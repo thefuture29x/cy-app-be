@@ -14,7 +14,7 @@ build:
     - docker build -t attend_app:latest .
     - docker run -d -p 8085:8085 --name attend_app attend_app:latest
   only:
-    - /^dev_[0-9]+(?:.[0-9]+)+$/ # regular expression
+    - /^deploy_[0-9]+(?:.[0-9]+)+$/ # regular expression
 #deploy:
 #  stage: deploy
 #  tags:
