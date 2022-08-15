@@ -1,0 +1,24 @@
+#workflow:
+#  rules:
+#    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+stages:
+  - build
+build:
+  stage: build
+  tags:
+    - shell-runner
+  script:
+    - ./gradlew assemble
+    - docker container rm -f attend_app || echo "d"
+    - docker image rm -f attend_app || echo "d"
+    - docker build -t attend_app:latest .
+    - docker run -d -p 8085:8085 --name attend_app attend_app:latest
+  only:
+    - /^dev_[0-9]+(?:.[0-9]+)+$/ # regular expression
+#deploy:
+#  stage: deploy
+#  tags:
+#    - shell-runner
+#  script:
+#  only:
+#    - develop
