@@ -1,4 +1,4 @@
-package com.resources;
+package cy.resources.publics;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.CustomHandleException;
