@@ -1,0 +1,27 @@
+package cy.services;
+
+import cy.configs.jwt.JwtLoginResponse;
+import cy.configs.jwt.JwtUserLoginModel;
+import cy.dtos.UserDto;
+import cy.entities.UserEntity;
+import cy.models.*;
+import cy.models.UserModel;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public interface IUserService extends IBaseService<UserEntity, UserDto, UserModel, Long>{
+
+    JwtLoginResponse logIn(JwtUserLoginModel model);
+
+    boolean tokenFilter(String substring, HttpServletRequest req, HttpServletResponse res);
+
+    boolean updateAvatar(MultipartFile avatar);
+
+    boolean changeStatus(Long userId);
+
+    boolean changeLockStatus(Long userId);
+
+    String updateAvatar1(MultipartFile avatar);
+}
