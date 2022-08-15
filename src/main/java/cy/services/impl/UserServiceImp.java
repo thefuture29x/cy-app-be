@@ -71,11 +71,12 @@ public class UserServiceImp implements IUserService {
         // create default roles
         try {
             // for insert default roles
-            if (this.roleRepository.findAllByRoleIdIn(List.of(1l, 2l, 3l, 4l)).size() < 4) {
+            if (this.roleRepository.findAllByRoleIdIn(List.of(1l, 2l, 3l, 4l, 5l)).size() < 5) {
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(2L).roleName(RoleEntity.ADMIN).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(3L).roleName(RoleEntity.MANAGER).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(4L).roleName(RoleEntity.EMPLOYEE).build());
+                this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(5L).roleName(RoleEntity.LEADER).build());
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -96,10 +97,7 @@ public class UserServiceImp implements IUserService {
 
                 Set<UserEntity> users = Set.of(administrator);
                 administrator.setRoleEntity(Set.of(
-                        RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).userEntitySet(users).build(),
-                        RoleEntity.builder().roleId(2L).roleName(RoleEntity.ADMIN).userEntitySet(users).build(),
-                        RoleEntity.builder().roleId(3L).roleName(RoleEntity.MANAGER).userEntitySet(users).build(),
-                        RoleEntity.builder().roleId(4L).roleName(RoleEntity.EMPLOYEE).userEntitySet(users).build()
+                        RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).userEntitySet(users).build()
                 ));
 
                 this.userRepository.save(administrator);

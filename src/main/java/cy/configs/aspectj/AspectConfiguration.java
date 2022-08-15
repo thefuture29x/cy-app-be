@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 @Aspect
 @Configuration
 public class AspectConfiguration {
-    @Around("execution(* com.services.*.*(org.springframework.data.domain.Pageable, ..))") // pointcut expression only apply with these methods service has first parameter type is Pageable
+    @Around("execution(* cy.services.*.*(org.springframework.data.domain.Pageable, ..))") // pointcut expression only apply with these methods service has first parameter type is Pageable
     public Object fixPageIfExceed(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs(); // get arguments
         Pageable page = (Pageable) args[0]; // get pageable object

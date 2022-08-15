@@ -17,6 +17,7 @@ public class RoleEntity {
     public final static String ADMIN = "ROLE_ADMIN";
     public final static String MANAGER = "ROLE_MANAGER";
     public final static String EMPLOYEE = "ROLE_EMPLOYEE";
+    public final static String LEADER = "ROLE_LEADER";
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
