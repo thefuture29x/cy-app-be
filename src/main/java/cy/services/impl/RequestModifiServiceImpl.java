@@ -62,7 +62,7 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
     }
 
     @Override
-    public RequestModifiDto add(RequestModifiModel model) throws IOException {
+    public RequestModifiDto add(RequestModifiModel model) {
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         requestModifiEntity.setAssignTo(iUserRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
@@ -70,8 +70,12 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             List<String> files = new ArrayList<>();
             for(MultipartFile fileMultipart : model.getFiles()){
                 if(!fileMultipart.isEmpty()){
+                    try{
                     String result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
                     files.add(result);
+                    }catch (Exception ex){
+                        ex.printStackTrace();
+                    }
                 }
             }
             requestModifiEntity.setFiles(files.toString());
