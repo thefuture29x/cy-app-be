@@ -24,7 +24,7 @@ public class RequestOTModel {
     private String timeEnd;
     @ApiModelProperty(notes = "The date OT", dataType = "Date", example = "2022-08-16")
     @JsonSerialize(as = Date.class)
-    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateOT;
     @ApiModelProperty(notes = "Request status", dataType = "Int", example = "2022-08-16")
     private Integer status;
