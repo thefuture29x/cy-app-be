@@ -8,6 +8,7 @@ build:
   tags:
     - shell-runner
   script:
+    - chmod +x gradlew
     - ./gradlew assemble
     - docker container rm -f attend_app || echo "d"
     - docker image rm -f attend_app || echo "d"
