@@ -23,6 +23,10 @@ public class RequestAttendEntity {
     private String timeCheckOut;
     @Column(name = "date_request_attend")
     private Date dateRequestAttend;
+    // 3 status:
+    // 0: waiting for approve
+    // 1: approved
+    // 2: rejected
     @Column(name = "status")
     private Integer status;
     @Column(name = "reason_cancel")
@@ -40,6 +44,4 @@ public class RequestAttendEntity {
 
     @OneToMany(mappedBy = "requestAttend")
     private List<HistoryRequestEntity> historyRequestEntities;
-
-
 }
