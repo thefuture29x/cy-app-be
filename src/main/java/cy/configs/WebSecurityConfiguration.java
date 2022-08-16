@@ -34,8 +34,8 @@ public class WebSecurityConfiguration {
     private final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
             new AntPathRequestMatcher(FrontendConfiguration.PREFIX_API + "test/**", HttpMethod.GET.name()),
             new AntPathRequestMatcher(FrontendConfiguration.PREFIX_API + "test", HttpMethod.GET.name()),
-            new AntPathRequestMatcher("/api/v1/public/test/login"),
-            new AntPathRequestMatcher("/users/login"),
+            new AntPathRequestMatcher("/api/v1/users/login"),
+
 
             new AntPathRequestMatcher("/swagger-resources/**"),
             new AntPathRequestMatcher("/swagger-ui/**"),

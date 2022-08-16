@@ -22,7 +22,6 @@ public class HistoryRequestEntity {
     private String timeHistory;
     @Column(name = "status")
     private String status;
-
     @ManyToOne
     @JoinColumn(name = "request_attend_id")
     private RequestAttendEntity requestAttend;

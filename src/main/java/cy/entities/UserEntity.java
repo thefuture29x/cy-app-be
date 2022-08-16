@@ -20,9 +20,9 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
-    @Column(name = "user_name")
+    @Column(name = "user_name", unique = true)
     private String userName;
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
     @Column(name = "full_name")
     private String fullName;
@@ -39,6 +39,8 @@ public class UserEntity {
     private Boolean status;
     @Column(name = "avatar")
     private String avatar;
+    @Column(name = "address")
+    private String address;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
