@@ -1,12 +1,11 @@
 package cy.dtos;
 
 import cy.entities.RequestDeviceEntity;
-import cy.entities.UserEntity;
-import cy.models.RequestDeviceModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
 import java.util.Date;
 
@@ -29,9 +28,10 @@ public class RequestDeviceDto {
     private Long createBy;
     private Long assignTo;
 
-    public static RequestDeviceDto entityToModel(RequestDeviceEntity obj) {
+    public static RequestDeviceDto entityToDto(RequestDeviceEntity obj) {
         return RequestDeviceDto.builder().id(obj.getId())
                 .type(obj.getType())
+                .title(obj.getTitle())
                 .quantity(obj.getQuantity())
                 .dateRequestDevice(obj.getDateRequestDevice())
                 .dateStart(obj.getDateStart())
@@ -40,8 +40,8 @@ public class RequestDeviceDto {
                 .reasonCancel(obj.getReasonCancel())
                 .files(obj.getFiles())
                 .description(obj.getDescription())
-                .createBy(obj.getCreateBy().getUserId())
-                .assignTo(obj.getAssignTo().getUserId())
+                .createBy(obj.getCreateBy() !=null ? obj.getCreateBy().getUserId() : null)
+                .assignTo(obj.getAssignTo() !=null ? obj.getAssignTo().getUserId() : null)
                 .build();
 
     }
