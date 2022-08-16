@@ -62,6 +62,4 @@ public class RequestDeviceEntity {
 
     @OneToMany(mappedBy = "requestDevice")
     private List<HistoryRequestEntity> historyRequestEntities;
-
-
 }

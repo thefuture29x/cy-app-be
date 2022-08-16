@@ -2,9 +2,11 @@ package cy.services.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestDeviceDto;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestDeviceEntity;
 import cy.entities.UserEntity;
 import cy.models.RequestDeviceModel;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestDeviceRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestDeviceService;
@@ -31,6 +33,9 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
     @Autowired
     IUserRepository userRepository;
+
+    @Autowired
+    INotificationRepository notificationRepository;
 
     @Override
     public List<RequestDeviceDto> findAll() {
@@ -89,6 +94,14 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         RequestDeviceDto requestDeviceDto = RequestDeviceDto.entityToDto(requestDeviceEntity);
+
+        // Add notification for user create request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Tạo yêu cầu mượn/mua thiết bị thành công!");
+        notificationEntity.setContent("Bạn đã tạo yêu cầu mượn/mua thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setUserId(requestDeviceEntity.getCreateBy());
+        notificationEntity.setRequestDevice(requestDeviceEntity);
+        this.notificationRepository.save(notificationEntity);
         return requestDeviceDto;
     }
 

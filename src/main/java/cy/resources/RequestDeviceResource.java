@@ -29,7 +29,6 @@ public class RequestDeviceResource {
         RequestDeviceDto requestDeviceDto=requestDeviceService.add(requestDeviceModel);
         if(requestDeviceDto==null){
             return ResponseDto.of(130, "CREATE");
-
         }else {
             return ResponseDto.of(requestDeviceDto);
         }
