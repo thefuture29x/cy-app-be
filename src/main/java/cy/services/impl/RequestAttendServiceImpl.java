@@ -1,6 +1,6 @@
 package cy.services.impl;
 
-import cy.dtos.CreateAttendRequest;
+import cy.models.CreateAttendRequest;
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.UserDto;
@@ -17,7 +17,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,12 +89,16 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 }catch (Exception ex){
                     ex.printStackTrace();
                     fileS3Urls.add("Error code: 31");
+                    throw new CustomHandleException(31);
                 }
             }
         }
 
-        // Check if request user id exist
+        // Check if requested user id exist
         userRepository.findById(request.getRequestUserId()).orElseThrow(() -> new CustomHandleException(32));
+
+        // Check if assigned user id exist
+        userRepository.findById(request.getAssignUserId()).orElseThrow(() -> new CustomHandleException(33));
 
         return RequestAttendDto.builder()
                 .timeCheckIn(request.getTimeCheckIn())

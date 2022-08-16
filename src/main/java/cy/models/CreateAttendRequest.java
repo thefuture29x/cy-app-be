@@ -1,4 +1,4 @@
-package cy.dtos;
+package cy.models;
 
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;

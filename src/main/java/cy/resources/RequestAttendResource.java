@@ -1,7 +1,7 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.CreateAttendRequest;
+import cy.models.CreateAttendRequest;
 import cy.dtos.RequestAttendDto;
 import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
