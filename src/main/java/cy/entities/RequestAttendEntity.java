@@ -23,7 +23,7 @@ public class RequestAttendEntity {
     private String timeCheckOut;
     @Column(name = "date_request_attend")
     private Date dateRequestAttend;
-    // 3 status:
+    //  status:
     // 0: waiting for approve
     // 1: approved
     // 2: rejected

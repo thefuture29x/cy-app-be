@@ -1,5 +1,7 @@
 package cy.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cy.dtos.HistoryRequestDto;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.UserDto;
@@ -27,6 +29,8 @@ public class RequestAttendModel {
     private Long id;
     private String timeCheckIn;
     private String timeCheckOut;
+    @JsonSerialize(as = Date.class)
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateRequestAttend;
     private Integer status;
     private String reasonCancel;
