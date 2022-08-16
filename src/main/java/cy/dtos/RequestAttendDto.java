@@ -1,5 +1,6 @@
 package cy.dtos;
 
+import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestAttendEntity;
 import cy.models.RequestAttendModel;
 import lombok.AllArgsConstructor;
@@ -31,10 +32,16 @@ public class RequestAttendDto {
     private List<HistoryRequestDto> historyRequests;
 
     public static RequestAttendDto entityToDto(RequestAttendEntity entity){
-        List<Object> s3UrlsObj = new JSONObject().getJSONArray("files").toList();
+        List<Object> s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
         List<String> s3Urls = new ArrayList<>();
         for(Object s3Url : s3UrlsObj){
             s3Urls.add(s3Url.toString());
+        }
+        List<HistoryRequestEntity> historyRequestEntities = entity.getHistoryRequestEntities();
+        List<HistoryRequestDto> historyRequestDtos = new ArrayList<>();
+        if(historyRequestEntities != null){
+            historyRequestDtos = historyRequestEntities.stream()
+                    .map(HistoryRequestDto::toDto).collect(Collectors.toList());
         }
         return RequestAttendDto.builder()
                 .id(entity.getId())
@@ -46,8 +53,7 @@ public class RequestAttendDto {
                 .files(s3Urls)
                 .createdBy(UserDto.toDto(entity.getCreateBy()))
                 .assignedTo(UserDto.toDto(entity.getAssignTo()))
-                .historyRequests(entity.getHistoryRequestEntities().stream()
-                        .map(HistoryRequestDto::toDto).collect(Collectors.toList()))
+                .historyRequests(historyRequestDtos)
                 .build();
     }
 }

@@ -43,6 +43,7 @@ public class BeanConfiguration {
                         .allowedOrigins(
                                 "http://localhost:3000",
                                 "http://localhost:8080",
+                                "http://localhost:8081",
                                 "http://localhost:19006",
                                 "http://localhost:19000" )
                         .allowedOriginPatterns("*.*.*.*:*")

@@ -15,8 +15,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,16 +63,29 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto add(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto add(RequestDeviceModel model)  {
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
 
         UserEntity assignUser = userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11));
 
         requestDeviceEntity.setAssignTo(assignUser);
-        if (model.getFiles() != null && !model.getFiles().isEmpty()) {
-            requestDeviceEntity.setFiles(fileUploadProvider.uploadFile("device", model.getFiles()));
+
+        if (model.getFiles() != null && model.getFiles().length > 0) {
+            List<String> files = new ArrayList<>();
+            for (MultipartFile fileMultipart : model.getFiles()) {
+                if (!fileMultipart.isEmpty()) {
+                    try {
+                        String result = fileUploadProvider.uploadFile("device", fileMultipart);
+                        files.add(result);
+                    } catch (Exception e) {
+                        System.out.println("upload file failed");
+                    }
+                }
+            }
+            requestDeviceEntity.setFiles(files.toString());
         }
+
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         RequestDeviceDto requestDeviceDto = RequestDeviceDto.entityToDto(requestDeviceEntity);
@@ -83,19 +98,29 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto update(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto update(RequestDeviceModel model){
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
-        if (model.getAssignTo() == null) {
-            requestDeviceEntity.setAssignTo(null);
 
-        } else {
-            UserEntity assignUser = userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11));
-            requestDeviceEntity.setAssignTo(assignUser);
+        UserEntity assignUser = userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11));
+
+        requestDeviceEntity.setAssignTo(assignUser);
+
+        if (model.getFiles() != null && model.getFiles().length > 0) {
+            List<String> files = new ArrayList<>();
+            for (MultipartFile fileMultipart : model.getFiles()) {
+                if (!fileMultipart.isEmpty()) {
+                    try {
+                        String result = fileUploadProvider.uploadFile("device", fileMultipart);
+                        files.add(result);
+                    } catch (Exception e) {
+                        System.out.println("upload file failed");
+                    }
+                }
+            }
+            requestDeviceEntity.setFiles(files.toString());
         }
-        if (model.getFiles() != null && !model.getFiles().isEmpty()) {
-            requestDeviceEntity.setFiles(fileUploadProvider.uploadFile("device", model.getFiles()));
-        }
+
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         RequestDeviceDto requestDeviceDto = RequestDeviceDto.entityToDto(requestDeviceEntity);
