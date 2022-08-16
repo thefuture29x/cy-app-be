@@ -4,14 +4,17 @@ import cy.configs.FrontendConfiguration;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.ResponseDto;
+import cy.entities.RoleEntity;
 import cy.models.UserModel;
 import cy.services.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 
 @RestController
@@ -25,7 +28,7 @@ public class UserResources {
         this.userService = userService;
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
+    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
     @GetMapping("{id}")
     public ResponseDto getUserById(@PathVariable Long id) {
         return ResponseDto.of(this.userService.findById(id));
