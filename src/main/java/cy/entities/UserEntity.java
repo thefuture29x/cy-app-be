@@ -20,9 +20,9 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long userId;
-    @Column(name = "user_name")
+    @Column(name = "user_name", unique = true)
     private String userName;
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
     @Column(name = "full_name")
     private String fullName;
@@ -40,6 +40,14 @@ public class UserEntity {
     @Column(name = "avatar")
     private String avatar;
 
+
+    @Column(name = "address")
+    private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private UserEntity manager;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date")
@@ -49,6 +57,7 @@ public class UserEntity {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_date")
     private Date updatedDate;
+
     public static final String FOLDER = "user/";
 
     @ManyToMany(fetch = FetchType.EAGER)

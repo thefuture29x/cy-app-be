@@ -58,7 +58,12 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto add(RequestDeviceModel model) throws IOException {
+    public RequestDeviceEntity getById(Long id) {
+        return this.iRequestDeviceRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
+    }
+
+    @Override
+    public RequestDeviceDto add(RequestDeviceModel model)  {
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
 
@@ -93,7 +98,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto update(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto update(RequestDeviceModel model){
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
 

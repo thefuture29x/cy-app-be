@@ -16,8 +16,9 @@ public class RoleEntity {
     public final static String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
     public final static String ADMIN = "ROLE_ADMIN";
     public final static String MANAGER = "ROLE_MANAGER";
-    public final static String EMPLOYEE = "ROLE_EMPLOYEE";
     public final static String LEADER = "ROLE_LEADER";
+    public final static String EMPLOYEE = "ROLE_EMPLOYEE";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
@@ -26,5 +27,4 @@ public class RoleEntity {
     private String roleName;
     @ManyToMany
     private Set<UserEntity> userEntitySet;
-
 }

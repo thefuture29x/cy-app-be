@@ -28,13 +28,13 @@ public class HandleException {
             errors.put(error.getField(), error.getDefaultMessage());
         }
         return ResponseEntity.badRequest()
-                .body(errors);
+                .body(ResponseDto.of(1, errors));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> resolverException(HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest()
-                .body(ex.getMessage());
+                .body(ResponseDto.of(2, ex.getMessage()));
     }
 
     @ExceptionHandler(CustomHandleException.class)

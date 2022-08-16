@@ -11,14 +11,11 @@ import java.util.Optional;
 
 @Repository
 public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
-    UserEntity findUserEntityByEmail(String email);
-
     UserEntity findUserEntityByUserName(String username);
 
     UserEntity findByUserName(String username);
 
     UserEntity findByEmail(String email);
-
 
     UserEntity findByPhone(String phone);
 
