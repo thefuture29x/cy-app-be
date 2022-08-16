@@ -40,14 +40,14 @@ public class UserResources {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @PostMapping
-    public ResponseDto addUser(@RequestBody UserModel model) {
+    public ResponseDto addUser(@RequestBody @Valid UserModel model) {
         model.setId(null);
         return ResponseDto.of(this.userService.add(model));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @PutMapping("{id}")
-    public ResponseDto updateUser(@PathVariable Long id, @RequestBody UserModel model) {
+    public ResponseDto updateUser(@PathVariable Long id, @RequestBody @Valid UserModel model) {
         model.setId(id);
         return ResponseDto.of(this.userService.update(model));
     }
