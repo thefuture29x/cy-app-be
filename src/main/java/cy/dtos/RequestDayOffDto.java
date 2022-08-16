@@ -41,4 +41,5 @@ public class RequestDayOffDto {
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
                 .build();
     }
+
 }
