@@ -2,16 +2,11 @@ package cy.dtos;
 
 import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestDayOffEntity;
-import cy.entities.UserEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import java.util.Date;
 import java.util.List;
 
@@ -41,4 +36,5 @@ public class RequestDayOffDto {
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
                 .build();
     }
+
 }
