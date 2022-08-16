@@ -19,7 +19,6 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
 
     UserEntity findByEmail(String email);
 
-
     UserEntity findByPhone(String phone);
 
     @Query(value = "select u.user_id from tbl_user as u join user_role as ur on ur.user_id=u.user_id join tbl_role as r on r.role_id = ur.role_id  where r.role_name = ?1", nativeQuery = true)

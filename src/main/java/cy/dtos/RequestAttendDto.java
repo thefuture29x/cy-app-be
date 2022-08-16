@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @Builder
 public class RequestAttendDto {
-    private Integer id;
+    private Long id;
     private String timeCheckIn;
     private String timeCheckOut;
     private Date dateRequestAttend;
