@@ -20,6 +20,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
+
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "users")
 public class UserResources {
@@ -75,7 +76,7 @@ public class UserResources {
     public ResponseDto search(@RequestParam @Valid @NotBlank String q, Pageable pageable) {
         return ResponseDto.of(this.userService.filter(pageable, Specification.where(
                 ((root, query, criteriaBuilder) -> {
-                    String s = new StringBuffer("%").append(q).append("%").toString();
+                    String s = "%" + q + "%";
                     return criteriaBuilder.or(criteriaBuilder.like(root.get(UserEntity_.USER_NAME), s),
                             criteriaBuilder.like(root.get(UserEntity_.FULL_NAME), s));
                 })
@@ -100,7 +101,7 @@ public class UserResources {
     }
 
     @PatchMapping("change_my_avatar")
-    public ResponseDto changeMyAvatar(MultipartFile file){
+    public ResponseDto changeMyAvatar(MultipartFile file) {
         return ResponseDto.of(this.userService.changeMyAvatar(file));
     }
 
