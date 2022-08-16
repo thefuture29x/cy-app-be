@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 @Component
 public class FileUploadProvider {
 
-    private final String bucket = "team-2";
-    private final String bucketEndpoint = "https://team-2.s3.ap-northeast-2.amazonaws.com/";
+    private final String bucket = "attend-project";
+    private final String bucketEndpoint = "https://attend-project.s3.ap-northeast-2.amazonaws.com/";
     private final AmazonS3 s3Client;
     private final String accessKey = "AKIA2GSEWDCLRXXMMCMG";
     private final String accessSecret = "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";
