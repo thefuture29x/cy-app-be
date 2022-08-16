@@ -105,6 +105,12 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     }
 
     public RequestAttendModel requestToModel(CreateUpdateRequestAttend request, int type){
+        // Check if user already have request attend in this date
+        RequestAttendEntity checkRequest = requestAttendRepository.userAlreadyRequest(SecurityUtils.getCurrentUserId(), request.getDateRequestAttend());
+        if(checkRequest != null){
+            throw new CustomHandleException(37);
+        }
+
         int status = 0;
         String reasonCancel = "";
         List<String> fileS3Urls = new ArrayList<>();
@@ -140,7 +146,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             }
         }
         final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
-        if(request.getAttachedFiles() != null){ // Check if user has attached files
+        if(request.getAttachedFiles() != null && request.getAttachedFiles().length > 0){ // Check if user has attached files
             for(MultipartFile file : request.getAttachedFiles()){
                 try{
                     String s3Url = fileUploadProvider.uploadFile(folderName, file);

@@ -114,6 +114,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         notificationEntity.setTitle("Gửi đơn xin nghỉ làm thành công!");
         notificationEntity.setContent("Bạn đã gửi đơn xin nghỉ làm thành công. Vui lòng đợi phản hồi từ quản lý công ty.");
         notificationEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
+        notificationEntity.setRequestDayOff(requestDayOff);
         this.notificationRepository.save(notificationEntity);
         return RequestDayOffDto.toDto(requestDayOff);
     }

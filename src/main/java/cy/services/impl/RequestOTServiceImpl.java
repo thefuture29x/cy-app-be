@@ -2,12 +2,15 @@ package cy.services.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestOTDto;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestOTEntity;
 import cy.models.RequestOTModel;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestOTRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestOTService;
 import cy.utils.FileUploadProvider;
+import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +28,9 @@ public class RequestOTServiceImpl implements IRequestOTService {
     private IUserRepository userRepository;
     @Autowired
     FileUploadProvider fileUploadProvider;
+
+    @Autowired
+    INotificationRepository notificationRepository;
 
     @Override
     public List<RequestOTDto> findAll() {
@@ -59,12 +65,28 @@ public class RequestOTServiceImpl implements IRequestOTService {
     @Override
     public RequestOTDto add(RequestOTModel model) {
         RequestOTEntity requestOTEntity = RequestOTModel.toEntity(model);
-        requestOTEntity.setCreateBy(userRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
-        requestOTEntity.setAssignTo(userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
-        if (model.getFiles() != null && !model.getFiles().isEmpty()) {
-
+        requestOTEntity.setCreateBy(userRepository.findById(model.getCreateBy()).orElseThrow(()
+                -> new CustomHandleException(11)));
+        requestOTEntity.setAssignTo(userRepository.findById(model.getAssignTo()).orElseThrow(()
+                -> new CustomHandleException(11)));
+        final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_ot/";
+        if(model.getFiles() != null && !model.getFiles().isEmpty()) {
+            try {
+                String s3Url = fileUploadProvider.uploadFile(folderName, model.getFiles());
+                requestOTEntity.setFiles(s3Url);
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
         }
-        return null;
+
+        // Add notification for user create request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Tạo yêu cầu làm thêm giờ thành công!");
+        notificationEntity.setContent("Bạn đã tạo yêu cầu làm thêm giờ thành công. Vui lòng chờ quản lí công ty phê duyệt.");
+        notificationEntity.setUserId(requestOTEntity.getCreateBy());
+        notificationEntity.setRequestOT(requestOTEntity);
+        this.notificationRepository.save(notificationEntity);
+        return RequestOTDto.toDto(requestOTEntity);
     }
 
     @Override
