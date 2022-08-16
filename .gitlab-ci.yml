@@ -10,6 +10,8 @@ build:
   script:
     - chmod +x gradlew
     - ./gradlew assemble
+    - cp ../application.properties .
+    - cp ../application-local.properties .
     - docker container rm -f attend_app || echo "d"
     - docker image rm -f attend_app || echo "d"
     - docker build -t attend_app:latest .
