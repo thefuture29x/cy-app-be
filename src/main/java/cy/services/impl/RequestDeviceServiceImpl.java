@@ -57,11 +57,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
     @Override
     public RequestDeviceEntity getById(Long id) {
-        return null;
+        return this.iRequestDeviceRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
 
     @Override
-    public RequestDeviceDto add(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto add(RequestDeviceModel model)  {
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
 

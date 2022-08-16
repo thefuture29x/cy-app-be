@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.*;
 import java.sql.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
 @Setter
@@ -42,10 +43,11 @@ public class RequestModifiModel {
     @ApiModelProperty(notes = "Id assigner", dataType = "Long", example = "1")
     private Long assignTo;
     @ApiModelProperty(notes = "List history request", dataType = "List<HistoryRequestEntity>", example = "[{},{}]")
-    private List<HistoryRequestEntity> historyRequestEntities;
+    private List<HistoryRequestModel> historyRequestModels;
 
 
-    public static RequestModifiEntity toEntity(RequestModifiModel object){
+    public static RequestModifiEntity toEntity(RequestModifiModel object ) {
+        if(object == null ) return null;
         return RequestModifiEntity.builder()
                 .id(object.getId())
                 .description(object.getDescription())
@@ -54,6 +56,7 @@ public class RequestModifiModel {
                 .dateRequestModifi(object.getDateRequestModifi())
                 .status(object.getStatus())
                 .reasonCancel(object.getReasonCancel())
+                .historyRequestEntities(object.getHistoryRequestModels() != null ? object.getHistoryRequestModels().stream().map(data -> HistoryRequestModel.toEntity(data)).collect(Collectors.toList()) : null)
                 .build();
 
     }

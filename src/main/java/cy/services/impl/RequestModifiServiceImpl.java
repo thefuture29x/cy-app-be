@@ -17,12 +17,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class RequestModifiServiceImpl implements IResquestModifiService {
     @Autowired
     IRequestModifiRepository iRequestModifiRepository;
@@ -58,11 +60,11 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
 
     @Override
     public RequestModifiEntity getById(Long id) {
-        return null;
+        return this.iRequestModifiRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
 
     @Override
-    public RequestModifiDto add(RequestModifiModel model) {
+    public RequestModifiDto add(RequestModifiModel model){
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         requestModifiEntity.setAssignTo(iUserRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
@@ -70,23 +72,22 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             List<String> files = new ArrayList<>();
             for(MultipartFile fileMultipart : model.getFiles()){
                 if(!fileMultipart.isEmpty()){
-                    try{
-                    String result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
-                    files.add(result);
-                    }catch (Exception ex){
-                        ex.printStackTrace();
+                    String result = null;
+                    try {
+                        result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
+                    files.add(result);
                 }
             }
             requestModifiEntity.setFiles(files.toString());
         }
-        // there is no dto of the history request, so leave it null for now
-        requestModifiEntity.setHistoryRequestEntities(null);
         return RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity));
     }
 
     @Override
-    public List<RequestModifiDto> add(List<RequestModifiModel> model) throws IOException {
+    public List<RequestModifiDto> add(List<RequestModifiModel> model) {
         List<RequestModifiDto> requestModifiDtoList = new ArrayList<>();
         for (RequestModifiModel requestModifiModel : model) {
             RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(requestModifiModel);
@@ -96,21 +97,24 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
                 List<String> files = new ArrayList<>();
                 for(MultipartFile fileMultipart : requestModifiModel.getFiles()){
                     if(!fileMultipart.isEmpty()){
-                        String result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                        String result = null;
+                        try {
+                            result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         files.add(result);
                     }
                 }
                 requestModifiEntity.setFiles(files.toString());
             }
-            // there is no dto of the history request, so leave it null for now
-            requestModifiEntity.setHistoryRequestEntities(null);
             requestModifiDtoList.add(RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity)));
         }
         return requestModifiDtoList;
     }
 
     @Override
-    public RequestModifiDto update(RequestModifiModel model) throws IOException {
+    public RequestModifiDto update(RequestModifiModel model)  {
         RequestModifiEntity requestModifiEntity = iRequestModifiRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
         requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
@@ -119,14 +123,17 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             List<String> files = new ArrayList<>();
             for(MultipartFile fileMultipart : model.getFiles()){
                 if(!fileMultipart.isEmpty()){
-                    String result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                    String result = null;
+                    try {
+                        result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     files.add(result);
                 }
             }
             requestModifiEntity.setFiles(files.toString());
         }
-        // there is no dto of the history request, so leave it null for now
-        requestModifiEntity.setHistoryRequestEntities(null);
         return RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity));
     }
 
