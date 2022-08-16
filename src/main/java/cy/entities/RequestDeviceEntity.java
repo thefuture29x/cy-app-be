@@ -1,6 +1,8 @@
 package cy.entities;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -48,6 +50,15 @@ public class RequestDeviceEntity {
     @ManyToOne
     @JoinColumn(name = "assign_id")
     private UserEntity assignTo;
+
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedDate;
 
     @OneToMany(mappedBy = "requestDevice")
     private List<HistoryRequestEntity> historyRequestEntities;
