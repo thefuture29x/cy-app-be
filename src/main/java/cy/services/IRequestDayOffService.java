@@ -11,8 +11,6 @@ import org.springframework.data.domain.Page;
 
 import java.io.IOException;
 
-public interface IRequestDayOffService {
-    RequestDayOffDto createOrUpdate(RequestDayOffModel requestDayOffModel) throws IOException;
+public interface IRequestDayOffService extends IBaseService<RequestDayOffEntity, RequestDayOffDto, RequestDayOffModel, Long>{
 
-    Page<RequestDayOffDto> getByPage(Integer pageIndex, Integer pageSize);
 }

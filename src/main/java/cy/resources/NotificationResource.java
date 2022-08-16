@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "notification/")
 public class NotificationResource {
@@ -26,13 +28,13 @@ public class NotificationResource {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_LEADER', 'ROLE_EMPLOYEE')")
-    public ResponseDto addNotification(@RequestBody NotificationModel model){
+    public ResponseDto addNotification(@RequestBody NotificationModel model) throws IOException {
         return ResponseDto.of( this.notificationService.add(model));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_LEADER', 'ROLE_EMPLOYEE')")
-    public ResponseDto editNotification(@RequestBody NotificationModel model, @PathVariable Long id){
+    public ResponseDto editNotification(@RequestBody NotificationModel model, @PathVariable Long id) throws IOException {
         model.setId(id);
         return ResponseDto.of( this.notificationService.update(model));
     }
