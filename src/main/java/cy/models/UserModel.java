@@ -44,7 +44,7 @@ public class UserModel {
 
     @ApiModelProperty(notes = "User birthdate", dataType = "Date", example = "2002-04-29")
     @JsonSerialize(as = Date.class)
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date birthDate;
 
     @ApiModelProperty(notes = "User roles", dataType = "array", example = "1,3,5")
@@ -56,6 +56,9 @@ public class UserModel {
 
     @ApiModelProperty(notes = "address", dataType = "String", example = "my dinh")
     private String address;
+
+    @ApiModelProperty(notes = "id of manager(admin, leader, manager)", dataType = "Long", example = "1")
+    private Long manager;
 
     public static UserEntity toEntity(UserModel model) {
         if (model == null) throw new RuntimeException("UserModel is null");

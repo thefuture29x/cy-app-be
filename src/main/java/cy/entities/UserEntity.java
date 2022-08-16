@@ -39,8 +39,14 @@ public class UserEntity {
     private Boolean status;
     @Column(name = "avatar")
     private String avatar;
+
+
     @Column(name = "address")
     private String address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private UserEntity manager;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

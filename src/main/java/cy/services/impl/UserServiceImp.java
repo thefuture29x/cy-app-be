@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,7 +50,6 @@ public class UserServiceImp implements IUserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final Random random = new Random();
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final FileUploadProvider fileUploadProvider;
 
@@ -137,7 +135,8 @@ public class UserServiceImp implements IUserService {
         return UserDto.toDto(this.getById(id));
     }
 
-    private UserEntity getById(Long id) {
+    @Override
+    public UserEntity getById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
     }
 
@@ -160,7 +159,16 @@ public class UserServiceImp implements IUserService {
                 throw new CustomHandleException(14);
         }
 
+
         UserEntity userEntity = UserModel.toEntity(model);
+        if (model.getManager() != null) {
+            try {
+                UserEntity userManager = this.getById(model.getManager());
+                userEntity.setManager(userManager);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         userEntity.setStatus(true);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.setRoles(userEntity, model.getRoles());
@@ -190,7 +198,15 @@ public class UserServiceImp implements IUserService {
             UserEntity checkUser = this.userRepository.findByPhone(model.getPhone());
             if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
                 throw new CustomHandleException(14);
+        }
 
+        if (model.getManager() != null) {
+            try {
+                UserEntity userManager = this.getById(model.getManager());
+                original.setManager(userManager);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         original.setEmail(model.getEmail());

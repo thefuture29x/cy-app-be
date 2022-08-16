@@ -19,6 +19,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 public class NotificationServiceImpl implements INotificationService {
     @Autowired
@@ -49,6 +50,11 @@ public class NotificationServiceImpl implements INotificationService {
     @Override
     public NotificationDto findById(Long id) {
         return NotificationDto.toDto(this.notificationRepository.findById(id).orElseThrow(() -> new CustomHandleException(500)));
+    }
+
+    @Override
+    public NotificationEntity getById(Long id) {
+        return this.notificationRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
     }
 
     @Transactional
