@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RequestMapping(value = FrontendConfiguration.PREFIX_API+"/history_request/")
 public class HistoryRequestResource {
     @Autowired
@@ -35,7 +37,7 @@ public class HistoryRequestResource {
     }
     @PostMapping("add")
     @Secured(value = {"ROLE_ADMINISTRATOR","ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE","ROLE_LEADER"})
-    public ResponseDto add(@RequestBody HistoryRequestModel historyRequestModel){
+    public ResponseDto add(@RequestBody HistoryRequestModel historyRequestModel) throws IOException {
         HistoryRequestDto historyRequestDto = iHistoryRequestService.add(historyRequestModel);
         if (historyRequestDto != null){
             return ResponseDto.of(historyRequestDto);
@@ -45,7 +47,7 @@ public class HistoryRequestResource {
     }
     @PostMapping("update")
     @Secured(value = {"ROLE_ADMINISTRATOR","ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE","ROLE_LEADER"})
-    public ResponseDto update(@RequestBody HistoryRequestModel historyRequestModel){
+    public ResponseDto update(@RequestBody HistoryRequestModel historyRequestModel) throws IOException {
         HistoryRequestDto historyRequestDto = iHistoryRequestService.update(historyRequestModel);
         if (historyRequestDto != null){
             return ResponseDto.of(historyRequestDto);
