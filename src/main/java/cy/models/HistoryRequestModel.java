@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -31,12 +32,9 @@ public class HistoryRequestModel {
     @NotNull
     private Integer status;
 
-    public static HistoryRequestEntity toEntity(HistoryRequestModel model) {
-        if (model == null) throw new RuntimeException("UserModel is null");
-        return HistoryRequestEntity.builder()
-                .id(model.getId())
-                .status(model.getStatus())
-                .dateHistory(model.dateHistory)
-                .build();
-    }
+    private RequestOTModel requestOTModel;
+    private RequestAttendModel requestAttendModel;
+    private RequestDeviceModel requestDeviceModel;
+    private RequestModifiModel requestModifiModel;
+    private RequestDayOffModel requestDayOffModel;
 }
