@@ -57,6 +57,11 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
     }
 
     @Override
+    public RequestModifiEntity getById(Long id) {
+        return null;
+    }
+
+    @Override
     public RequestModifiDto add(RequestModifiModel model) throws IOException {
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
