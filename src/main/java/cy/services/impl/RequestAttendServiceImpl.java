@@ -128,7 +128,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 // If user deleted files
                 if(request.getDeletedFilesNumber() != null){
                     for(Integer deletedFileNumber : request.getDeletedFilesNumber()){
-                        fileS3Urls.remove(deletedFileNumber);
+                        fileS3Urls.remove(deletedFileNumber.intValue());
                     }
                 }
 

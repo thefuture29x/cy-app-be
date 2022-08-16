@@ -36,8 +36,8 @@ public class RequestAttendResource {
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    @DeleteMapping(value = "/delete")
-    public ResponseDto delete(Long id) {
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseDto delete(@PathVariable Long id) {
         boolean result = this.requestAttendService.deleteById(id);
         if(!result){
             throw new CustomHandleException(36);
