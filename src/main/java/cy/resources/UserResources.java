@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "users")
@@ -43,14 +44,14 @@ public class UserResources {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @PostMapping
-    public ResponseDto addUser(@RequestBody @Valid UserModel model) {
+    public ResponseDto addUser(@RequestBody @Valid UserModel model) throws IOException {
         model.setId(null);
         return ResponseDto.of(this.userService.add(model));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @PutMapping("{id}")
-    public ResponseDto updateUser(@PathVariable Long id, @RequestBody @Valid UserModel model) {
+    public ResponseDto updateUser(@PathVariable Long id, @RequestBody @Valid UserModel model) throws IOException {
         model.setId(id);
         return ResponseDto.of(this.userService.update(model));
     }
