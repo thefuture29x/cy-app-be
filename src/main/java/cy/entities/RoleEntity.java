@@ -26,5 +26,4 @@ public class RoleEntity {
     private String roleName;
     @ManyToMany
     private Set<UserEntity> userEntitySet;
-
 }
