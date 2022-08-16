@@ -3,13 +3,16 @@ package cy.services.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestDayOffDto;
 import cy.dtos.ResponseDto;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestDayOffEntity;
 import cy.entities.UserEntity;
 import cy.models.RequestDayOffModel;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestDayOffRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestDayOffService;
 import cy.utils.FileUploadProvider;
+import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +35,8 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     IRequestDayOffRepository iRequestDayOffRepository;
     @Autowired
     IUserRepository userRepository;
+    @Autowired
+    INotificationRepository notificationRepository;
     @Autowired
     FileUploadProvider fileUploadProvider;
 
@@ -103,6 +108,13 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         }
         requestDayOff.setDateDayOff(new Date());
         requestDayOff = iRequestDayOffRepository.save(requestDayOff);
+
+        // Add notification for user request day off
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Gửi đơn xin nghỉ làm thành công!");
+        notificationEntity.setContent("Bạn đã gửi đơn xin nghỉ làm thành công. Vui lòng đợi phản hồi từ quản lý công ty.");
+        notificationEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
+        this.notificationRepository.save(notificationEntity);
         return RequestDayOffDto.toDto(requestDayOff);
     }
 

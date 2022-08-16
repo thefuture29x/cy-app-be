@@ -98,7 +98,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         // Add notification for user create request
         NotificationEntity notificationEntity = new NotificationEntity();
         notificationEntity.setTitle("Tạo yêu cầu mượn/mua thiết bị thành công!");
-        notificationEntity.setContent("Bạn đã tạo yêu cầu mượn/mua thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setContent("Bạn đã tạo yêu cầu mượn/mua thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt.");
         notificationEntity.setUserId(requestDeviceEntity.getCreateBy());
         notificationEntity.setRequestDevice(requestDeviceEntity);
         this.notificationRepository.save(notificationEntity);
