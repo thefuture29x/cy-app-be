@@ -21,6 +21,7 @@ public class RequestOTEntity {
     private String timeStart;
     @Column(name = "time_End")
     private String timeEnd;
+    @Temporal(TemporalType.DATE)
     @Column(name = "date_OT")
     private Date dateOT;
     @Column(name = "status")
