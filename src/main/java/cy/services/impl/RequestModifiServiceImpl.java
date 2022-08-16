@@ -17,12 +17,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class RequestModifiServiceImpl implements IResquestModifiService {
     @Autowired
     IRequestModifiRepository iRequestModifiRepository;
@@ -58,11 +60,11 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
 
     @Override
     public RequestModifiEntity getById(Long id) {
-        return null;
+        return this.iRequestModifiRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
 
     @Override
-    public RequestModifiDto add(RequestModifiModel model)  {
+    public RequestModifiDto add(RequestModifiModel model) {
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         requestModifiEntity.setAssignTo(iUserRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));

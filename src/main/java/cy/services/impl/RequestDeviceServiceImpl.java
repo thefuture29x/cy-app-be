@@ -57,7 +57,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
     @Override
     public RequestDeviceEntity getById(Long id) {
-        return null;
+        return this.iRequestDeviceRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
 
     @Override

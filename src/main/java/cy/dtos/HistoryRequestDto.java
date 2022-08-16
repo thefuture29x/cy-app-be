@@ -26,7 +26,7 @@ public class HistoryRequestDto {
     private RequestOTDto requestOTDto;
 
     public static HistoryRequestDto toDto(HistoryRequestEntity historyRequestEntity) {
-        if (historyRequestEntity == null) return null;
+//        if (historyRequestEntity == null) return null;
         return HistoryRequestDto.builder()
                 .id(historyRequestEntity.getId())
                 .dateHistory(historyRequestEntity.getDateHistory())
