@@ -1,6 +1,8 @@
 package cy.entities;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -32,6 +34,15 @@ public class RequestModifiEntity {
     private String reasonCancel;
     @Column(name = "files")
     private String files;
+
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
