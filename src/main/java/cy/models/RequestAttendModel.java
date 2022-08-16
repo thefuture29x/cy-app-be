@@ -3,13 +3,21 @@ package cy.models;
 import cy.dtos.HistoryRequestDto;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.UserDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.RequestAttendEntity;
+import cy.repositories.IUserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @NoArgsConstructor
 @AllArgsConstructor
