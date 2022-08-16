@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 public class RequestAttendServiceImpl implements IRequestAttendService {
     @Autowired
@@ -51,6 +52,11 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendDto findById(Long id) {
+        return null;
+    }
+
+    @Override
+    public RequestAttendEntity getById(Long id) {
         return null;
     }
 

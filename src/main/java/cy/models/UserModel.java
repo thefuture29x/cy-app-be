@@ -1,5 +1,7 @@
 package cy.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cy.entities.UserEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -25,39 +27,48 @@ public class UserModel {
     @NotNull
     private String email;
 
-    @ApiModelProperty(notes = "User Email", dataType = "String", example = "email@gmail.com")
-    @NotBlank
+    @ApiModelProperty(notes = "Username", dataType = "String", example = "user")
     @NotNull
+    private String username;
+
+    @ApiModelProperty(notes = "User Email", dataType = "String", example = "email@gmail.com")
     private String sex;
 
     @ApiModelProperty(notes = "User full name", dataType = "String", example = "Nguyen Van A")
+    @NotNull
     private String fullName;
 
     @ApiModelProperty(notes = "User password", dataType = "String", example = "123456")
+    @NotNull
     private String password;
 
     @ApiModelProperty(notes = "User birthdate", dataType = "Date", example = "2002-04-29")
+    @JsonSerialize(as = Date.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date birthDate;
 
     @ApiModelProperty(notes = "User roles", dataType = "array", example = "1,3,5")
+    @NotNull
     private List<Long> roles;
 
-    @ApiModelProperty(notes = "receiver's phone, phone must format follow vietnam", dataType = "String", example = "0952888888")
-    @NotNull
-    @NotBlank
-    @Pattern(
-            regexp = "(84|0[3|5|7|8|9])+([0-9]{8})\\b",
-            message = "Phone number must be in format: 84xxxxxxxx"
-    )
+    @ApiModelProperty(notes = "phone, phone must format follow vietnam", dataType = "String", example = "0952888888")
     private String phone;
+
+    @ApiModelProperty(notes = "address", dataType = "String", example = "my dinh")
+    private String address;
+
+    @ApiModelProperty(notes = "id of manager(admin, leader, manager)", dataType = "Long", example = "1")
+    private Long manager;
 
     public static UserEntity toEntity(UserModel model) {
         if (model == null) throw new RuntimeException("UserModel is null");
         return UserEntity.builder()
+                .userName(model.username)
                 .fullName(model.getFullName())
                 .email(model.getEmail())
                 .password(model.getPassword())
                 .birthDate(model.getBirthDate())
+                .address(model.address)
                 .phone(model.getPhone())
                 .sex(model.getSex())
                 .userId(model.getId()).build();

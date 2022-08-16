@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Builder
@@ -25,9 +27,9 @@ public class UserDto {
     private Date birthDate;
     private boolean status;
     private Long mainAddress;
-    private boolean lockStatus;
     private Date createdDate;
     private Date updatedDate;
+    private List<RoleDto> roles;
 
     public static UserDto toDto(UserEntity userEntity) {
         if (userEntity == null) return null;
@@ -43,6 +45,13 @@ public class UserDto {
                 .status(userEntity.getStatus())
                 .createdDate(userEntity.getCreatedDate())
                 .updatedDate(userEntity.getUpdatedDate())
+                .roles(userEntity.getRoleEntity()
+                        .stream()
+                        .map(r -> RoleDto.builder()
+                                .roleId(r.getRoleId())
+                                .roleName(r.getRoleName())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

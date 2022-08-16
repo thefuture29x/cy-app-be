@@ -23,5 +23,4 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     boolean changeLockStatus(Long userId);
 
-    String updateAvatar1(MultipartFile avatar);
 }
