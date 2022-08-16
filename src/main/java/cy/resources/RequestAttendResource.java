@@ -28,7 +28,7 @@ public class RequestAttendResource {
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    @PostMapping(value = "update")
+    @PostMapping(value = "/update")
     public ResponseDto update(CreateUpdateRequestAttend updateAttendRequest) {
         RequestAttendModel requestAttendModel = requestAttendService.requestToModel(updateAttendRequest, 2);
         RequestAttendDto result = this.requestAttendService.update(requestAttendModel);
@@ -36,7 +36,7 @@ public class RequestAttendResource {
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    @DeleteMapping(value = "delete")
+    @DeleteMapping(value = "/delete")
     public ResponseDto delete(Long id) {
         boolean result = this.requestAttendService.deleteById(id);
         if(!result){

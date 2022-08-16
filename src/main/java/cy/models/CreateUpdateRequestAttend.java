@@ -20,7 +20,7 @@ import java.util.List;
 @Builder
 public class CreateUpdateRequestAttend {
     private Long id;
-    private Long requestUserId;
+    //private Long requestUserId;
     private Long assignUserId;
     private String timeCheckIn;
     private String timeCheckOut;

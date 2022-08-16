@@ -85,6 +85,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto update(RequestAttendModel model) {
         RequestAttendEntity requestAttendUpdateEntity = this.modelToEntity(model);
+        requestAttendUpdateEntity.setId(model.getId());
         RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
         return RequestAttendDto.entityToDto(result);
     }
@@ -149,14 +150,8 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             }
         }
 
-        // Check if requested user id exist
-        Optional<UserEntity> userCreated = userRepository.findById(request.getRequestUserId());
-        if(userCreated.isEmpty()){
-            throw new CustomHandleException(32);
-        }
-
         // Check if assigned user id exist
-        Optional<UserEntity> userAssigned = userRepository.findById(request.getRequestUserId());
+        Optional<UserEntity> userAssigned = userRepository.findById(request.getAssignUserId());
         if(userAssigned.isEmpty()){
             throw new CustomHandleException(33);
         }
@@ -169,7 +164,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 .status(status)
                 .reasonCancel(reasonCancel)
                 .files(fileS3Urls)
-                .createdBy(UserDto.toDto(userCreated.get()))
+                .createdBy(UserDto.toDto(SecurityUtils.getCurrentUser().getUser()))
                 .assignedTo(UserDto.toDto(userAssigned.get()))
                 .build();
     }
