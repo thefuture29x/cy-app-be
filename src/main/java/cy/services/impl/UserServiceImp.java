@@ -3,6 +3,7 @@ package cy.services.impl;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtProvider;
 import cy.configs.jwt.JwtUserLoginModel;
+import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.UserEntity;
@@ -36,12 +37,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Order(5)
+@Transactional
 public class UserServiceImp implements IUserService {
     private final IUserRepository userRepository;
     private final IRoleRepository roleRepository;
@@ -49,7 +50,6 @@ public class UserServiceImp implements IUserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final Random random = new Random();
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final FileUploadProvider fileUploadProvider;
 
@@ -116,28 +116,63 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public Page<UserDto> findAll(Pageable page) {
-        return null;
+        return this.userRepository.findAll(page).map(UserDto::toDto);
     }
 
     @Override
     public List<UserDto> findAll(Specification<UserEntity> specs) {
-        return null;
+        return this.userRepository.findAll(specs).stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
     @Override
     public Page<UserDto> filter(Pageable page, Specification<UserEntity> specs) {
-        return null;
+        return this.userRepository.findAll(specs, page).map(UserDto::toDto);
     }
 
     @Override
     public UserDto findById(Long id) {
-//        logger.info("{} finding user id: {%d}", SecurityUtils.getCurrentUsername(), id);
-        return null;
+        logger.info("{} finding user id: {%d}", SecurityUtils.getCurrentUsername(), id);
+        return UserDto.toDto(this.getById(id));
+    }
+
+    @Override
+    public UserEntity getById(Long id) {
+        return this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
     }
 
     @Override
     public UserDto add(UserModel model) {
-        return null;
+        // check user has existed with email
+        UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
+        if (checkUser != null)
+            throw new CustomHandleException(12);
+
+        // check user has existed with username
+        checkUser = this.userRepository.findByUserName(model.getUsername());
+        if (checkUser != null)
+            throw new CustomHandleException(13);
+
+        // check user has existed with phone
+        if (model.getPhone() != null) {
+            checkUser = this.userRepository.findByPhone(model.getPhone());
+            if (checkUser != null)
+                throw new CustomHandleException(14);
+        }
+
+
+        UserEntity userEntity = UserModel.toEntity(model);
+        if (model.getManager() != null) {
+            try {
+                UserEntity userManager = this.getById(model.getManager());
+                userEntity.setManager(userManager);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        userEntity.setStatus(true);
+        userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
+        this.setRoles(userEntity, model.getRoles());
+        return UserDto.toDto(this.userRepository.saveAndFlush(userEntity));
     }
 
     @Override
@@ -149,7 +184,38 @@ public class UserServiceImp implements IUserService {
     public UserDto update(UserModel model) {
         logger.info("{} is updating userid: {%d}", SecurityUtils.getCurrentUsername(), model.getId());
 
-        return null;
+        UserEntity original = this.getById(model.getId());
+
+        // check user has existed if user update their email
+        if (!model.getEmail().equals(original.getEmail())) {
+            UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
+            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
+                throw new CustomHandleException(12);
+        }
+
+        // check user has existed if user update their phone
+        if (!model.getPhone().equals(original.getPhone())) {
+            UserEntity checkUser = this.userRepository.findByPhone(model.getPhone());
+            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
+                throw new CustomHandleException(14);
+        }
+
+        if (model.getManager() != null) {
+            try {
+                UserEntity userManager = this.getById(model.getManager());
+                original.setManager(userManager);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        original.setEmail(model.getEmail());
+        original.setBirthDate(model.getBirthDate());
+        original.setFullName(model.getFullName());
+        original.setSex(model.getSex());
+        original.setPhone(model.getPhone());
+        original.setAddress(model.getAddress());
+        return UserDto.toDto(this.userRepository.saveAndFlush(original));
     }
 
     public void setRoles(UserEntity user, List<Long> roles) {
@@ -161,15 +227,17 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public boolean deleteById(Long id) {
-        return true;
+        UserEntity userEntity = this.getById(id);
+        userEntity.setStatus(false);
+        return this.userRepository.saveAndFlush(userEntity) != null;
     }
 
     @Override
     public boolean deleteByIds(List<Long> ids) {
-        return false;
+        ids.forEach(id -> this.deleteById(id));
+        return true;
     }
 
-    @Transactional
     @Override
     public JwtLoginResponse logIn(JwtUserLoginModel userLogin) {
         UserEntity user = this.findByUsername(userLogin.getUsername());
@@ -189,7 +257,7 @@ public class UserServiceImp implements IUserService {
     }
 
     public UserEntity findByUsername(String userName) {
-        return userRepository.findUserEntityByUserNameOrEmail(userName, userName).orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng có tên: " + userName));
+        return userRepository.findUserEntityByUserNameOrEmail(userName, userName).orElseThrow(() -> new CustomHandleException(11));
     }
 
     // Token filter, check token is valid and set to context
@@ -223,23 +291,6 @@ public class UserServiceImp implements IUserService {
             throw new RuntimeException("Tải ảnh đại diện lên thất bại!");
         }
         return this.userRepository.save(userEntity) != null;
-    }
-
-    public String updateAvatar1(MultipartFile avatar) {
-        if (avatar.isEmpty())
-            throw new RuntimeException("Ảnh đại diện đang để trống!");
-        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        if (userEntity.getAvatar() != null)
-            this.fileUploadProvider.deleteFile(userEntity.getAvatar());
-        try {
-            userEntity.setAvatar(this.fileUploadProvider.uploadFile(UserEntity.FOLDER + userEntity.getUserName() + "/", avatar));
-        } catch (IOException e) {
-            throw new RuntimeException("Tải ảnh đại diện lên thất bại!");
-        }
-        if (this.userRepository.save(userEntity) != null) {
-            return userEntity.getAvatar();
-        }
-        return new RuntimeException("Bạn chưa chọn ảnh, tải ảnh đại diện lên thất bại!").getMessage();
     }
 
     @Override

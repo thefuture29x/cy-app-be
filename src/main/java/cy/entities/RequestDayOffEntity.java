@@ -1,5 +1,7 @@
 package cy.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 
 import javax.persistence.*;
@@ -18,6 +20,8 @@ public class RequestDayOffEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "date_request_dayoff")
+    @JsonSerialize(as = Date.class)
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateDayOff;
     @Column(name = "status")
     private Integer status;
