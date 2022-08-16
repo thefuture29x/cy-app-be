@@ -2,18 +2,14 @@ package cy.dtos;
 
 import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestDayOffEntity;
-import cy.entities.UserEntity;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -27,7 +23,7 @@ public class RequestDayOffDto {
     private String files;
     private UserDto createBy;
     private UserDto assignTo;
-    private List<HistoryRequestEntity> historyRequestEntities;
+    private List<HistoryRequestDto> historyRequest;
 
     public static RequestDayOffDto toDto(RequestDayOffEntity requestDayOffEntity) {
         if (requestDayOffEntity == null) return null;
@@ -39,6 +35,8 @@ public class RequestDayOffDto {
                 .files(requestDayOffEntity.getFiles())
                 .createBy(UserDto.toDto(requestDayOffEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
+                .historyRequest(requestDayOffEntity.getHistoryRequestEntities().stream().map(x->HistoryRequestDto.toDto(x)).collect(Collectors.toList()))
                 .build();
     }
+
 }

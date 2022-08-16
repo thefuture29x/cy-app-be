@@ -3,11 +3,12 @@ package cy.services.impl;
 import cy.dtos.HistoryRequestDto;
 import cy.entities.HistoryRequestEntity;
 import cy.entities.UserEntity;
-import cy.models.CreateAttendRequest;
+import cy.models.CreateUpdateRequestAttend;
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.UserDto;
 import cy.entities.RequestAttendEntity;
+import cy.models.CreateUpdateRequestAttend;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.IRequestAttendRepository;
@@ -35,9 +36,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Autowired
     private IUserRepository userRepository;
-
-    @Autowired
-    private IHistoryRequestRepository historyRequestRepository;
 
     @Autowired
     private IRequestAttendRepository requestAttendRepository;
@@ -71,7 +69,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     public RequestAttendDto add(RequestAttendModel model) {
         RequestAttendEntity requestAttendEntity = this.modelToEntity(model);
         RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
-        return null;
+        return RequestAttendDto.entityToDto(result);
     }
 
     @Override
@@ -81,11 +79,17 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendDto update(RequestAttendModel model) {
-        return null;
+        RequestAttendEntity requestAttendUpdateEntity = this.modelToEntity(model);
+        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
+        return RequestAttendDto.entityToDto(result);
     }
 
     @Override
     public boolean deleteById(Long id) {
+        this.requestAttendRepository.deleteById(id);
+        if(this.requestAttendRepository.findById(id).isEmpty()){
+            return true;
+        }
         return false;
     }
 
@@ -94,9 +98,39 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         return false;
     }
 
-    public RequestAttendModel requestToModel(CreateAttendRequest request){
-        final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
+    public RequestAttendModel requestToModel(CreateUpdateRequestAttend request, int type){
+        int status = 0;
+        String reasonCancel = "";
         List<String> fileS3Urls = new ArrayList<>();
+        RequestAttendEntity requestAttendEntity = new RequestAttendEntity();
+        if(type == 2){
+            // Update request, must have id
+            if(request.getId() == null){
+                throw new CustomHandleException(34);
+            }
+
+            // Request attend must exist
+            Optional<RequestAttendEntity> findRequestAttend = this.requestAttendRepository.findById(request.getId());
+            if(findRequestAttend.isEmpty()){
+                throw new CustomHandleException(35);
+            }else {
+                requestAttendEntity = findRequestAttend.get();
+                List<Object> objFiles = new JSONObject(requestAttendEntity.getFiles()).getJSONArray("files").toList();
+                for(Object objFile : objFiles){
+                    fileS3Urls.add(objFile.toString());
+                }
+                // If user deleted files
+                if(request.getDeletedFilesNumber() != null){
+                    for(Integer deletedFileNumber : request.getDeletedFilesNumber()){
+                        fileS3Urls.remove(deletedFileNumber);
+                    }
+                }
+
+                status = requestAttendEntity.getStatus();
+                reasonCancel = requestAttendEntity.getReasonCancel();
+            }
+        }
+        final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
         if(request.getAttachedFiles() != null){ // Check if user has attached files
             for(MultipartFile file : request.getAttachedFiles()){
                 try{
@@ -123,11 +157,12 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         }
 
         return RequestAttendModel.builder()
+                .id(requestAttendEntity.getId())
                 .timeCheckIn(request.getTimeCheckIn())
                 .timeCheckOut(request.getTimeCheckOut())
                 .dateRequestAttend(request.getDateRequestAttend())
-                .status(0)
-                .reasonCancel("")
+                .status(status)
+                .reasonCancel(reasonCancel)
                 .files(fileS3Urls)
                 .createdBy(UserDto.toDto(userCreated.get()))
                 .assignedTo(UserDto.toDto(userAssigned.get()))
@@ -155,25 +190,5 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         historyRequest.setStatus(model.getStatus());
         historyRequest.setRequestAttend(entity);
         return entity;
-    }
-
-    private RequestAttendDto entityToDto(RequestAttendEntity entity){
-        List<Object> s3UrlsObj = new JSONObject().getJSONArray("files").toList();
-        List<String> s3Urls = new ArrayList<>();
-        for(Object s3Url : s3UrlsObj){
-            s3Urls.add(s3Url.toString());
-        }
-        return RequestAttendDto.builder()
-                .id(entity.getId())
-                .timeCheckIn(entity.getTimeCheckIn())
-                .timeCheckOut(entity.getTimeCheckOut())
-                .dateRequestAttend(entity.getDateRequestAttend())
-                .status(entity.getStatus())
-                .reasonCancel(entity.getReasonCancel())
-                .files(s3Urls)
-                .createdBy(UserDto.toDto(entity.getCreateBy()))
-                .assignedTo(UserDto.toDto(entity.getAssignTo()))
-                .historyRequests(null)
-                .build();
     }
 }

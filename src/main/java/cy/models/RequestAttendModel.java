@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @Builder
 public class RequestAttendModel {
-    private Integer id;
+    private Long id;
     private String timeCheckIn;
     private String timeCheckOut;
     private Date dateRequestAttend;
@@ -25,9 +25,5 @@ public class RequestAttendModel {
     private List<String> files;
     private UserDto createdBy;
     private UserDto assignedTo;
-    private List<HistoryRequestDto> historyRequests;
-
-    public static RequestAttendDto modelToDto(RequestAttendModel model){
-        return RequestAttendDto.builder().build();
-    }
+    //private List<HistoryRequestModel> historyRequests;
 }

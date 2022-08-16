@@ -6,7 +6,10 @@ import cy.models.NotificationModel;
 import cy.services.INotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "notification/")
@@ -24,17 +27,20 @@ public class NotificationResource {
     }
 
     @PostMapping
-    public ResponseDto addNotification(@RequestBody NotificationModel model){
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_LEADER', 'ROLE_EMPLOYEE')")
+    public ResponseDto addNotification(@RequestBody NotificationModel model) throws IOException {
         return ResponseDto.of( this.notificationService.add(model));
     }
 
     @PutMapping("/{id}")
-    public ResponseDto editNotification(@RequestBody NotificationModel model, @PathVariable Long id){
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_LEADER', 'ROLE_EMPLOYEE')")
+    public ResponseDto editNotification(@RequestBody NotificationModel model, @PathVariable Long id) throws IOException {
         model.setId(id);
         return ResponseDto.of( this.notificationService.update(model));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_LEADER', 'ROLE_EMPLOYEE')")
     public ResponseDto deleteNotification(@PathVariable Long id){
         return ResponseDto.of( this.notificationService.deleteById(id));
     }

@@ -1,26 +1,28 @@
 package cy.models;
 
-import cy.utils.FileUploadProvider;
-import cy.utils.SecurityUtils;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.List;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @Builder
-public class CreateAttendRequest {
+public class CreateUpdateRequestAttend {
+    private Long id;
     private Long requestUserId;
     private Long assignUserId;
     private String timeCheckIn;
     private String timeCheckOut;
     private Date dateRequestAttend;
     private MultipartFile[] attachedFiles;
+    private List<Integer> deletedFilesNumber;
 }
