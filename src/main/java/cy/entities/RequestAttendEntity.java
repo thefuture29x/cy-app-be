@@ -3,7 +3,8 @@ package cy.entities;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Date;
+
+import java.sql.Date;
 import java.util.List;
 
 @Builder

@@ -30,8 +30,9 @@ public class RequestAttendDto {
     private UserDto createdBy;
     private UserDto assignedTo;
     private List<HistoryRequestDto> historyRequests;
+    private NotificationDto notification;
 
-    public static RequestAttendDto entityToDto(RequestAttendEntity entity){
+    public static RequestAttendDto entityToDto(RequestAttendEntity entity, NotificationDto notificationDto){
         List<Object> s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
         List<String> s3Urls = new ArrayList<>();
         for(Object s3Url : s3UrlsObj){
@@ -43,6 +44,7 @@ public class RequestAttendDto {
             historyRequestDtos = historyRequestEntities.stream()
                     .map(HistoryRequestDto::toDto).collect(Collectors.toList());
         }
+
         return RequestAttendDto.builder()
                 .id(entity.getId())
                 .timeCheckIn(entity.getTimeCheckIn())
@@ -54,6 +56,7 @@ public class RequestAttendDto {
                 .createdBy(UserDto.toDto(entity.getCreateBy()))
                 .assignedTo(UserDto.toDto(entity.getAssignTo()))
                 .historyRequests(historyRequestDtos)
+                .notification(notificationDto)
                 .build();
     }
 }
