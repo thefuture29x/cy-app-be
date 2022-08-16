@@ -21,7 +21,7 @@ public class HistoryRequestEntity {
     @Column(name = "time_history")
     private String timeHistory;
     @Column(name = "status")
-    private String status;
+    private Integer status;
 
     @ManyToOne
     @JoinColumn(name = "request_attend_id")
