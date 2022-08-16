@@ -58,7 +58,6 @@ public class BeanConfiguration {
         return executor;
     }
 
-
     //Template resolver's resource bean configurer
     @Bean
     public SpringResourceTemplateResolver templateResolver(ApplicationContext context) {
