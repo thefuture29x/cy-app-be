@@ -57,6 +57,9 @@ public class UserModel {
     @ApiModelProperty(notes = "address", dataType = "String", example = "my dinh")
     private String address;
 
+    @ApiModelProperty(notes = "id manager", dataType = "Long", example = "1")
+    private Long manager;
+
     public static UserEntity toEntity(UserModel model) {
         if (model == null) throw new RuntimeException("UserModel is null");
         return UserEntity.builder()

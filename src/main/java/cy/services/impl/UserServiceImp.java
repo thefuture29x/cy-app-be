@@ -7,6 +7,7 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.UserEntity;
+import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.repositories.IRoleRepository;
 import cy.repositories.IUserRepository;
@@ -37,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,7 +51,6 @@ public class UserServiceImp implements IUserService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final Random random = new Random();
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final FileUploadProvider fileUploadProvider;
 
@@ -60,7 +59,8 @@ public class UserServiceImp implements IUserService {
                           JwtProvider jwtProvider,
                           AuthenticationManager authenticationManager,
                           PasswordEncoder passwordEncoder,
-                          MailService mailService, FileUploadProvider fileUploadProvider) {
+                          MailService mailService,
+                          FileUploadProvider fileUploadProvider) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.jwtProvider = jwtProvider;
@@ -73,14 +73,14 @@ public class UserServiceImp implements IUserService {
         // create default roles
         try {
             // for insert default roles
-            if (this.roleRepository.findAllByRoleIdIn(List.of(1l, 2l, 3l, 4l)).size() < 4) {
+            if (this.roleRepository.findAllByRoleIdIn(List.of(1L, 2L, 3L, 4L, 5L)).size() < 5) {
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(2L).roleName(RoleEntity.ADMIN).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(3L).roleName(RoleEntity.MANAGER).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(4L).roleName(RoleEntity.EMPLOYEE).build());
+                this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(5L).roleName(RoleEntity.LEADER).build());
             }
         } catch (Exception e) {
-            System.out.println(e);
             e.printStackTrace();
         }
 
@@ -89,7 +89,7 @@ public class UserServiceImp implements IUserService {
             // for insert default admin
             if (!this.userRepository.findById(1L).isPresent()) {
                 UserEntity administrator = UserEntity.builder()
-                        .userId(1l)
+                        .userId(1L)
                         .fullName("administrator")
                         .status(true)
                         .userName("administrator")
@@ -98,17 +98,13 @@ public class UserServiceImp implements IUserService {
 
                 Set<UserEntity> users = Set.of(administrator);
                 administrator.setRoleEntity(Set.of(
-                        RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).userEntitySet(users).build(),
-                        RoleEntity.builder().roleId(2L).roleName(RoleEntity.ADMIN).userEntitySet(users).build(),
-                        RoleEntity.builder().roleId(3L).roleName(RoleEntity.MANAGER).userEntitySet(users).build(),
-                        RoleEntity.builder().roleId(4L).roleName(RoleEntity.EMPLOYEE).userEntitySet(users).build()
+                        RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).userEntitySet(users).build()
                 ));
 
                 this.userRepository.save(administrator);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(e);
         }
 
     }
@@ -120,11 +116,13 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public Page<UserDto> findAll(Pageable page) {
+        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(page).map(UserDto::toDto);
     }
 
     @Override
     public List<UserDto> findAll(Specification<UserEntity> specs) {
+        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(specs).stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
@@ -135,16 +133,18 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto findById(Long id) {
-        logger.info("{} finding user id: {%d}", SecurityUtils.getCurrentUsername(), id);
+        logger.info("{} is finding users id: {}", SecurityUtils.getCurrentUsername(), id);
         return UserDto.toDto(this.getById(id));
     }
 
-    private UserEntity getById(Long id) {
+    @Override
+    public UserEntity getById(Long id) {
         return this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
     }
 
     @Override
     public UserDto add(UserModel model) {
+        logger.info("{} is adding user", SecurityUtils.getCurrentUsername());
         // check user has existed with email
         UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
         if (checkUser != null)
@@ -162,7 +162,16 @@ public class UserServiceImp implements IUserService {
                 throw new CustomHandleException(14);
         }
 
+
         UserEntity userEntity = UserModel.toEntity(model);
+        if (model.getManager() != null) {
+            try {
+                UserEntity userManager = this.getById(model.getManager());
+                userEntity.setManager(userManager);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         userEntity.setStatus(true);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.setRoles(userEntity, model.getRoles());
@@ -176,7 +185,7 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto update(UserModel model) {
-        logger.info("{} is updating userid: {%d}", SecurityUtils.getCurrentUsername(), model.getId());
+        logger.info("{} is updating user id: {}", SecurityUtils.getCurrentUsername(), model.getId());
 
         UserEntity original = this.getById(model.getId());
 
@@ -192,7 +201,15 @@ public class UserServiceImp implements IUserService {
             UserEntity checkUser = this.userRepository.findByPhone(model.getPhone());
             if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
                 throw new CustomHandleException(14);
+        }
 
+        if (model.getManager() != null) {
+            try {
+                UserEntity userManager = this.getById(model.getManager());
+                original.setManager(userManager);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         original.setEmail(model.getEmail());
@@ -213,28 +230,24 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public boolean deleteById(Long id) {
+        logger.info("{} is deleting user id: {}", SecurityUtils.getCurrentUsername(), id);
         UserEntity userEntity = this.getById(id);
         userEntity.setStatus(false);
-        return this.userRepository.saveAndFlush(userEntity) != null;
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
     }
 
     @Override
     public boolean deleteByIds(List<Long> ids) {
-        ids.forEach(id -> this.deleteById(id));
-        return true;
+        return false;
     }
 
     @Override
     public JwtLoginResponse logIn(JwtUserLoginModel userLogin) {
         UserEntity user = this.findByUsername(userLogin.getUsername());
         UserDetails userDetail = new CustomUserDetail(user);
-        try {
-            this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetail, userLogin.getPassword(), userDetail.getAuthorities()));
-        } catch (Exception e) {
-            throw e;
-        }
-
-        long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800l;
+        this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetail, userLogin.getPassword(), userDetail.getAuthorities()));
+        long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800L;
         return JwtLoginResponse.builder()
                 .token(this.jwtProvider.generateToken(userDetail.getUsername(), timeValid))
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
@@ -263,29 +276,36 @@ public class UserServiceImp implements IUserService {
         }
     }
 
+    @Override
+    public boolean setPassword(PasswordModel model) {
+        logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
+        UserEntity userEntity = this.getById(model.getUserId());
+        userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
 
     @Override
-    public boolean updateAvatar(MultipartFile avatar) {
-        if (avatar.isEmpty())
-            throw new RuntimeException("Ảnh đại diện đang để trống!");
+    public boolean changePassword(String password) {
+        logger.info("{} is changing password", SecurityUtils.getCurrentUsername());
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        if (userEntity.getAvatar() != null)
-            this.fileUploadProvider.deleteFile(userEntity.getAvatar());
+        userEntity.setPassword(this.passwordEncoder.encode(password));
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+    @Override
+    public boolean changeMyAvatar(MultipartFile file) {
+        logger.info("{} is updating avatar", SecurityUtils.getCurrentUsername());
+
+        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
         try {
-            userEntity.setAvatar(this.fileUploadProvider.uploadFile(UserEntity.FOLDER + userEntity.getUserName() + "/", avatar));
+            String folder = "users" + userEntity.getUserName() + "/";
+            userEntity.setAvatar(this.fileUploadProvider.uploadFile(folder, file));
         } catch (IOException e) {
-            throw new RuntimeException("Tải ảnh đại diện lên thất bại!");
+            throw new CustomHandleException(15);
         }
-        return this.userRepository.save(userEntity) != null;
-    }
-
-    @Override
-    public boolean changeStatus(Long userId) {
-        return false;
-    }
-
-    @Override
-    public boolean changeLockStatus(Long userId) {
-        return false;
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
     }
 }
