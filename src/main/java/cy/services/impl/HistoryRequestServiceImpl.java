@@ -1,5 +1,6 @@
 package cy.services.impl;
 
+import cy.dtos.CustomHandleException;
 import cy.dtos.HistoryRequestDto;
 import cy.entities.HistoryRequestEntity;
 import cy.models.HistoryRequestModel;
@@ -9,9 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Transactional
 public class HistoryRequestServiceImpl implements IHistoryRequestService {
     @Autowired
     IHistoryRequestRepository iHistoryRequestRepository;
@@ -49,6 +52,11 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
         }else {
             return null;
         }
+    }
+
+    @Override
+    public HistoryRequestEntity getById(Long id) {
+        return this.iHistoryRequestRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
     }
 
     @Override
