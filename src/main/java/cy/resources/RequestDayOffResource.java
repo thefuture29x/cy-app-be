@@ -24,7 +24,7 @@ public class RequestDayOffResource {
     IRequestDayOffService iRequestDayOffService;
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
-    @GetMapping(name = "findById")
+    @GetMapping(value = "findById")
     public ResponseDto findById(@RequestParam(name = "id") Long id){
         ResponseDto responseDto = new ResponseDto();
         responseDto.setCode(200);
@@ -33,13 +33,20 @@ public class RequestDayOffResource {
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
-    @PostMapping(name = "createOrUpdate")
+    @PostMapping(value = "createOrUpdate")
     public ResponseDto CreateOrUpdate(@ModelAttribute RequestDayOffModel requestDayOffModel) throws IOException {
         return ResponseDto.of(iRequestDayOffService.createOrUpdate(requestDayOffModel));
     }
 
+
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
-    @DeleteMapping(name = "delete")
+    @GetMapping(value = "getPageBySearch")
+    public ResponseDto getPageBySearch(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize){
+        return ResponseDto.of(iRequestDayOffService.getByPage(pageIndex, pageSize));
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @DeleteMapping(value = "delete")
     public ResponseDto deleteRequestDayOff(@RequestParam(name = "id") Long id){
         ResponseDto responseDto = new ResponseDto();
         responseDto.setCode(200);
@@ -47,10 +54,5 @@ public class RequestDayOffResource {
         return responseDto;
     }
 
-    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
-    @GetMapping(name = "findByPage")
-    public ResponseDto findByPage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize){
-        return ResponseDto.of(iRequestDayOffService.getByPage(pageIndex, pageSize));
-    }
 
 }
