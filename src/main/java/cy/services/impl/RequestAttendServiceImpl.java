@@ -9,10 +9,12 @@ import cy.dtos.RequestAttendDto;
 import cy.dtos.UserDto;
 import cy.entities.RequestAttendEntity;
 import cy.models.CreateUpdateRequestAttend;
+import cy.models.NotificationModel;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IUserRepository;
+import cy.services.INotificationService;
 import cy.services.IRequestAttendService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
@@ -39,6 +41,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Autowired
     private IRequestAttendRepository requestAttendRepository;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @Override
     public List<RequestAttendDto> findAll() {
@@ -74,6 +79,15 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     public RequestAttendDto add(RequestAttendModel model) {
         RequestAttendEntity requestAttendEntity = this.modelToEntity(model);
         RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
+        String title = "Request Attend";
+        String content = "You have a new request attend";
+//        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        NotificationModel notificationModel = NotificationModel.builder()
+                .title(title)
+                .content(content)
+                .requestAttendId(result.getId())
+                .build();
+        this.notificationService.add(notificationModel);
         return RequestAttendDto.entityToDto(result);
     }
 
