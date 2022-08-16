@@ -58,10 +58,6 @@ public class UserEntity {
     @Column(name = "updated_date")
     private Date updatedDate;
 
-    @ManyToOne
-    @JoinColumn(name = "manager_id")
-    private UserEntity manager;
-
     public static final String FOLDER = "user/";
 
     @ManyToMany(fetch = FetchType.EAGER)

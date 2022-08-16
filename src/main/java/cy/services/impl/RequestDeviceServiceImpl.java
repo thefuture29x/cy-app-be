@@ -61,7 +61,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto add(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto add(RequestDeviceModel model)  {
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
 
@@ -69,7 +69,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
         requestDeviceEntity.setAssignTo(assignUser);
         if (model.getFiles() != null && !model.getFiles().isEmpty()) {
-            requestDeviceEntity.setFiles(fileUploadProvider.uploadFile("device", model.getFiles()));
+            try {
+                requestDeviceEntity.setFiles(fileUploadProvider.uploadFile("device", model.getFiles()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
@@ -83,7 +87,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto update(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto update(RequestDeviceModel model){
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
         if (model.getAssignTo() == null) {
@@ -94,7 +98,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
             requestDeviceEntity.setAssignTo(assignUser);
         }
         if (model.getFiles() != null && !model.getFiles().isEmpty()) {
-            requestDeviceEntity.setFiles(fileUploadProvider.uploadFile("device", model.getFiles()));
+            try {
+                requestDeviceEntity.setFiles(fileUploadProvider.uploadFile("device", model.getFiles()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
