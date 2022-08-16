@@ -1,5 +1,6 @@
 package cy.services.impl;
 
+import cy.dtos.CustomHandleException;
 import cy.dtos.RequestDayOffDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RequestDayOffEntity;
@@ -42,7 +43,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Override
     public Page<RequestDayOffDto> findAll(Pageable page) {
         Page<RequestDayOffEntity> findByPage = iRequestDayOffRepository.findBypage(page);
-        return findByPage.map(x->RequestDayOffDto.toDto(x));
+        return findByPage.map(x -> RequestDayOffDto.toDto(x));
     }
 
     @Override
@@ -61,32 +62,41 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     }
 
     @Override
-    public RequestDayOffDto add(RequestDayOffModel requestDayOffModel) throws IOException {
+    public RequestDayOffEntity getById(Long id) {
+        return this.iRequestDayOffRepository.findById(id).orElseThrow(() -> new CustomHandleException(99999));
+    }
+
+    @Override
+    public RequestDayOffDto add(RequestDayOffModel requestDayOffModel) {
         RequestDayOffEntity requestDayOff = null;
-        if(requestDayOffModel.getId() != null){
+        if (requestDayOffModel.getId() != null) {
             requestDayOff = iRequestDayOffRepository.findById(requestDayOffModel.getId()).orElse(null);
         }
-        if(requestDayOff == null){
+        if (requestDayOff == null) {
             requestDayOff = new RequestDayOffEntity();
         }
-        if(requestDayOffModel.getAssignId() != null){
+        if (requestDayOffModel.getAssignId() != null) {
             UserEntity assignTo = userRepository.findById(requestDayOffModel.getAssignId()).orElse(null);
-            if(assignTo != null)
+            if (assignTo != null)
                 requestDayOff.setAssignTo(assignTo);
         }
-        if(requestDayOffModel.getCreatedById() != null){
+        if (requestDayOffModel.getCreatedById() != null) {
             UserEntity createdBy = userRepository.findById(requestDayOffModel.getCreatedById()).orElse(null);
-            if(createdBy != null)
+            if (createdBy != null)
                 requestDayOff.setCreateBy(createdBy);
         }
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
-        if(requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().size() > 0){
+        if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().size() > 0) {
             List<String> files = new ArrayList<>();
-            for(MultipartFile fileMultipart : requestDayOffModel.getFiles()){
-                if(!fileMultipart.isEmpty()){
-                    String result = fileUploadProvider.uploadFile("requestDayOff",fileMultipart);
-                    files.add(result);
+            for (MultipartFile fileMultipart : requestDayOffModel.getFiles()) {
+                if (!fileMultipart.isEmpty()) {
+                    try {
+                        String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
+                        files.add(result);
+                    } catch (Exception e) {
+                        System.out.println("upload file failed");
+                    }
                 }
             }
             requestDayOff.setFiles(files.toString());
@@ -102,32 +112,36 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     }
 
     @Override
-    public RequestDayOffDto update(RequestDayOffModel requestDayOffModel) throws IOException {
+    public RequestDayOffDto update(RequestDayOffModel requestDayOffModel) {
         RequestDayOffEntity requestDayOff = null;
-        if(requestDayOffModel.getId() != null){
+        if (requestDayOffModel.getId() != null) {
             requestDayOff = iRequestDayOffRepository.findById(requestDayOffModel.getId()).orElse(null);
         }
-        if(requestDayOff == null){
+        if (requestDayOff == null) {
             requestDayOff = new RequestDayOffEntity();
         }
-        if(requestDayOffModel.getAssignId() != null){
+        if (requestDayOffModel.getAssignId() != null) {
             UserEntity assignTo = userRepository.findById(requestDayOffModel.getAssignId()).orElse(null);
-            if(assignTo != null)
+            if (assignTo != null)
                 requestDayOff.setAssignTo(assignTo);
         }
-        if(requestDayOffModel.getCreatedById() != null){
+        if (requestDayOffModel.getCreatedById() != null) {
             UserEntity createdBy = userRepository.findById(requestDayOffModel.getCreatedById()).orElse(null);
-            if(createdBy != null)
+            if (createdBy != null)
                 requestDayOff.setCreateBy(createdBy);
         }
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
-        if(requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().size() > 0){
+        if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().size() > 0) {
             List<String> files = new ArrayList<>();
-            for(MultipartFile fileMultipart : requestDayOffModel.getFiles()){
-                if(!fileMultipart.isEmpty()){
-                    String result = fileUploadProvider.uploadFile("requestDayOff",fileMultipart);
-                    files.add(result);
+            for (MultipartFile fileMultipart : requestDayOffModel.getFiles()) {
+                if (!fileMultipart.isEmpty()) {
+                    try {
+                        String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
+                        files.add(result);
+                    } catch (Exception e) {
+                        System.out.println("upload file failed");
+                    }
                 }
             }
             requestDayOff.setFiles(files.toString());
@@ -139,11 +153,10 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
 
     @Override
     public boolean deleteById(Long id) {
-        try{
+        try {
             iRequestDayOffRepository.deleteById(id);
             return true;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }

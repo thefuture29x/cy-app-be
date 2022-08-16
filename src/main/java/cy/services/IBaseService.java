@@ -17,12 +17,13 @@ public interface IBaseService<T, D, M, K> {
     Page<D> filter(Pageable page, Specification<T> specs);
 
     D findById(K id);
+    T getById(K id);
 
-    D add(M model) throws IOException;
+    D add(M model);
 
-    List<D> add(List<M> model);
+    List<D> add(List<M> model) throws IOException;
 
-    D update(M model) throws IOException;
+    D update(M model);
 
     boolean deleteById(K id);
 

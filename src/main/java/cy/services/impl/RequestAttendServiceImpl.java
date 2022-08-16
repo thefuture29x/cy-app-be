@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 public class RequestAttendServiceImpl implements IRequestAttendService {
     @Autowired
@@ -61,6 +62,11 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendDto findById(Long id) {
+        return null;
+    }
+
+    @Override
+    public RequestAttendEntity getById(Long id) {
         return null;
     }
 
