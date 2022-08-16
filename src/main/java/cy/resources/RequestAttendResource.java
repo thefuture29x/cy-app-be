@@ -3,27 +3,31 @@ package cy.resources;
 import cy.configs.FrontendConfiguration;
 import cy.dtos.CustomHandleException;
 import cy.dtos.ResponseDto;
+import cy.entities.RoleEntity;
 import cy.models.CreateUpdateRequestAttend;
 import cy.dtos.RequestAttendDto;
 import cy.models.RequestAttendModel;
 import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-@RequestMapping(value = FrontendConfiguration.PREFIX_API+"request_attend/")
+import javax.annotation.security.RolesAllowed;
+
+@RequestMapping(value = FrontendConfiguration.PREFIX_API+"request_attend")
+@RestController
 public class RequestAttendResource {
     @Autowired
     private RequestAttendServiceImpl requestAttendService;
 
-    @PostMapping(value = "create")
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @PostMapping(value = "/create")
     public ResponseDto create(CreateUpdateRequestAttend addAttendRequest) {
         RequestAttendModel requestAttendModel = requestAttendService.requestToModel(addAttendRequest, 1);
         RequestAttendDto result = this.requestAttendService.add(requestAttendModel);
         return ResponseDto.of(result);
     }
 
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping(value = "update")
     public ResponseDto update(CreateUpdateRequestAttend updateAttendRequest) {
         RequestAttendModel requestAttendModel = requestAttendService.requestToModel(updateAttendRequest, 2);
@@ -31,6 +35,7 @@ public class RequestAttendResource {
         return ResponseDto.of(result);
     }
 
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @DeleteMapping(value = "delete")
     public ResponseDto delete(Long id) {
         boolean result = this.requestAttendService.deleteById(id);
