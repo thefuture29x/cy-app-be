@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder
 @Setter
@@ -27,10 +28,11 @@ public class RequestModifiDto {
 
     private Long assignTo;
 
-    private List<HistoryRequestEntity> historyRequestEntities;
+    private List<HistoryRequestDto> historyRequestDtos;
 
 
     public static RequestModifiDto toDto(RequestModifiEntity object){
+        if(object == null ) return null;
         return RequestModifiDto.builder()
                 .id(object.getId())
                 .description(object.getDescription())
@@ -42,8 +44,7 @@ public class RequestModifiDto {
                 .files(object.getFiles())
                 .createBy(object.getCreateBy() != null ? object.getCreateBy().getUserId() : null)
                 .assignTo(object.getAssignTo() != null ? object.getAssignTo().getUserId() : null)
-                // there is no dto of the history request, so leave it null for now
-                .historyRequestEntities(null)
+                .historyRequestDtos(object.getHistoryRequestEntities() != null ? object.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
 
     }

@@ -17,12 +17,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class RequestModifiServiceImpl implements IResquestModifiService {
     @Autowired
     IRequestModifiRepository iRequestModifiRepository;
@@ -71,8 +73,6 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             }
             requestModifiEntity.setFiles(files.toString());
         }
-        // there is no dto of the history request, so leave it null for now
-        requestModifiEntity.setHistoryRequestEntities(null);
         return RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity));
     }
 
@@ -93,8 +93,6 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
                 }
                 requestModifiEntity.setFiles(files.toString());
             }
-            // there is no dto of the history request, so leave it null for now
-            requestModifiEntity.setHistoryRequestEntities(null);
             requestModifiDtoList.add(RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity)));
         }
         return requestModifiDtoList;
@@ -116,8 +114,6 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             }
             requestModifiEntity.setFiles(files.toString());
         }
-        // there is no dto of the history request, so leave it null for now
-        requestModifiEntity.setHistoryRequestEntities(null);
         return RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity));
     }
 
