@@ -1,6 +1,8 @@
 package cy.entities;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -17,10 +19,19 @@ public class RequestOTEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedDate;
     @Column(name = "time_start")
     private String timeStart;
     @Column(name = "time_End")
     private String timeEnd;
+    @Temporal(TemporalType.DATE)
     @Column(name = "date_OT")
     private Date dateOT;
     @Column(name = "status")
