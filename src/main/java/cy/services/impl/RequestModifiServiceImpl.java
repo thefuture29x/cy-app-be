@@ -13,43 +13,44 @@ import java.util.List;
 
 @Service
 public class RequestModifiServiceImpl implements IResquestModifiService {
+
     @Override
-    public List<RequestModifiModel> findAll() {
+    public List<RequestModifiDto> findAll() {
         return null;
     }
 
     @Override
-    public Page<RequestModifiModel> findAll(Pageable page) {
+    public Page<RequestModifiDto> findAll(Pageable page) {
         return null;
     }
 
     @Override
-    public List<RequestModifiModel> findAll(Specification<RequestModifiEntity> specs) {
+    public List<RequestModifiDto> findAll(Specification<RequestModifiEntity> specs) {
         return null;
     }
 
     @Override
-    public Page<RequestModifiModel> filter(Pageable page, Specification<RequestModifiEntity> specs) {
+    public Page<RequestModifiDto> filter(Pageable page, Specification<RequestModifiEntity> specs) {
         return null;
     }
 
     @Override
-    public RequestModifiModel findById(Long id) {
+    public RequestModifiDto findById(Long id) {
         return null;
     }
 
     @Override
-    public RequestModifiModel add(RequestModifiDto model) {
+    public RequestModifiDto add(RequestModifiModel model) {
         return null;
     }
 
     @Override
-    public List<RequestModifiModel> add(List<RequestModifiDto> model) {
+    public List<RequestModifiDto> add(List<RequestModifiModel> model) {
         return null;
     }
 
     @Override
-    public RequestModifiModel update(RequestModifiDto model) {
+    public RequestModifiDto update(RequestModifiModel model) {
         return null;
     }
 
