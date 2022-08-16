@@ -20,6 +20,10 @@ public class HistoryRequestEntity {
     private Date dateHistory;
     @Column(name = "time_history")
     private String timeHistory;
+    // 3 status:
+    // 0: waiting for approve
+    // 1: approved
+    // 2: rejected
     @Column(name = "status")
     private Integer status;
 
