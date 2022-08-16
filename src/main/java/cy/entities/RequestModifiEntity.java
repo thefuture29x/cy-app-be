@@ -24,6 +24,7 @@ public class RequestModifiEntity {
     @Column(name = "time_end")
     private String timeEnd;
     @Column(name = "date_request_modifi")
+    @Temporal(TemporalType.DATE)
     private Date dateRequestModifi;
     @Column(name = "status")
     private Integer status;
