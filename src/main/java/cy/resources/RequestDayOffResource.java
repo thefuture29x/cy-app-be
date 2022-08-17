@@ -1,6 +1,8 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
+import cy.dtos.CustomHandleException;
+import cy.dtos.RequestAttendDto;
 import cy.dtos.RequestDayOffDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RequestDayOffEntity;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.IOException;
 
 @RestController
@@ -37,6 +40,7 @@ public class RequestDayOffResource {
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "create")
     public ResponseDto Create(@ModelAttribute RequestDayOffModel requestDayOffModel) throws IOException {
+        RequestDayOffEntity test = this.iRequestDayOffService.getById(6L);
         return ResponseDto.of(iRequestDayOffService.add(requestDayOffModel));
     }
 
@@ -58,6 +62,24 @@ public class RequestDayOffResource {
     @DeleteMapping(value = "delete")
     public ResponseDto deleteRequestDayOff(@RequestParam(name = "id") Long id){
         return ResponseDto.of(iRequestDayOffService.deleteById(id));
+    }
+
+    @Secured({"ROLE_ADMIN","ROLE_LEADER","ROLE_ADMINISTRATOR"})
+    @PostMapping(value = "change-status")
+    public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
+        RequestDayOffDto requestDayOffDto = this.iRequestDayOffService.changeRequestStatus(id,reasonCancel,status);
+        if(requestDayOffDto.getReasonCancel()!=null){
+            if(requestDayOffDto.getReasonCancel().equals("1"))
+                throw new CustomHandleException(45);
+            else if (requestDayOffDto.getReasonCancel().equals("2")) {
+                throw new CustomHandleException(46);
+            }
+                return ResponseDto.of(requestDayOffDto);
+        }
+        else if(requestDayOffDto.getId()!=null){
+            return ResponseDto.of(requestDayOffDto);
+        }
+            throw new CustomHandleException(47);
     }
 
 
