@@ -90,9 +90,9 @@ public class RequestDeviceResource {
     *@update:
     **/
     @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
-    @PutMapping("/acceptRequestDevice/{id}")
-    public Object acceptRequestDevice(@PathVariable(value = "id") Long id){
-        return ResponseDto.of(requestDeviceService.updateStatusAccept(id));
+    @PutMapping("/acceptRequestDevice")
+    public Object acceptRequestDevice(@RequestParam(value = "id") Long id,@RequestParam(value = "case") int caseSwitch,@RequestParam(value = "reason") String reason){
+        return ResponseDto.of(requestDeviceService.updateStatus(id,caseSwitch,reason));
     }
     /*
     *@author:HieuMM_Cy
@@ -100,9 +100,9 @@ public class RequestDeviceResource {
     *@description:Cancel yêu cầu
     *@update:
     **/
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+   /* @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PutMapping("/cancelRequestDevice")
     public Object cancelRequestDevice(@RequestParam(value = "id") Long id,@RequestParam(value = "reason") String reason){
         return ResponseDto.of(requestDeviceService.updateStatusCancle(id,reason));
-    }
+    }*/
 }

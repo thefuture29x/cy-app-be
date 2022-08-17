@@ -1,5 +1,6 @@
 package cy.dtos;
 
+import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestDeviceEntity;
 import cy.entities.UserEntity;
 import cy.repositories.IUserRepository;
@@ -9,8 +10,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -32,7 +36,7 @@ public class RequestDeviceDto {
     private Long assignTo;
     private UserDto userDtoCreateBy;
     private UserDto userDtoAssignTo;
-
+    private List<HistoryRequestDto> historyRequestEntities;
 /*
 *@author:HieuMM_Cy
 *@since:8/17/2022-9:36 AM
@@ -56,6 +60,7 @@ public class RequestDeviceDto {
                 .assignTo(obj.getAssignTo() !=null ? obj.getAssignTo().getUserId() : null)
                 .userDtoCreateBy(obj.getCreateBy() !=null ? UserDto.toDto(obj.getCreateBy()) : null)
                 .userDtoAssignTo(obj.getAssignTo() !=null ? UserDto.toDto(obj.getAssignTo()) : null)
+                .historyRequestEntities(obj.getHistoryRequestEntities().stream().map(HistoryRequestDto::toDto).collect(Collectors.toList()))
                 .build();
 
     }

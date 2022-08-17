@@ -2,14 +2,19 @@ package cy.models;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestDeviceEntity;
+import cy.repositories.IHistoryRequestRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 
 @Data
 @Builder
@@ -40,6 +45,7 @@ public class RequestDeviceModel {
 
     public RequestDeviceEntity modelToEntity(RequestDeviceModel model){
        RequestDeviceEntity requestDeviceEntity=new RequestDeviceEntity();
+
         requestDeviceEntity.setId(model.getId());
         requestDeviceEntity.setType(model.getType());
         requestDeviceEntity.setTitle(model.getTitle());
@@ -51,6 +57,7 @@ public class RequestDeviceModel {
         requestDeviceEntity.setReasonCancel(model.getReasonCancel());
       /*  requestDeviceEntity.setFiles(model.getFiles());*/
         requestDeviceEntity.setDescription(model.getDescription());
+
        return requestDeviceEntity;
     }
 }
