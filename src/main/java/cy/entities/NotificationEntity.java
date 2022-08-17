@@ -1,8 +1,10 @@
 package cy.entities;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Builder
 @Getter
@@ -19,6 +21,14 @@ public class NotificationEntity {
     private String title;
     @Column(name = "content")
     private String content;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "date_noti")
+    private Date dateNoti;
+
+    @Column(name = "isRead")
+    private Boolean isRead;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

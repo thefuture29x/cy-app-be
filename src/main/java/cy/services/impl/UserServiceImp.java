@@ -84,7 +84,6 @@ public class UserServiceImp implements IUserService {
             e.printStackTrace();
         }
 
-
         try {
             // for insert default admin
             if (!this.userRepository.findById(1L).isPresent()) {
