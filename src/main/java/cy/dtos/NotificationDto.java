@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -14,6 +16,8 @@ public class NotificationDto {
     private Long id;
     private String title;
     private String content;
+    private Date dateNoti;
+    private Boolean isRead;
 
     private Long userId;
     private Long requestAttendId;
@@ -29,6 +33,8 @@ public class NotificationDto {
                 .title(entity.getTitle())
                 .content(entity.getContent())
                 .userId(entity.getUserId().getUserId())
+                .dateNoti(entity.getDateNoti())
+                .isRead(entity.getIsRead())
                 .requestAttendId(entity.getRequestAttendEntityId() == null ? null : entity.getRequestAttendEntityId().getId())
                 .requestDayOffId(entity.getRequestDayOff() == null ? null : entity.getRequestDayOff().getId())
                 .requestDeviceId(entity.getRequestDevice() == null ? null : entity.getRequestDevice().getId())
