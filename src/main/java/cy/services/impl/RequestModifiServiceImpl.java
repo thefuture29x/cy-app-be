@@ -1,5 +1,14 @@
 package cy.services.impl;
 
+import cy.dtos.CustomHandleException;
+import cy.dtos.RequestAttendDto;
+import cy.dtos.RequestModifiDto;
+import cy.dtos.ResponseDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.RequestAttendEntity;
+import cy.entities.RequestModifiEntity;
+import cy.entities.UserEntity;
+import cy.models.HistoryRequestModel;
 import cy.dtos.*;
 import cy.entities.*;
 import cy.models.AcceptRequestModifiModel;
@@ -169,7 +178,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
     public RequestModifiDto sendResquestModifi(RequestModifiModel requestModifiModel) {
 
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
-        historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
+        historyRequestEntity.setDateHistory(new Date());
         historyRequestEntity.setStatus(0);
         if (requestModifiModel.getDateRequestModifi() != null){
             historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
@@ -216,6 +225,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         if(requestModifiModel.getHistoryRequestModels() == null){
             requestModifiEntity.setHistoryRequestEntities(new ArrayList<>());
         };
+        requestModifiEntity.getHistoryRequestEntities().add(historyRequestEntity);
+        requestModifiEntity.setDateRequestModifi(new Date());
 
 
         iHistoryRequestRepository.save(historyRequestEntity);

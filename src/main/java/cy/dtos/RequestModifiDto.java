@@ -1,5 +1,6 @@
 package cy.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestModifiEntity;
 import cy.models.RequestModifiModel;
@@ -19,6 +20,7 @@ public class RequestModifiDto {
     private String description;
     private String timeStart;
     private String timeEnd;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date dateRequestModifi;
     private Integer status;
     private String reasonCancel;
