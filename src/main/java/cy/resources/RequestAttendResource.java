@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+
+import java.util.List;
 import java.util.Date;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API+"request_attend")
@@ -51,4 +53,5 @@ public class RequestAttendResource {
         boolean result = this.requestAttendService.checkRequestAttendNotExist(day);
         return ResponseDto.of(result);
     }
+
 }
