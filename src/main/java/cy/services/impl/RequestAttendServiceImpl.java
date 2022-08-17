@@ -1,18 +1,17 @@
 package cy.services.impl;
 
-import cy.dtos.HistoryRequestDto;
+import cy.dtos.*;
 import cy.entities.HistoryRequestEntity;
 import cy.entities.UserEntity;
 import cy.models.CreateUpdateRequestAttend;
-import cy.dtos.CustomHandleException;
-import cy.dtos.RequestAttendDto;
-import cy.dtos.UserDto;
 import cy.entities.RequestAttendEntity;
 import cy.models.CreateUpdateRequestAttend;
+import cy.models.NotificationModel;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IUserRepository;
+import cy.services.INotificationService;
 import cy.services.IRequestAttendService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
@@ -39,6 +38,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Autowired
     private IRequestAttendRepository requestAttendRepository;
+
+    @Autowired
+    private INotificationService notificationService;
 
     @Override
     public List<RequestAttendDto> findAll() {
@@ -67,14 +69,38 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendEntity getById(Long id) {
-        return null;
+        return this.requestAttendRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
     }
 
     @Override
     public RequestAttendDto add(RequestAttendModel model) {
         RequestAttendEntity requestAttendEntity = this.modelToEntity(model);
-        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
-        return RequestAttendDto.entityToDto(result);
+
+        // Today can't timekeeping for next day
+        if(requestAttendEntity.getDateRequestAttend().after(new Date())){
+            throw new CustomHandleException(38);
+        }
+
+        // check request attend follow day and user not exist ???
+        String day = new SimpleDateFormat("yyyy-MM-dd").format(model.getDateRequestAttend());
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
+        // cho tao moi neu khong co request attend nao hoac co request nhung da bi reject
+        if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
+            RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
+            String title = "Request Attend";
+            String content = "You have created a new request attend on " + model.getDateRequestAttend() + " from " + model.getTimeCheckIn() + " to " + model.getTimeCheckOut();
+            NotificationModel notificationModel = NotificationModel.builder()
+                    .title(title)
+                    .content(content)
+                    .requestAttendId(result.getId())
+                    .build();
+            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+            return RequestAttendDto.entityToDto(result, notificationDto);
+        }else {
+            throw new CustomHandleException(37);
+        }
+
     }
 
     @Override
@@ -86,8 +112,28 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     public RequestAttendDto update(RequestAttendModel model) {
         RequestAttendEntity requestAttendUpdateEntity = this.modelToEntity(model);
         requestAttendUpdateEntity.setId(model.getId());
-        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
-        return RequestAttendDto.entityToDto(result);
+
+        // Today can't timekeeping for next day
+        if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
+            throw new CustomHandleException(38);
+        }
+
+        // check request attend follow day and user not exist ???
+        String day = new SimpleDateFormat("yyyy-MM-dd").format(model.getDateRequestAttend());
+        if(this.checkRequestAttendNotExist(day)) {
+            RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
+            String title = "Request Attend";
+            String content = "You have updated a request attend on " + model.getDateRequestAttend() + " from " + model.getTimeCheckIn() + " to " + model.getTimeCheckOut();
+            NotificationModel notificationModel = NotificationModel.builder()
+                    .title(title)
+                    .content(content)
+                    .requestAttendId(result.getId())
+                    .build();
+            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+            return RequestAttendDto.entityToDto(result, notificationDto);
+        }else {
+            throw new CustomHandleException(37);
+        }
     }
 
     @Override
@@ -114,9 +160,13 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             if(request.getId() == null){
                 throw new CustomHandleException(34);
             }
-
-            // Request attend must exist
             Optional<RequestAttendEntity> findRequestAttend = this.requestAttendRepository.findById(request.getId());
+            // if status is approved, can't update
+            if(findRequestAttend.get().getStatus() == 1){
+                throw new CustomHandleException(39);
+            }
+
+            // Request attend must not exist
             if(findRequestAttend.isEmpty()){
                 throw new CustomHandleException(35);
             }else {
@@ -190,5 +240,15 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         historyRequest.setStatus(model.getStatus());
         historyRequest.setRequestAttend(entity);
         return entity;
+    }
+
+    @Override
+    public Boolean checkRequestAttendNotExist(String dayRequestAttend) {
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(dayRequestAttend, userId);
+        if(requestAttendExist.isEmpty()){
+            return true; // Request attend not exist
+        }
+        return false; // Request attend exist
     }
 }

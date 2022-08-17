@@ -17,6 +17,7 @@ public class HistoryRequestEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "date_history")
+    @Temporal(TemporalType.DATE)
     private Date dateHistory;
     @Column(name = "time_history")
     private String timeHistory;
