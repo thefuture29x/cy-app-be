@@ -1,6 +1,7 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
+import cy.dtos.NotificationDto;
 import cy.dtos.ResponseDto;
 import cy.models.NotificationModel;
 import cy.services.INotificationService;
@@ -43,5 +44,20 @@ public class NotificationResource {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_LEADER', 'ROLE_EMPLOYEE')")
     public ResponseDto deleteNotification(@PathVariable Long id){
         return ResponseDto.of( this.notificationService.deleteById(id));
+    }
+
+    @GetMapping("/user")
+    public ResponseDto getAllNotificationByUserId(Pageable pageable) {
+        return ResponseDto.of( this.notificationService.findAllByUserId(pageable));
+    }
+
+    @GetMapping("/user/{id}") // id = notificationId
+    public ResponseDto getAllNotificationByUserId(@PathVariable Long id) {
+        return ResponseDto.of(NotificationDto.toDto(this.notificationService.getById(id)));
+    }
+
+    @GetMapping("/user/notificationNotRead")
+    public ResponseDto getAllNotificationByUserIdNotRead(Pageable pageable) {
+        return ResponseDto.of( this.notificationService.findAllByUserIdNotRead(pageable));
     }
 }

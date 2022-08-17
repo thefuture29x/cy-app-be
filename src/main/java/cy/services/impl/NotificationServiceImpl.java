@@ -6,8 +6,9 @@ import cy.entities.NotificationEntity;
 import cy.entities.UserEntity;
 import cy.models.NotificationModel;
 import cy.repositories.INotificationRepository;
+import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IUserRepository;
-import cy.services.INotificationService;
+import cy.services.*;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,16 @@ public class NotificationServiceImpl implements INotificationService {
     private INotificationRepository notificationRepository;
     @Autowired
     private IUserRepository userRepository;
+    @Autowired
+    private IRequestAttendRepository requestAttendRepository;
+    @Autowired
+    private IRequestDayOffService requestDayOffService;
+    @Autowired
+    private IRequestDeviceService requestDeviceService;
+    @Autowired
+    private IRequestModifiService requestModifiService;
+    @Autowired
+    private IRequestOTService requestOvertimeService;
 
     @Override
     public List<NotificationDto> findAll() {
@@ -54,7 +65,9 @@ public class NotificationServiceImpl implements INotificationService {
 
     @Override
     public NotificationEntity getById(Long id) {
-        return this.notificationRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
+        NotificationEntity notificationEntity = this.notificationRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
+        notificationEntity.setIsRead(true);
+        return this.notificationRepository.save(notificationEntity);
     }
 
     @Transactional
@@ -63,6 +76,26 @@ public class NotificationServiceImpl implements INotificationService {
         NotificationEntity notification = NotificationModel.toEntity(model);
         UserEntity userEntity = this.userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11));
         notification.setUserId(userEntity);
+        // request attend
+        if(model.getRequestAttendId() != null) {
+            notification.setRequestAttendEntityId(this.requestAttendRepository.findById(model.getRequestAttendId()).orElseThrow(()-> new CustomHandleException(99999)));
+        }
+        // request day off
+        if(model.getRequestDayOffId() != null) {
+            notification.setRequestDayOff(this.requestDayOffService.getById(model.getRequestDayOffId()));
+        }
+        // request device
+        if(model.getRequestDeviceId() != null) {
+            notification.setRequestDevice(this.requestDeviceService.getById(model.getRequestDeviceId()));
+        }
+        // request modifi
+        if(model.getRequestModifiId() != null) {
+            notification.setRequestModifi(this.requestModifiService.getById(model.getRequestModifiId()));
+        }
+        // request OT
+        if(model.getRequestOTId() != null) {
+            notification.setRequestOT(this.requestOvertimeService.getById(model.getRequestOTId()));
+        }
         return NotificationDto.toDto(this.notificationRepository.save(notification));
     }
 
@@ -79,6 +112,26 @@ public class NotificationServiceImpl implements INotificationService {
         oldNotification.setContent(model.getContent());
         UserEntity userEntity = this.userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11));
         oldNotification.setUserId(userEntity);
+        // request attend
+        if(model.getRequestAttendId() != null) {
+            oldNotification.setRequestAttendEntityId(this.requestAttendRepository.findById(model.getRequestAttendId()).orElseThrow(()-> new CustomHandleException(99999)));
+        }
+        // request day off
+        if(model.getRequestDayOffId() != null) {
+            oldNotification.setRequestDayOff(this.requestDayOffService.getById(model.getRequestDayOffId()));
+        }
+        // request device
+        if(model.getRequestDeviceId() != null) {
+            oldNotification.setRequestDevice(this.requestDeviceService.getById(model.getRequestDeviceId()));
+        }
+        // request modifi
+        if(model.getRequestModifiId() != null) {
+            oldNotification.setRequestModifi(this.requestModifiService.getById(model.getRequestModifiId()));
+        }
+        // request OT
+        if(model.getRequestOTId() != null) {
+            oldNotification.setRequestOT(this.requestOvertimeService.getById(model.getRequestOTId()));
+        }
         return NotificationDto.toDto(this.notificationRepository.save(oldNotification));
     }
 
@@ -92,5 +145,17 @@ public class NotificationServiceImpl implements INotificationService {
     @Override
     public boolean deleteByIds(List<Long> ids) {
         return false;
+    }
+
+    @Override
+    public Page<NotificationDto> findAllByUserId(Pageable pageable) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        return this.notificationRepository.findAllByUserId(userId, pageable).map(NotificationDto::toDto);
+    }
+
+    @Override
+    public Page<NotificationDto> findAllByUserIdNotRead(Pageable pageable) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        return this.notificationRepository.findAllByUserIdNotRead(userId, pageable).map(NotificationDto::toDto);
     }
 }
