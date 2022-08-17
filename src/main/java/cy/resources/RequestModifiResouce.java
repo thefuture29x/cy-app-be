@@ -1,10 +1,12 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
+import cy.dtos.AcceptRequestModifiDto;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.RequestModifiDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
+import cy.models.AcceptRequestModifiModel;
 import cy.models.NotificationModel;
 import cy.models.RequestAll;
 import cy.models.RequestModifiModel;
@@ -13,6 +15,7 @@ import cy.services.IRequestModifiService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -32,7 +35,7 @@ public class RequestModifiResouce {
     * @description-VN:  Lấy danh sách tất cả yêu cầu chỉnh sửa
     * @description-EN:  Get all request modifi
     * @param: pageable
-    * @return:
+    * @return: 
     *
     * */
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
@@ -103,7 +106,7 @@ public class RequestModifiResouce {
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Find request modifi by id")
     @GetMapping("find-by-id")
-    public ResponseDto findRequestModifi(Long id){
+    public ResponseDto findRequestModifi(@RequestParam(value = "id") Long id){
         return ResponseDto.of(iResquestModifiService.findById(id));
     }
     /*
@@ -156,5 +159,11 @@ public class RequestModifiResouce {
             return ResponseDto.of(165,requestAttendDto);
         }
         return ResponseDto.of(requestAttendDto);
+    }
+
+//    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @PostMapping("/acceptRequestModifi")
+    public Object acceptRequestDevice(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
+        return ResponseDto.of(iResquestModifiService.updateStatus(acceptRequestModifiModel));
     }
 }

@@ -31,6 +31,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "users")
