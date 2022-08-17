@@ -26,9 +26,12 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     boolean changePassword(String password);
 
+
     boolean setPassword(PasswordModel model);
 
     List<RequestSendMeDto> getAllRequestSendMe(Long id, Pageable pageable);
 
     List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable);
+
+    boolean changeStatus(Long id);
 }
