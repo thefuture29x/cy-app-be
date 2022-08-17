@@ -3,13 +3,16 @@ package cy.resources;
 import cy.configs.FrontendConfiguration;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
+import cy.dtos.RequestModifiDto;
+import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
 import cy.entities.UserEntity_;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
-import cy.services.IUserService;
+import cy.services.*;
 import cy.utils.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,12 +22,13 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "users")
 public class UserResources {
-
     private final IUserService userService;
 
     public UserResources(IUserService userService) {
@@ -103,6 +107,18 @@ public class UserResources {
     @PatchMapping("change_my_avatar")
     public ResponseDto changeMyAvatar(MultipartFile file) {
         return ResponseDto.of(this.userService.changeMyAvatar(file));
+    }
+    private Long id;
+    private String timeStart;
+    private String timeEnd;
+    private Integer status;
+    private String reason;
+    private Long idUserCreate;
+    private String nameUserCreate;
+
+    @GetMapping("get_request_send_me")
+    public ResponseDto getAllRequestSendMe(Long id){
+        return ResponseDto.of(this.userService.getAllRequestSendMe(id));
     }
 
 }

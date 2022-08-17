@@ -30,7 +30,7 @@ public class RequestModifiModel {
     private String timeEnd;
     @JsonSerialize(as = Date.class)
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    @ApiModelProperty(notes = "Adjustment date", dataType = "Date", example = "16/08/2022")
+    @ApiModelProperty(notes = "Adjustment date", dataType = "Date", example = "2022-08-16")
     private Date dateRequestModifi;
     @ApiModelProperty(notes = "Status of request modifi", dataType = "Integer ", example = "0")
     private Integer status;

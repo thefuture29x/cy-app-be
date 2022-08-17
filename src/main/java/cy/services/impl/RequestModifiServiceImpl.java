@@ -2,17 +2,15 @@ package cy.services.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestModifiDto;
-import cy.dtos.ResponseDto;
 import cy.entities.RequestModifiEntity;
 import cy.models.RequestModifiModel;
 import cy.repositories.IRequestModifiRepository;
 import cy.repositories.IUserRepository;
-import cy.services.IResquestModifiService;
+import cy.services.IRequestModifiService;
 import cy.utils.FileUploadProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class RequestModifiServiceImpl implements IResquestModifiService {
+public class RequestModifiServiceImpl implements IRequestModifiService {
     @Autowired
     IRequestModifiRepository iRequestModifiRepository;
     @Autowired
