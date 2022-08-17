@@ -24,4 +24,6 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
     boolean changeMyAvatar(MultipartFile file);
 
     boolean updateMyProfile(UserProfileModel model);
+
+    boolean changeStatus(Long id);
 }

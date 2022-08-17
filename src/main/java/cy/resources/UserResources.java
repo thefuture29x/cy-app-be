@@ -5,12 +5,17 @@ import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
+import cy.entities.RoleEntity_;
+import cy.entities.UserEntity;
 import cy.entities.UserEntity_;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
 import cy.services.IUserService;
 import cy.utils.SecurityUtils;
+
+import javax.persistence.criteria.Join;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -88,6 +93,25 @@ public class UserResources {
 
     }
 
+    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @GetMapping("get_managers")
+    public ResponseDto getManagers(Pageable page) {
+        return ResponseDto.of(this.userService.filter(page,
+                Specification.where(
+                        ((root, query, criteriaBuilder) -> {
+                            Join<UserEntity, RoleEntity> join = root.join(UserEntity_.ROLE_ENTITY);
+                            return criteriaBuilder.equal(join.get(RoleEntity_.ROLE_NAME), RoleEntity.EMPLOYEE).not();
+                        })
+                )));
+    }
+
+    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @PatchMapping("change_status/{id}")
+    public ResponseDto changeStatus(@PathVariable Long id){
+        return ResponseDto.of(this.userService.changeStatus(id));
+    }
+
+
     @GetMapping("my_profile")
     public ResponseDto getMyProfile() {
         return ResponseDto.of(this.userService.findById(SecurityUtils.getCurrentUserId()));
@@ -107,5 +131,7 @@ public class UserResources {
     public ResponseDto changeMyAvatar(MultipartFile file) {
         return ResponseDto.of(this.userService.changeMyAvatar(file));
     }
+
+
 
 }

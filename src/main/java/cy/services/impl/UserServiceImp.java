@@ -176,7 +176,9 @@ public class UserServiceImp implements IUserService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        } else
+            userEntity.setManager(this.getById(1L));
+
         userEntity.setStatus(true);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.setRoles(userEntity, model.getRoles());
@@ -190,6 +192,8 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto update(UserModel model) {
+        if (model.getId().equals(1L))
+            throw new CustomHandleException(19);
         logger.info("{} is updating user id: {}", SecurityUtils.getCurrentUsername(), model.getId());
 
         UserEntity original = this.getById(model.getId());
@@ -229,6 +233,8 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public boolean deleteById(Long id) {
+        if (id.equals(1L))
+            throw new CustomHandleException(18);
         logger.info("{} is deleting user id: {}", SecurityUtils.getCurrentUsername(), id);
         UserEntity userEntity = this.getById(id);
         userEntity.setStatus(false);
@@ -318,6 +324,15 @@ public class UserServiceImp implements IUserService {
         userEntity.setAddress(model.getAddress());
         userEntity.setPhone(model.getPhone());
         userEntity.setEmail(model.getEmail());
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+    @Override
+    public boolean changeStatus(Long id) {
+        logger.info("{} is changing status", SecurityUtils.getCurrentUsername());
+        UserEntity userEntity = this.getById(id);
+        userEntity.setStatus(!userEntity.getStatus());
         this.userRepository.saveAndFlush(userEntity);
         return true;
     }
