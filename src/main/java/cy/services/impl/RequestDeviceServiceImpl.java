@@ -80,7 +80,6 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     public RequestDeviceEntity getById(Long id) {
         return this.iRequestDeviceRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
-
     public void createHistory(RequestDeviceEntity requestDeviceEntity,int status){
         HistoryRequestEntity historyRequest=new HistoryRequestEntity();
         String pattern = "yyyy-MM-dd";

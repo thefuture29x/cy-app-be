@@ -1,8 +1,10 @@
 package cy.services;
 
+import cy.dtos.AcceptRequestModifiDto;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.RequestModifiDto;
 import cy.entities.RequestModifiEntity;
+import cy.models.AcceptRequestModifiModel;
 import cy.models.RequestAttendModel;
 import cy.models.RequestModifiModel;
 
@@ -12,4 +14,6 @@ public interface IRequestModifiService extends IBaseService<RequestModifiEntity,
 
     RequestModifiDto sendResquestModifi(RequestModifiModel requestModifiModel);
     RequestAttendDto checkAttend(Date date,Long idUser);
+
+    RequestModifiDto updateStatus(AcceptRequestModifiModel acceptRequestModifiModel);
 }
