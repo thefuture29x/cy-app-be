@@ -47,11 +47,12 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     private IRequestAttendRepository requestAttendRepository;
 
     @Autowired
-
     private INotificationRepository notificationRepository;
     @Autowired
-
     private INotificationService notificationService;
+
+    @Autowired
+    private IHistoryRequestRepository historyRequestRepository;
 
     @Override
     public List<RequestAttendDto> findAll() {
@@ -80,7 +81,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendEntity getById(Long id) {
-        return this.requestAttendRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
+        return this.requestAttendRepository.findById(id).orElseThrow(()-> new CustomHandleException(44));
     }
 
     @Override
@@ -99,9 +100,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         // cho tao moi neu khong co request attend nao hoac co request nhung da bi reject
         if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
-
             RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
 
+            // save notification
             String title = "Request Attend";
             String content = "You have created a new request attend on " + model.getDateRequestAttend() + " from " + model.getTimeCheckIn() + " to " + model.getTimeCheckOut();
             NotificationModel notificationModel = NotificationModel.builder()
@@ -111,6 +112,19 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                     .build();
 
             NotificationDto notificationDto = this.notificationService.add(notificationModel);
+
+            // save history
+            Date dateHistory = result.getCreatedDate();
+            String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+            Integer status = result.getStatus();
+            HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
+                    .dateHistory(dateHistory)
+                    .timeHistory(timeHistory)
+                    .status(status)
+                    .requestAttend(result)
+                    .build();
+            this.historyRequestRepository.save(historyRequestEntity);
+
             return RequestAttendDto.entityToDto(result, notificationDto);
         }else {
             throw new CustomHandleException(37);

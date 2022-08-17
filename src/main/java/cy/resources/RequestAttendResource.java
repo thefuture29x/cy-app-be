@@ -3,6 +3,7 @@ package cy.resources;
 import cy.configs.FrontendConfiguration;
 import cy.dtos.CustomHandleException;
 import cy.dtos.ResponseDto;
+import cy.entities.RequestAttendEntity;
 import cy.entities.RoleEntity;
 import cy.models.CreateUpdateRequestAttend;
 import cy.dtos.RequestAttendDto;
@@ -21,6 +22,13 @@ import java.util.Date;
 public class RequestAttendResource {
     @Autowired
     private RequestAttendServiceImpl requestAttendService;
+
+    @GetMapping(value = "/{id}")
+    public ResponseDto findById(@PathVariable("id") Long id) {
+        RequestAttendEntity requestAttend = requestAttendService.getById(id);
+        RequestAttendDto requestAttendDto = RequestAttendDto.entityToDto(requestAttend);
+        return ResponseDto.of(requestAttendDto);
+    }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping(value = "/create")
