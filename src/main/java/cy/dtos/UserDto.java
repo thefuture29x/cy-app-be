@@ -27,7 +27,7 @@ public class UserDto {
     private String sex;
     private Date birthDate;
     private boolean status;
-    private Long mainAddress;
+    private String address;
     private Date createdDate;
     private Date updatedDate;
     private List<RoleDto> roles;
@@ -47,6 +47,7 @@ public class UserDto {
                 .status(userEntity.getStatus())
                 .createdDate(userEntity.getCreatedDate())
                 .updatedDate(userEntity.getUpdatedDate())
+                .address(userEntity.getAddress())
                 .roles(userEntity.getRoleEntity()
                         .stream()
                         .map(r -> RoleDto.builder()

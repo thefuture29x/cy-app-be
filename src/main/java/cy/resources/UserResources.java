@@ -7,6 +7,8 @@ import cy.dtos.RequestModifiDto;
 import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
+import cy.entities.RoleEntity_;
+import cy.entities.UserEntity;
 import cy.entities.UserEntity_;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
@@ -15,6 +17,9 @@ import cy.services.IUserService;
 import cy.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.persistence.criteria.Join;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
@@ -26,6 +31,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "users")
@@ -95,6 +103,25 @@ public class UserResources {
 
     }
 
+    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @GetMapping("get_managers")
+    public ResponseDto getManagers(Pageable page) {
+        return ResponseDto.of(this.userService.filter(page,
+                Specification.where(
+                        ((root, query, criteriaBuilder) -> {
+                            Join<UserEntity, RoleEntity> join = root.join(UserEntity_.ROLE_ENTITY);
+                            return criteriaBuilder.equal(join.get(RoleEntity_.ROLE_NAME), RoleEntity.EMPLOYEE).not();
+                        })
+                )));
+    }
+
+    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @PatchMapping("change_status/{id}")
+    public ResponseDto changeStatus(@PathVariable Long id){
+        return ResponseDto.of(this.userService.changeStatus(id));
+    }
+
+
     @GetMapping("my_profile")
     public ResponseDto getMyProfile() {
         return ResponseDto.of(this.userService.findById(SecurityUtils.getCurrentUserId()));
@@ -131,6 +158,8 @@ public class UserResources {
     public ResponseDto getAllRequestCreateByMe(Long id,Pageable pageable){
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
     }
+
+
 
 
 }

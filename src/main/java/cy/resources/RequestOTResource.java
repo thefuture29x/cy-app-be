@@ -51,8 +51,8 @@ public class RequestOTResource {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Find request OT by id")
-    @GetMapping("find-by-id")
-    public ResponseDto findRequestOT(Long id){
+    @GetMapping("find-by-id/{id}")
+    public ResponseDto findRequestOT(@PathVariable("id") Long id){
         return ResponseDto.of(requestOTService.findById(id));
     }
 
