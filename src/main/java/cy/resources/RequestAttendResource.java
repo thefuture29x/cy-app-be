@@ -62,4 +62,9 @@ public class RequestAttendResource {
         }else
             throw new CustomHandleException(41);
     }
+    @PostMapping(value = "/check_request_not_exist")
+    public ResponseDto checkRequestExist(@RequestParam String day) {
+        boolean result = this.requestAttendService.checkRequestAttendNotExist(day);
+        return ResponseDto.of(result);
+    }
 }

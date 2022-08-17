@@ -1,17 +1,13 @@
 package cy.services.impl;
 
-import cy.dtos.HistoryRequestDto;
+import cy.dtos.NotificationDto;
 import cy.entities.*;
 import cy.models.CreateUpdateRequestAttend;
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.UserDto;
-import cy.models.CreateUpdateRequestAttend;
 
-import cy.entities.*;
-import cy.models.CreateUpdateRequestAttend;
 import cy.entities.UserEntity;
-import cy.models.CreateUpdateRequestAttend;
 import cy.models.NotificationModel;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
@@ -53,9 +49,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Autowired
     private IRequestAttendRepository requestAttendRepository;
 
-    @Autowired
-
-    private INotificationRepository notificationRepository;
     @Autowired
 
     private INotificationService notificationService;
@@ -288,5 +281,15 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
         this.notificationRepository.saveAndFlush(notificationEntity);
         return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+    }
+
+    @Override
+    public Boolean checkRequestAttendNotExist(String dayRequestAttend) {
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(dayRequestAttend, userId);
+        if(requestAttendExist.isEmpty()){
+            return true; // Request attend not exist
+        }
+        return false; // Request attend exist
     }
 }

@@ -40,7 +40,6 @@ public class RequestDayOffResource {
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "create")
     public ResponseDto Create(@ModelAttribute RequestDayOffModel requestDayOffModel) throws IOException {
-        RequestDayOffEntity test = this.iRequestDayOffService.getById(6L);
         return ResponseDto.of(iRequestDayOffService.add(requestDayOffModel));
     }
 
