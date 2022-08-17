@@ -148,6 +148,15 @@ public class NotificationServiceImpl implements INotificationService {
     @Override
     public Page<NotificationDto> findAllByUserId(Pageable pageable) {
         Long userId = SecurityUtils.getCurrentUserId();
+        this.notificationRepository.findAllByUserId(userId).stream().forEach(notification -> {
+            notification.setIsRead(true);
+        });
         return this.notificationRepository.findAllByUserId(userId, pageable).map(NotificationDto::toDto);
+    }
+
+    @Override
+    public Page<NotificationDto> findAllByUserIdNotRead(Pageable pageable) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        return this.notificationRepository.findAllByUserIdNotRead(userId, pageable).map(NotificationDto::toDto);
     }
 }

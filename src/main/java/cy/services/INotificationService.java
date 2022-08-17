@@ -8,4 +8,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface INotificationService extends IBaseService<NotificationEntity, NotificationDto, NotificationModel, Long>{
     Page<NotificationDto> findAllByUserId(Pageable pageable);
+
+    Page<NotificationDto> findAllByUserIdNotRead(Pageable pageable);
 }

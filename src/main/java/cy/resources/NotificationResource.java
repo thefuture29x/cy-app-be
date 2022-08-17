@@ -49,4 +49,9 @@ public class NotificationResource {
     public ResponseDto getAllNotificationByUserId(Pageable pageable) {
         return ResponseDto.of( this.notificationService.findAllByUserId(pageable));
     }
+
+    @GetMapping("/user/notificationNotRead")
+    public ResponseDto getAllNotificationByUserIdNotRead(Pageable pageable) {
+        return ResponseDto.of( this.notificationService.findAllByUserIdNotRead(pageable));
+    }
 }
