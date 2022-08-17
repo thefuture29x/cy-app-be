@@ -57,7 +57,7 @@ public class RequestOTServiceImpl implements IRequestOTService {
 
     @Override
     public RequestOTEntity getById(Long id) {
-        return requestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
+        return this.requestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(999999));
     }
 
     @Override

@@ -44,4 +44,14 @@ public class NotificationResource {
     public ResponseDto deleteNotification(@PathVariable Long id){
         return ResponseDto.of( this.notificationService.deleteById(id));
     }
+
+    @GetMapping("/user")
+    public ResponseDto getAllNotificationByUserId(Pageable pageable) {
+        return ResponseDto.of( this.notificationService.findAllByUserId(pageable));
+    }
+
+    @GetMapping("/user/notificationNotRead")
+    public ResponseDto getAllNotificationByUserIdNotRead(Pageable pageable) {
+        return ResponseDto.of( this.notificationService.findAllByUserIdNotRead(pageable));
+    }
 }
