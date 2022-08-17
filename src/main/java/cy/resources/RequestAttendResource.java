@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.Date;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API+"request_attend")
 @RestController
@@ -43,5 +44,11 @@ public class RequestAttendResource {
             throw new CustomHandleException(36);
         }
         return ResponseDto.of("Delete request attend by id " + id + " success");
+    }
+
+    @PostMapping(value = "/check_request_not_exist")
+    public ResponseDto checkRequestExist(@RequestParam String day) {
+        boolean result = this.requestAttendService.checkRequestAttendNotExist(day);
+        return ResponseDto.of(result);
     }
 }

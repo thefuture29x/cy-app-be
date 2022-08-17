@@ -2,12 +2,14 @@ package cy.models;
 
 import cy.entities.NotificationEntity;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
 public class NotificationModel {
     private Long id;
     private String title;

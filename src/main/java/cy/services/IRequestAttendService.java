@@ -4,7 +4,6 @@ import cy.dtos.RequestAttendDto;
 import cy.entities.RequestAttendEntity;
 import cy.models.RequestAttendModel;
 
-public interface IRequestAttendService extends IBaseService<RequestAttendEntity, RequestAttendDto,
-        RequestAttendModel, Long> {
-
+public interface IRequestAttendService extends IBaseService<RequestAttendEntity, RequestAttendDto, RequestAttendModel, Long> {
+    Boolean checkRequestAttendNotExist(String dayRequestAttend);
 }
