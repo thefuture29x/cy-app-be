@@ -1,6 +1,7 @@
 package cy.repositories;
 
 import cy.entities.RequestDayOffEntity;
+import cy.entities.RequestDeviceEntity;
 import cy.entities.RequestModifiEntity;
 import cy.resources.RequestDayOffResource;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,10 @@ public interface IRequestDayOffRepository extends JpaRepository<RequestDayOffEnt
     @Query(value = "SELECT * FROM `tbl_request_dayoff` \n " +
             "WHERE user_id = ?1 \n " +
             "and created_date between ?2 and ?3", nativeQuery = true)
-    List<RequestDayOffEntity> getAllRequestSendMe(Long id, String startTime, String endTime);
+    Page<RequestDayOffEntity> getAllRequestSendMe(Long id, String startTime, String endTime,Pageable pageable);
+
+    @Query(value = "SELECT * FROM `tbl_request_dayoff` \n " +
+            "WHERE assign_id = ?1", nativeQuery = true)
+    Page<RequestDayOffEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
 
 }

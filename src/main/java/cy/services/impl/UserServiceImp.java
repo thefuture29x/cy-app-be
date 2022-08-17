@@ -322,13 +322,13 @@ public class UserServiceImp implements IUserService {
     }
 
     @Override
-    public List<RequestSendMeDto> getAllRequestSendMe(Long id) {
+    public List<RequestSendMeDto> getAllRequestSendMe(Long id,Pageable pageable) {
         LocalDate date = LocalDate.now();
         String startTime = date.toString().concat(" 00:00:00");
         String endTime = date.toString().concat(" 23:59:59");
         List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
         // Get all request modifi send to leader on this day
-        for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime)) {
+        for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -341,7 +341,7 @@ public class UserServiceImp implements IUserService {
                     .build());
         }
         // Get all request day off send to leader on this day
-        for (RequestDayOffEntity entity: iRequestDayOffRepository.getAllRequestSendMe(id,startTime,endTime)) {
+        for (RequestDayOffEntity entity: iRequestDayOffRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -355,7 +355,7 @@ public class UserServiceImp implements IUserService {
         }
 
         // Get all request device send to leader on this day
-        for (RequestDeviceEntity entity: iRequestDeviceRepository.getAllRequestSendMe(id,startTime,endTime)) {
+        for (RequestDeviceEntity entity: iRequestDeviceRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -369,11 +369,73 @@ public class UserServiceImp implements IUserService {
         }
 
         // Get all request OT send to leader on this day
-        for (RequestOTEntity entity: iRequestOTRepository.getAllRequestSendMe(id,startTime,endTime)) {
+        for (RequestOTEntity entity: iRequestOTRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
                     .timeCreate(entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("OT")
+                    .build());
+        }
+
+
+        return requestSendMeDtoList;
+    }
+
+    @Override
+    public List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable) {
+        List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
+        // Get all request modifi create by me
+        for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("Modifi")
+                    .build());
+        }
+        // Get all request day off create by me
+        for (RequestDayOffEntity entity: iRequestDayOffRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(null)
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("DayOff")
+                    .build());
+        }
+
+        // Get all request device create by me
+        for (RequestDeviceEntity entity: iRequestDeviceRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("Device")
+                    .build());
+        }
+
+        // Get all request OT create by me
+        for (RequestOTEntity entity: iRequestOTRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())

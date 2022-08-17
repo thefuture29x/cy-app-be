@@ -117,8 +117,14 @@ public class UserResources {
     private String nameUserCreate;
 
     @GetMapping("get_request_send_me")
-    public ResponseDto getAllRequestSendMe(Long id){
-        return ResponseDto.of(this.userService.getAllRequestSendMe(id));
+    public ResponseDto getAllRequestSendMe(Long id,Pageable pageable){
+        return ResponseDto.of(this.userService.getAllRequestSendMe(id,pageable));
     }
+
+    @GetMapping("get_request_create_by_me")
+    public ResponseDto getAllRequestCreateByMe(Long id,Pageable pageable){
+        return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
+    }
+
 
 }

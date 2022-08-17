@@ -7,6 +7,7 @@ import cy.dtos.UserDto;
 import cy.entities.UserEntity;
 import cy.models.*;
 import cy.models.UserModel;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,5 +26,7 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     boolean changeMyAvatar(MultipartFile file);
 
-    List<RequestSendMeDto> getAllRequestSendMe(Long id);
+    List<RequestSendMeDto> getAllRequestSendMe(Long id, Pageable pageable);
+
+    List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable);
 }

@@ -7,6 +7,7 @@ import cy.dtos.ResponseDto;
 import cy.repositories.IRequestModifiRepository;
 import cy.services.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +23,7 @@ public class TestController {
     @Autowired
     IUserService iUserService;
     @GetMapping
-    public ResponseDto getCurrentTime(Long id){
-        return ResponseDto.of(iUserService.getAllRequestSendMe(id));
+    public ResponseDto getCurrentTime(Long id, Pageable pageable){
+        return ResponseDto.of(iUserService.getAllRequestSendMe(id,pageable));
     }
 }
