@@ -79,7 +79,7 @@ public class RequestDeviceResource {
     *@update:
     **/
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
-    @DeleteMapping("/getOne/{id}")
+    @GetMapping("/getOne/{id}")
     public Object findAll(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.findById(id));
     }
