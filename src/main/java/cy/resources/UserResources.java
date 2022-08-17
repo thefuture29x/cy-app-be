@@ -3,6 +3,8 @@ package cy.resources;
 import cy.configs.FrontendConfiguration;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
+import cy.dtos.RequestModifiDto;
+import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
 import cy.entities.UserEntity_;
@@ -24,6 +26,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "users")
@@ -112,5 +117,23 @@ public class UserResources {
     public ResponseDto changeMyAvatar(MultipartFile file) {
         return ResponseDto.of(this.userService.changeMyAvatar(file));
     }
+    private Long id;
+    private String timeStart;
+    private String timeEnd;
+    private Integer status;
+    private String reason;
+    private Long idUserCreate;
+    private String nameUserCreate;
+
+    @GetMapping("get_request_send_me")
+    public ResponseDto getAllRequestSendMe(Long id,Pageable pageable){
+        return ResponseDto.of(this.userService.getAllRequestSendMe(id,pageable));
+    }
+
+    @GetMapping("get_request_create_by_me")
+    public ResponseDto getAllRequestCreateByMe(Long id,Pageable pageable){
+        return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
+    }
+
 
 }
