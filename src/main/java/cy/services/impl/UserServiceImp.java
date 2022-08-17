@@ -7,7 +7,6 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.UserEntity;
-import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.repositories.IRoleRepository;
 import cy.repositories.IUserRepository;
@@ -59,8 +58,7 @@ public class UserServiceImp implements IUserService {
                           JwtProvider jwtProvider,
                           AuthenticationManager authenticationManager,
                           PasswordEncoder passwordEncoder,
-                          MailService mailService,
-                          FileUploadProvider fileUploadProvider) {
+                          MailService mailService, FileUploadProvider fileUploadProvider) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.jwtProvider = jwtProvider;
@@ -73,7 +71,7 @@ public class UserServiceImp implements IUserService {
         // create default roles
         try {
             // for insert default roles
-            if (this.roleRepository.findAllByRoleIdIn(List.of(1L, 2L, 3L, 4L, 5L)).size() < 5) {
+            if (this.roleRepository.findAllByRoleIdIn(List.of(1l, 2l, 3l, 4l, 5l)).size() < 5) {
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(2L).roleName(RoleEntity.ADMIN).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(3L).roleName(RoleEntity.MANAGER).build());
@@ -81,14 +79,16 @@ public class UserServiceImp implements IUserService {
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(5L).roleName(RoleEntity.LEADER).build());
             }
         } catch (Exception e) {
+            System.out.println(e);
             e.printStackTrace();
         }
+
 
         try {
             // for insert default admin
             if (!this.userRepository.findById(1L).isPresent()) {
                 UserEntity administrator = UserEntity.builder()
-                        .userId(1L)
+                        .userId(1l)
                         .fullName("administrator")
                         .status(true)
                         .userName("administrator")
@@ -104,6 +104,7 @@ public class UserServiceImp implements IUserService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println(e);
         }
 
     }
@@ -115,13 +116,11 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public Page<UserDto> findAll(Pageable page) {
-        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(page).map(UserDto::toDto);
     }
 
     @Override
     public List<UserDto> findAll(Specification<UserEntity> specs) {
-        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(specs).stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
@@ -132,7 +131,7 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto findById(Long id) {
-        logger.info("{} is finding users id: {}", SecurityUtils.getCurrentUsername(), id);
+        logger.info("{} finding user id: {%d}", SecurityUtils.getCurrentUsername(), id);
         return UserDto.toDto(this.getById(id));
     }
 
@@ -143,7 +142,6 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto add(UserModel model) {
-        logger.info("{} is adding user", SecurityUtils.getCurrentUsername());
         // check user has existed with email
         UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
         if (checkUser != null)
@@ -184,7 +182,7 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto update(UserModel model) {
-        logger.info("{} is updating user id: {}", SecurityUtils.getCurrentUsername(), model.getId());
+        logger.info("{} is updating userid: {%d}", SecurityUtils.getCurrentUsername(), model.getId());
 
         UserEntity original = this.getById(model.getId());
 
@@ -229,24 +227,28 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public boolean deleteById(Long id) {
-        logger.info("{} is deleting user id: {}", SecurityUtils.getCurrentUsername(), id);
         UserEntity userEntity = this.getById(id);
         userEntity.setStatus(false);
-        this.userRepository.saveAndFlush(userEntity);
-        return true;
+        return this.userRepository.saveAndFlush(userEntity) != null;
     }
 
     @Override
     public boolean deleteByIds(List<Long> ids) {
-        return false;
+        ids.forEach(id -> this.deleteById(id));
+        return true;
     }
 
     @Override
     public JwtLoginResponse logIn(JwtUserLoginModel userLogin) {
         UserEntity user = this.findByUsername(userLogin.getUsername());
         UserDetails userDetail = new CustomUserDetail(user);
-        this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetail, userLogin.getPassword(), userDetail.getAuthorities()));
-        long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800L;
+        try {
+            this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetail, userLogin.getPassword(), userDetail.getAuthorities()));
+        } catch (Exception e) {
+            throw e;
+        }
+
+        long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800l;
         return JwtLoginResponse.builder()
                 .token(this.jwtProvider.generateToken(userDetail.getUsername(), timeValid))
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
@@ -275,36 +277,29 @@ public class UserServiceImp implements IUserService {
         }
     }
 
-    @Override
-    public boolean setPassword(PasswordModel model) {
-        logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
-        UserEntity userEntity = this.getById(model.getUserId());
-        userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
-        this.userRepository.saveAndFlush(userEntity);
-        return true;
-    }
 
     @Override
-    public boolean changePassword(String password) {
-        logger.info("{} is changing password", SecurityUtils.getCurrentUsername());
+    public boolean updateAvatar(MultipartFile avatar) {
+        if (avatar.isEmpty())
+            throw new RuntimeException("Ảnh đại diện đang để trống!");
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        userEntity.setPassword(this.passwordEncoder.encode(password));
-        this.userRepository.saveAndFlush(userEntity);
-        return true;
-    }
-
-    @Override
-    public boolean changeMyAvatar(MultipartFile file) {
-        logger.info("{} is updating avatar", SecurityUtils.getCurrentUsername());
-
-        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        if (userEntity.getAvatar() != null)
+            this.fileUploadProvider.deleteFile(userEntity.getAvatar());
         try {
-            String folder = "users" + userEntity.getUserName() + "/";
-            userEntity.setAvatar(this.fileUploadProvider.uploadFile(folder, file));
+            userEntity.setAvatar(this.fileUploadProvider.uploadFile(UserEntity.FOLDER + userEntity.getUserName() + "/", avatar));
         } catch (IOException e) {
-            throw new CustomHandleException(15);
+            throw new RuntimeException("Tải ảnh đại diện lên thất bại!");
         }
-        this.userRepository.saveAndFlush(userEntity);
-        return true;
+        return this.userRepository.save(userEntity) != null;
+    }
+
+    @Override
+    public boolean changeStatus(Long userId) {
+        return false;
+    }
+
+    @Override
+    public boolean changeLockStatus(Long userId) {
+        return false;
     }
 }

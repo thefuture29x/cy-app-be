@@ -1,47 +1,20 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.CustomHandleException;
-import cy.dtos.ResponseDto;
-import cy.entities.RoleEntity;
-import cy.models.CreateUpdateRequestAttend;
+import cy.dtos.CreateAttendRequest;
 import cy.dtos.RequestAttendDto;
-import cy.models.RequestAttendModel;
 import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.annotation.security.RolesAllowed;
-
-@RequestMapping(value = FrontendConfiguration.PREFIX_API+"request_attend")
-@RestController
+@RequestMapping(value = FrontendConfiguration.PREFIX_API+"request_attend/")
 public class RequestAttendResource {
     @Autowired
     private RequestAttendServiceImpl requestAttendService;
 
-    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    @PostMapping(value = "/create")
-    public ResponseDto create(CreateUpdateRequestAttend addAttendRequest) {
-        RequestAttendModel requestAttendModel = requestAttendService.requestToModel(addAttendRequest, 1);
-        RequestAttendDto result = this.requestAttendService.add(requestAttendModel);
-        return ResponseDto.of(result);
-    }
-
-    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    @PostMapping(value = "/update")
-    public ResponseDto update(CreateUpdateRequestAttend updateAttendRequest) {
-        RequestAttendModel requestAttendModel = requestAttendService.requestToModel(updateAttendRequest, 2);
-        RequestAttendDto result = this.requestAttendService.update(requestAttendModel);
-        return ResponseDto.of(result);
-    }
-
-    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    @DeleteMapping(value = "/delete/{id}")
-    public ResponseDto delete(@PathVariable Long id) {
-        boolean result = this.requestAttendService.deleteById(id);
-        if(!result){
-            throw new CustomHandleException(36);
-        }
-        return ResponseDto.of("Delete request attend by id " + id + " success");
+    @PostMapping(value = "create")
+    public void create(CreateAttendRequest createAttendRequest) {
+        RequestAttendDto requestAttendDto = requestAttendService.requestToDto(createAttendRequest);
     }
 }

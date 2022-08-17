@@ -17,9 +17,10 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     boolean tokenFilter(String substring, HttpServletRequest req, HttpServletResponse res);
 
-    boolean setPassword(PasswordModel model);
+    boolean updateAvatar(MultipartFile avatar);
 
-    boolean changePassword(String password);
+    boolean changeStatus(Long userId);
 
-    boolean changeMyAvatar(MultipartFile file);
+    boolean changeLockStatus(Long userId);
+
 }
