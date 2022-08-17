@@ -33,7 +33,12 @@ public class RequestDeviceDto {
     private UserDto userDtoCreateBy;
     private UserDto userDtoAssignTo;
 
-
+/*
+*@author:HieuMM_Cy
+*@since:8/17/2022-9:36 AM
+*@description:new
+*@update:
+**/
 
     public static RequestDeviceDto entityToDto(RequestDeviceEntity obj) {
         return RequestDeviceDto.builder().id(obj.getId())
