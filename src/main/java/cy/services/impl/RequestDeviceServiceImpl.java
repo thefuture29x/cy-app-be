@@ -43,6 +43,10 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
     @Autowired
     IUserRepository userRepository;
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
+    @Autowired
+    INotificationRepository notificationRepository;
 
     @Override
     public List<RequestDeviceDto> findAll() {
