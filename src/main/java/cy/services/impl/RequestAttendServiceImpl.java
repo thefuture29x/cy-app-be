@@ -151,30 +151,37 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     public RequestAttendDto update(RequestAttendModel model) {
         RequestAttendEntity requestAttendUpdateEntity = this.modelToEntity(model);
         requestAttendUpdateEntity.setId(model.getId());
+        RequestAttendEntity oldRequestAttend = this.getById(model.getId());
+        requestAttendUpdateEntity.setDateRequestAttend(oldRequestAttend.getDateRequestAttend());
 
         // Today can't timekeeping for next day
         if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
             throw new CustomHandleException(38);
         }
 
-        // check request attend follow day and user not exist ???
-        String day = new SimpleDateFormat("yyyy-MM-dd").format(model.getDateRequestAttend());
-        if(this.checkRequestAttendNotExist(day)) {
-            RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
-            String title = "Yêu cầu chỉnh sửa chấm công";
-            String content = "Bạn đã chỉnh sửa một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + "giờ đến " + model.getTimeCheckOut() + " giờ";
-            NotificationModel notificationModel = NotificationModel.builder()
-                    .title(title)
-                    .content(content)
-                    .requestAttendId(result.getId())
-                    .build();
-            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
+        String title = "Yêu cầu chỉnh sửa chấm công";
+        String content = "Bạn đã chỉnh sửa một yêu cầu chấm công ngày " + requestAttendUpdateEntity.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+        NotificationModel notificationModel = NotificationModel.builder()
+                .title(title)
+                .content(content)
+                .requestAttendId(result.getId())
+                .build();
+        NotificationDto notificationDto = this.notificationService.add(notificationModel);
 
-            return RequestAttendDto.entityToDto(result, notificationDto);
+        // save history
+        Date dateHistory = result.getUpdatedDate();
+        String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+        Integer status = result.getStatus();
+        HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
+                .dateHistory(dateHistory)
+                .timeHistory(timeHistory)
+                .status(status)
+                .requestAttend(result)
+                .build();
+        this.historyRequestRepository.save(historyRequestEntity);
 
-        }else {
-            throw new CustomHandleException(37);
-        }
+        return RequestAttendDto.entityToDto(result, notificationDto);
     }
 
     @Override
@@ -229,13 +236,15 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
         if(request.getAttachedFiles() != null && request.getAttachedFiles().length > 0){ // Check if user has attached files
             for(MultipartFile file : request.getAttachedFiles()){
-                try{
-                    String s3Url = fileUploadProvider.uploadFile(folderName, file);
-                    fileS3Urls.add(s3Url);
-                }catch (Exception ex){
-                    ex.printStackTrace();
-                    fileS3Urls.add("Error code: 31");
-                    throw new CustomHandleException(31);
+                if(!file.getOriginalFilename().equals("")) {
+                    try {
+                        String s3Url = fileUploadProvider.uploadFile(folderName, file);
+                        fileS3Urls.add(s3Url);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        fileS3Urls.add("Error code: 31");
+                        throw new CustomHandleException(31);
+                    }
                 }
             }
         }
@@ -263,7 +272,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         RequestAttendEntity entity = new RequestAttendEntity();
         entity.setTimeCheckIn(model.getTimeCheckIn());
         entity.setTimeCheckOut(model.getTimeCheckOut());
-        entity.setDateRequestAttend(model.getDateRequestAttend());
+        entity.setDateRequestAttend(model.getDateRequestAttend() != null ? model.getDateRequestAttend() : null);
         entity.setStatus(model.getStatus());
         entity.setReasonCancel(model.getReasonCancel());
         List<String> s3Urls = model.getFiles();
