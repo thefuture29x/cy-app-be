@@ -230,7 +230,7 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
 
     @Override
     public RequestAttendDto checkAttend(Date date, Long idUser) {
-        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date,idUser);
+        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date, idUser);
         if (requestAttendEntity == null){
             return null;
         }
