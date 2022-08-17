@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +51,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     @Autowired
     INotificationRepository notificationRepository;
 
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
+
+    @Autowired
+    INotificationRepository notificationRepository;
     @Override
     public List<RequestDeviceDto> findAll() {
         return iRequestDeviceRepository.findAll().stream().map(data -> RequestDeviceDto.entityToDto(data)).collect(Collectors.toList());
@@ -77,7 +85,6 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     public RequestDeviceEntity getById(Long id) {
         return this.iRequestDeviceRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
-
     public void createHistory(RequestDeviceEntity requestDeviceEntity,int status){
         HistoryRequestEntity historyRequest=new HistoryRequestEntity();
         String pattern = "yyyy-MM-dd";
@@ -87,7 +94,6 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         historyRequest.setRequestDevice(requestDeviceEntity);
         historyRequestRepository.save(historyRequest);
     }
-
     public void createNotification(RequestDeviceEntity requestDeviceEntity,Boolean isRead,String title,String content){
         NotificationEntity notificationEntity=new NotificationEntity();
         notificationEntity.setDateNoti(new java.util.Date());
@@ -126,8 +132,23 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         RequestDeviceDto requestDeviceDto = RequestDeviceDto.entityToDto(requestDeviceEntity);
-        createHistory(requestDeviceEntity,model.getStatus());
-        createNotification(requestDeviceEntity,false,"Đang chờ xét duyệt","Yêu cầu cấp thiết bị");
+
+        // Add notification for user created device request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Gửi yêu cầu mượn/thuê thiết bị thành công!");
+        notificationEntity.setContent("Bạn đã gửi yêu cầu mượn/thuê thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setRequestDevice(requestDeviceEntity);
+        notificationRepository.save(notificationEntity);
+
+        // Save history for this request
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalTime nowTime = LocalTime.now(ZoneId.of("Asia/Saigon"));
+        HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
+        historyRequestEntity.setDateHistory(new Date());
+        historyRequestEntity.setTimeHistory(nowTime.format(dtf));
+        historyRequestEntity.setStatus(0); // waiting for approve
+        historyRequestEntity.setRequestDevice(requestDeviceEntity);
+        historyRequestRepository.save(historyRequestEntity);
         return requestDeviceDto;
     }
 

@@ -6,6 +6,9 @@ import cy.dtos.ResponseDto;
 import cy.models.HistoryRequestModel;
 import cy.services.IHistoryRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,6 +68,18 @@ public class HistoryRequestResource {
             return ResponseDto.of(historyRequestDtos);
         }else {
             return ResponseDto.of(163,historyRequestDtos);
+        }
+    }
+
+    @GetMapping("findByPage/{pageIndex}/{pageSize}")
+    @Secured(value = {"ROLE_ADMINISTRATOR","ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE","ROLE_LEADER"})
+    public ResponseDto findByPage(@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize){
+        Pageable pageable = PageRequest.of(pageIndex,pageSize);
+        Page<HistoryRequestDto> historyRequestDtos = iHistoryRequestService.findAll(pageable);
+        if (historyRequestDtos != null){
+            return ResponseDto.of(historyRequestDtos);
+        }else {
+            return ResponseDto.of(162,historyRequestDtos);
         }
     }
 }

@@ -3,6 +3,8 @@ package cy.entities;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -38,8 +40,16 @@ public class RequestDayOffEntity {
     @JoinColumn(name = "assign_id")
     private UserEntity assignTo;
 
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedDate;
+
     @OneToMany(mappedBy = "requestDayOff")
     private List<HistoryRequestEntity> historyRequestEntities;
-
 
 }
