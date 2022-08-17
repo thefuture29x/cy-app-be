@@ -9,9 +9,12 @@ import cy.dtos.RequestAttendDto;
 import cy.models.RequestAttendModel;
 import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.List;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API+"request_attend")
 @RestController
@@ -43,5 +46,19 @@ public class RequestAttendResource {
             throw new CustomHandleException(36);
         }
         return ResponseDto.of("Delete request attend by id " + id + " success");
+    }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @GetMapping(value = "/find-by-id/{id}")
+    public ResponseDto findById(@PathVariable(value = "id")Long id){
+        RequestAttendDto result = this.requestAttendService.findById(id);
+        return ResponseDto.of(result);
+    }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @GetMapping(value = "/find-by-user-id/{userId}")
+    public ResponseDto findByUserId(@PathVariable(value = "userId")Long id, Pageable pageable){
+        Page<RequestAttendDto> result = this.requestAttendService.findByUserId(id, pageable);
+        return ResponseDto.of(result);
     }
 }

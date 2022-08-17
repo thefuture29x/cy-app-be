@@ -18,6 +18,7 @@ import cy.utils.SecurityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -60,9 +61,20 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         return null;
     }
 
+    public Page<RequestAttendDto> findByUserId(Long id, Pageable page) {
+        List<RequestAttendDto> requestAttends = this.requestAttendRepository.findByUserId(id);
+        final long start = page.getOffset();
+        final long end = Math.min(start + page.getPageSize(), requestAttends.size());
+        return new PageImpl<>(requestAttends.subList((int) start, (int) end), page, requestAttends.size());
+    }
     @Override
     public RequestAttendDto findById(Long id) {
-        return null;
+        Optional<RequestAttendEntity> findById = this.requestAttendRepository.findById(id);
+        if(findById.isEmpty()){
+            throw new CustomHandleException(40);
+        }else {
+            return RequestAttendDto.entityToDto(findById.get());
+        }
     }
 
     @Override

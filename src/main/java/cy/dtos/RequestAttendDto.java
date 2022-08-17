@@ -31,6 +31,24 @@ public class RequestAttendDto {
     private UserDto assignedTo;
     private List<HistoryRequestDto> historyRequests;
 
+    public RequestAttendDto(RequestAttendEntity entity){
+        List<Object> fileUrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
+        List<String> fileUrls = new ArrayList<>();
+        for(Object obj : fileUrlsObj){
+            fileUrls.add(obj.toString());
+        }
+        this.id = entity.getId();
+        this.timeCheckIn = entity.getTimeCheckIn();
+        this.timeCheckOut = entity.getTimeCheckOut();
+        this.dateRequestAttend = entity.getDateRequestAttend();
+        this.status = entity.getStatus();
+        this.reasonCancel = entity.getReasonCancel();
+        this.files = fileUrls;
+        this.createdBy = UserDto.toDto(entity.getCreateBy());
+        this.assignedTo = UserDto.toDto(entity.getAssignTo());
+        this.historyRequests = entity.getHistoryRequestEntities().stream().map(HistoryRequestDto::toDto)
+                .collect(Collectors.toList());
+    }
     public static RequestAttendDto entityToDto(RequestAttendEntity entity){
         List<Object> s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
         List<String> s3Urls = new ArrayList<>();
