@@ -12,13 +12,11 @@ import cy.services.INotificationService;
 import cy.services.IResquestModifiService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API+"request_modifi/")
