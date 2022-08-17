@@ -103,8 +103,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
             RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
 
-            RequestAttendEntity result2 = this.requestAttendRepository.save(requestAttendEntity);
-
             String title = "Request Attend";
             String content = "You have created a new request attend on " + model.getDateRequestAttend() + " from " + model.getTimeCheckIn() + " to " + model.getTimeCheckOut();
             NotificationModel notificationModel = NotificationModel.builder()
