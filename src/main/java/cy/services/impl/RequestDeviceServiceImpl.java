@@ -7,6 +7,7 @@ import cy.entities.NotificationEntity;
 import cy.entities.RequestDeviceEntity;
 import cy.entities.UserEntity;
 import cy.models.RequestDeviceModel;
+import cy.models.RequestDeviceUpdateStatusModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestDeviceRepository;
@@ -45,6 +46,10 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
     @Autowired
     IUserRepository userRepository;
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
+    @Autowired
+    INotificationRepository notificationRepository;
 
     @Autowired
     IHistoryRequestRepository historyRequestRepository;
@@ -91,7 +96,6 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
     public void createNotification(RequestDeviceEntity requestDeviceEntity,Boolean isRead,String title,String content){
         NotificationEntity notificationEntity=new NotificationEntity();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         notificationEntity.setDateNoti(new java.util.Date());
         notificationEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
         notificationEntity.setIsRead(isRead);
@@ -198,24 +202,24 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         return false;
     }
 
-    public RequestDeviceDto updateStatus(Long id, int caseSwitch, String reason) {
+    public RequestDeviceDto updateStatus(RequestDeviceUpdateStatusModel model) {
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        RequestDeviceEntity requestDeviceEntity = this.getById(id);
+        RequestDeviceEntity requestDeviceEntity = this.getById(model.getId());
         if(userEntity.getUserId()==requestDeviceEntity.getAssignTo().getUserId()){
-            switch (caseSwitch){
+            switch (model.getSwitchCase()){
                 case 1:
                     requestDeviceEntity.setStatus(1);
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,1);
-                    createNotification(requestDeviceEntity,false,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    createNotification(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
                     // return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
                     break;
                 case 2:
                     requestDeviceEntity.setStatus(2);
-                    requestDeviceEntity.setReasonCancel(reason);
+                    requestDeviceEntity.setReasonCancel(model.getReasonCancel());
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,2);
-                    createNotification(requestDeviceEntity,false,"Đã bị hủy bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    createNotification(requestDeviceEntity,true,"Đã bị hủy bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
                     //   return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
                     break;
             }
@@ -224,7 +228,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
        /* requestDeviceEntity.setStatus(1);
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());*/
-        return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+        return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11)));
     }
     /*public RequestDeviceDto updateStatusCancle(Long id,String reason) {
         RequestDeviceEntity requestDeviceEntity = this.getById(id);
