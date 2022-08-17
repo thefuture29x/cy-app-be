@@ -53,9 +53,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Autowired
     private INotificationService notificationService;
 
-    @Autowired
-    private IHistoryRequestRepository historyRequestRepository;
-
     @Override
     public List<RequestAttendDto> findAll() {
         return null;

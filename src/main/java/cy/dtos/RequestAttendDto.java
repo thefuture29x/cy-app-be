@@ -29,7 +29,6 @@ public class RequestAttendDto {
     private List<String> files;
     private UserDto createdBy;
     private UserDto assignedTo;
-    private HistoryRequestDto historyRequest;
     private NotificationDto notification;
 
     public RequestAttendDto(RequestAttendEntity entity) {
@@ -86,7 +85,6 @@ public class RequestAttendDto {
                 .files(s3Urls)
                 .createdBy(UserDto.toDto(entity.getCreateBy()))
                 .assignedTo(UserDto.toDto(entity.getAssignTo()))
-
                 .build();
     }
 }
