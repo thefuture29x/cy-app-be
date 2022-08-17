@@ -51,4 +51,5 @@ public class RequestDayOffEntity {
 
     @OneToMany(mappedBy = "requestDayOff")
     private List<HistoryRequestEntity> historyRequestEntities;
+
 }

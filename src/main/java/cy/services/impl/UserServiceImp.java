@@ -105,7 +105,7 @@ public class UserServiceImp implements IUserService {
             // for insert default admin
             if (!this.userRepository.findById(1L).isPresent()) {
                 UserEntity administrator = UserEntity.builder()
-                        .userId(1L)
+                        .userId(1l)
                         .fullName("administrator")
                         .status(true)
                         .userName("administrator")
@@ -374,7 +374,6 @@ public class UserServiceImp implements IUserService {
             }
 
     }
-
     @Override
     public List<RequestSendMeDto> getAllRequestSendMe(Long id,Pageable pageable) {
         LocalDate date = LocalDate.now();
