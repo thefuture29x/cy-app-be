@@ -1,14 +1,21 @@
 package cy.services.impl;
 
 import cy.dtos.*;
+
 import cy.entities.HistoryRequestEntity;
 import cy.entities.UserEntity;
 import cy.models.CreateUpdateRequestAttend;
 import cy.entities.RequestAttendEntity;
 import cy.models.CreateUpdateRequestAttend;
+
+import cy.entities.*;
+import cy.models.CreateUpdateRequestAttend;
+import cy.entities.UserEntity;
+import cy.models.CreateUpdateRequestAttend;
 import cy.models.NotificationModel;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IUserRepository;
 import cy.services.INotificationService;
@@ -40,6 +47,10 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     private IRequestAttendRepository requestAttendRepository;
 
     @Autowired
+
+    private INotificationRepository notificationRepository;
+    @Autowired
+
     private INotificationService notificationService;
 
     @Override
@@ -75,6 +86,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto add(RequestAttendModel model) {
         RequestAttendEntity requestAttendEntity = this.modelToEntity(model);
+        RequestAttendEntity resultAttendEntity = this.requestAttendRepository.save(requestAttendEntity);
 
         // Today can't timekeeping for next day
         if(requestAttendEntity.getDateRequestAttend().after(new Date())){
@@ -82,12 +94,17 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         }
 
         // check request attend follow day and user not exist ???
+
         String day = new SimpleDateFormat("yyyy-MM-dd").format(model.getDateRequestAttend());
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
         // cho tao moi neu khong co request attend nao hoac co request nhung da bi reject
         if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
+
             RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
+
+            RequestAttendEntity result2 = this.requestAttendRepository.save(requestAttendEntity);
+
             String title = "Request Attend";
             String content = "You have created a new request attend on " + model.getDateRequestAttend() + " from " + model.getTimeCheckIn() + " to " + model.getTimeCheckOut();
             NotificationModel notificationModel = NotificationModel.builder()
@@ -95,6 +112,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                     .content(content)
                     .requestAttendId(result.getId())
                     .build();
+
             NotificationDto notificationDto = this.notificationService.add(notificationModel);
             return RequestAttendDto.entityToDto(result, notificationDto);
         }else {
@@ -130,7 +148,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                     .requestAttendId(result.getId())
                     .build();
             NotificationDto notificationDto = this.notificationService.add(notificationModel);
+
             return RequestAttendDto.entityToDto(result, notificationDto);
+
         }else {
             throw new CustomHandleException(37);
         }
@@ -165,7 +185,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             if(findRequestAttend.get().getStatus() == 1){
                 throw new CustomHandleException(39);
             }
-
             // Request attend must not exist
             if(findRequestAttend.isEmpty()){
                 throw new CustomHandleException(35);
