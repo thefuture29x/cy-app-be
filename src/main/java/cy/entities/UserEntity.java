@@ -57,6 +57,7 @@ public class UserEntity {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_date")
     private Date updatedDate;
+
     public static final String FOLDER = "user/";
 
     @ManyToMany(fetch = FetchType.EAGER)

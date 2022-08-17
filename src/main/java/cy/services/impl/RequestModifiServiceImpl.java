@@ -64,7 +64,7 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
     }
 
     @Override
-    public RequestModifiDto add(RequestModifiModel model) throws IOException {
+    public RequestModifiDto add(RequestModifiModel model){
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         requestModifiEntity.setAssignTo(iUserRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
@@ -72,7 +72,12 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             List<String> files = new ArrayList<>();
             for(MultipartFile fileMultipart : model.getFiles()){
                 if(!fileMultipart.isEmpty()){
-                    String result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                    String result = null;
+                    try {
+                        result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     files.add(result);
                 }
             }
@@ -82,7 +87,7 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
     }
 
     @Override
-    public List<RequestModifiDto> add(List<RequestModifiModel> model) throws IOException {
+    public List<RequestModifiDto> add(List<RequestModifiModel> model) {
         List<RequestModifiDto> requestModifiDtoList = new ArrayList<>();
         for (RequestModifiModel requestModifiModel : model) {
             RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(requestModifiModel);
@@ -92,7 +97,12 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
                 List<String> files = new ArrayList<>();
                 for(MultipartFile fileMultipart : requestModifiModel.getFiles()){
                     if(!fileMultipart.isEmpty()){
-                        String result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                        String result = null;
+                        try {
+                            result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         files.add(result);
                     }
                 }
@@ -104,7 +114,7 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
     }
 
     @Override
-    public RequestModifiDto update(RequestModifiModel model) throws IOException {
+    public RequestModifiDto update(RequestModifiModel model)  {
         RequestModifiEntity requestModifiEntity = iRequestModifiRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
         requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
@@ -113,7 +123,12 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             List<String> files = new ArrayList<>();
             for(MultipartFile fileMultipart : model.getFiles()){
                 if(!fileMultipart.isEmpty()){
-                    String result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                    String result = null;
+                    try {
+                        result = fileUploadProvider.uploadFile("requestModifi",fileMultipart);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     files.add(result);
                 }
             }
