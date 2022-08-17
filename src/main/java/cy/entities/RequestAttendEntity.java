@@ -37,6 +37,15 @@ public class RequestAttendEntity {
     @Column(name = "files")
     private String files;
 
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdDate;
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date updatedDate;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity createBy;

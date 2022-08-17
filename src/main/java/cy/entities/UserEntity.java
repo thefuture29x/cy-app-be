@@ -44,7 +44,7 @@ public class UserEntity {
     @Column(name = "address")
     private String address;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "manager_id")
     private UserEntity manager;
 

@@ -65,7 +65,7 @@ public class NotificationServiceImpl implements INotificationService {
 
     @Override
     public NotificationEntity getById(Long id) {
-        NotificationEntity notificationEntity = this.notificationRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
+        NotificationEntity notificationEntity = this.notificationRepository.findById(id).orElseThrow(()-> new CustomHandleException(131));
         notificationEntity.setIsRead(true);
         return this.notificationRepository.save(notificationEntity);
     }
