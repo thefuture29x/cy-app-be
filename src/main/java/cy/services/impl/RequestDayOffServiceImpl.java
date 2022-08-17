@@ -3,7 +3,15 @@ package cy.services.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.RequestDayOffDto;
+<<<<<<< HEAD
+import cy.dtos.ResponseDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.NotificationEntity;
+import cy.entities.RequestDayOffEntity;
+import cy.entities.UserEntity;
+=======
 import cy.entities.*;
+>>>>>>> 06e4b55325d975d42da39fc19c5f5264a1db483e
 import cy.models.RequestDayOffModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.INotificationRepository;
@@ -20,8 +28,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+<<<<<<< HEAD
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.ZoneId;
+=======
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+>>>>>>> 06e4b55325d975d42da39fc19c5f5264a1db483e
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +57,11 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Autowired
     FileUploadProvider fileUploadProvider;
 
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
+
+    @Autowired
+    INotificationRepository notificationRepository;
     @Override
     public List<RequestDayOffDto> findAll() {
         return null;
@@ -110,12 +129,34 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
             requestDayOff.setFiles(files.toString());
         }
         requestDayOff.setDateDayOff(new Date());
+<<<<<<< HEAD
+        requestDayOff = iRequestDayOffRepository.save(requestDayOff);
+
+        // Add notification for user created device request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Gửi đơn xin nghỉ làm thành công!");
+        notificationEntity.setContent("Bạn đã gửi đơn xin nghỉ làm thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setRequestDayOff(requestDayOff);
+        notificationRepository.save(notificationEntity);
+
+        // Save history for this request
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalTime nowTime = LocalTime.now(ZoneId.of("Asia/Saigon"));
+        HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
+        historyRequestEntity.setDateHistory(new Date());
+        historyRequestEntity.setTimeHistory(nowTime.format(dtf));
+        historyRequestEntity.setStatus(0); // waiting for approve
+        historyRequestEntity.setRequestDayOff(requestDayOff);
+        historyRequestRepository.save(historyRequestEntity);
+        return RequestDayOffDto.toDto(requestDayOff);
+=======
         requestDayOff.setHistoryRequestEntities(new ArrayList<>());
         RequestDayOffEntity savedRqDayoff = iRequestDayOffRepository.saveAndFlush(requestDayOff);
         this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(savedRqDayoff).status(0).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
         NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(savedRqDayoff).content("Yêu cầu nghỉ phép đã được gửi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu nghỉ phép đã được gửi").dateNoti(new Date()).userId(savedRqDayoff.getCreateBy()).isRead(false).build();
         this.notificationRepository.saveAndFlush(notificationEntity);
         return RequestDayOffDto.toDto(savedRqDayoff);
+>>>>>>> 06e4b55325d975d42da39fc19c5f5264a1db483e
     }
 
     @Override
