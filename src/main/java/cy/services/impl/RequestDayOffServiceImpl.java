@@ -3,9 +3,13 @@ package cy.services.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestDayOffDto;
 import cy.dtos.ResponseDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestDayOffEntity;
 import cy.entities.UserEntity;
 import cy.models.RequestDayOffModel;
+import cy.repositories.IHistoryRequestRepository;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestDayOffRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestDayOffService;
@@ -21,6 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +42,11 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Autowired
     FileUploadProvider fileUploadProvider;
 
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
+
+    @Autowired
+    INotificationRepository notificationRepository;
     @Override
     public List<RequestDayOffDto> findAll() {
         return null;
@@ -103,6 +115,23 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         }
         requestDayOff.setDateDayOff(new Date());
         requestDayOff = iRequestDayOffRepository.save(requestDayOff);
+
+        // Add notification for user created device request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Gửi đơn xin nghỉ làm thành công!");
+        notificationEntity.setContent("Bạn đã gửi đơn xin nghỉ làm thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setRequestDayOff(requestDayOff);
+        notificationRepository.save(notificationEntity);
+
+        // Save history for this request
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalTime nowTime = LocalTime.now(ZoneId.of("Asia/Saigon"));
+        HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
+        historyRequestEntity.setDateHistory(new Date());
+        historyRequestEntity.setTimeHistory(nowTime.format(dtf));
+        historyRequestEntity.setStatus(0); // waiting for approve
+        historyRequestEntity.setRequestDayOff(requestDayOff);
+        historyRequestRepository.save(historyRequestEntity);
         return RequestDayOffDto.toDto(requestDayOff);
     }
 

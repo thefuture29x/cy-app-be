@@ -25,6 +25,7 @@ import cy.utils.SecurityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,18 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendDto findById(Long id) {
-        return null;
+        RequestAttendDto findByIdToDto = this.requestAttendRepository.findByIdToDto(id);
+        if(findByIdToDto == null){
+            throw new CustomHandleException(40);
+        }
+        return findByIdToDto;
+    }
+
+    public Page<RequestAttendDto> findByUserId(Long userId, Pageable pageable){
+        List<RequestAttendDto> findByUserId = this.requestAttendRepository.findByUserId(userId);
+        final long start = pageable.getOffset();
+        final long end = Math.min(start + pageable.getPageSize(), findByUserId.size());
+        return new PageImpl<>(findByUserId.subList((int)start, (int)end), pageable, findByUserId.size());
     }
 
     @Override
@@ -203,7 +215,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             }
         }
         final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
-        if(request.getAttachedFiles() != null){ // Check if user has attached files
+        if(request.getAttachedFiles() != null && request.getAttachedFiles().length > 0){ // Check if user has attached files
             for(MultipartFile file : request.getAttachedFiles()){
                 try{
                     String s3Url = fileUploadProvider.uploadFile(folderName, file);
@@ -250,7 +262,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         entity.setAssignTo(userRepository.findById(model.getAssignedTo().getId()).get());
         HistoryRequestEntity historyRequest = new HistoryRequestEntity();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         historyRequest.setDateHistory(new Date());
         historyRequest.setTimeHistory(LocalTime.now().toString());
         historyRequest.setStatus(model.getStatus());
