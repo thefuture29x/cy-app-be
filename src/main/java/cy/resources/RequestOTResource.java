@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
-import java.io.IOException;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API+"request_ot/")
@@ -26,17 +25,17 @@ public class RequestOTResource {
         return ResponseDto.of(requestOTService.findAll(pageable));
     }
 
-    @RolesAllowed({RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Create new request OT")
     @PostMapping
-    public ResponseDto addRequestOT(@ModelAttribute RequestOTModel requestOTModel) throws IOException {
+    public ResponseDto addRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.add(requestOTModel));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Update request OT")
     @PutMapping
-    public ResponseDto updateRequestOT(@ModelAttribute RequestOTModel requestOTModel) throws IOException {
+    public ResponseDto updateRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.update(requestOTModel));
     }
 

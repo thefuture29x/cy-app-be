@@ -54,12 +54,12 @@ public class RequestOTServiceImpl implements IRequestOTService {
 
     @Override
     public RequestOTDto findById(Long id) {
-        return RequestOTDto.toDto(requestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+        return RequestOTDto.toDto(requestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(111)));
     }
 
     @Override
     public RequestOTEntity getById(Long id) {
-        return this.requestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(999999));
+        return this.requestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(111));
     }
 
     @Override
@@ -108,7 +108,7 @@ public class RequestOTServiceImpl implements IRequestOTService {
 
     @Override
     public RequestOTDto update(RequestOTModel model) {
-        RequestOTEntity requestOTEntity = requestOTRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
+        RequestOTEntity requestOTEntity = requestOTRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(111));
         requestOTEntity = RequestOTModel.toEntity(model);
 
         if (model.getCreateBy() != null) {

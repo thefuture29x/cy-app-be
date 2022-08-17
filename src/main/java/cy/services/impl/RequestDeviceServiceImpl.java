@@ -63,7 +63,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto add(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto add(RequestDeviceModel model)  {
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
 
@@ -98,7 +98,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
 
     @Override
-    public RequestDeviceDto update(RequestDeviceModel model) throws IOException {
+    public RequestDeviceDto update(RequestDeviceModel model){
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
         requestDeviceEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
 
