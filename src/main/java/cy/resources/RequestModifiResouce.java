@@ -161,7 +161,7 @@ public class RequestModifiResouce {
         return ResponseDto.of(requestAttendDto);
     }
 
-//    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @PostMapping("/acceptRequestModifi")
     public Object acceptRequestDevice(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
         return ResponseDto.of(iResquestModifiService.updateStatus(acceptRequestModifiModel));
