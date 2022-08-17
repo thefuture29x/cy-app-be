@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -80,8 +81,6 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         return this.iRequestDeviceRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
 
-    @Autowired
-    IHistoryRequestRepository historyRequestRepository;
     public void createHistory(RequestDeviceEntity requestDeviceEntity,int status){
         HistoryRequestEntity historyRequest=new HistoryRequestEntity();
         String pattern = "yyyy-MM-dd";
@@ -91,8 +90,6 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         historyRequest.setRequestDevice(requestDeviceEntity);
         historyRequestRepository.save(historyRequest);
     }
-    @Autowired
-    INotificationRepository notificationRepository;
     public void createNotification(RequestDeviceEntity requestDeviceEntity,Boolean isRead,String title,String content){
         NotificationEntity notificationEntity=new NotificationEntity();
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");

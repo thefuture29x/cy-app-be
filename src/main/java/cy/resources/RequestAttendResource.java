@@ -24,7 +24,7 @@ public class RequestAttendResource {
     private RequestAttendServiceImpl requestAttendService;
 
     @GetMapping(value = "/{id}")
-    public ResponseDto findById(@PathVariable("id") Long id) {
+    public ResponseDto getById(@PathVariable("id") Long id) {
         RequestAttendEntity requestAttend = requestAttendService.getById(id);
         RequestAttendDto requestAttendDto = RequestAttendDto.entityToDto(requestAttend);
         return ResponseDto.of(requestAttendDto);
