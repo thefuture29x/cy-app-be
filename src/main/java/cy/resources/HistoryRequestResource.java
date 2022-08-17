@@ -10,8 +10,9 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
-@RequestMapping(value = FrontendConfiguration.PREFIX_API+"/history_request/")
+@RequestMapping(value = FrontendConfiguration.PREFIX_API+"history_request/")
 public class HistoryRequestResource {
     @Autowired
     IHistoryRequestService iHistoryRequestService;
@@ -52,7 +53,18 @@ public class HistoryRequestResource {
         if (historyRequestDto != null){
             return ResponseDto.of(historyRequestDto);
         }else {
-            return ResponseDto.of(163,historyRequestDto);
+            return ResponseDto.of(164,historyRequestDto);
+        }
+    }
+
+    @PostMapping("addList")
+    @Secured(value = {"ROLE_ADMINISTRATOR","ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE","ROLE_LEADER"})
+    public ResponseDto addList(@RequestBody List<HistoryRequestModel> historyRequestModelList) throws IOException {
+        List<HistoryRequestDto> historyRequestDtos = iHistoryRequestService.add(historyRequestModelList);
+        if (historyRequestDtos != null){
+            return ResponseDto.of(historyRequestDtos);
+        }else {
+            return ResponseDto.of(163,historyRequestDtos);
         }
     }
 }

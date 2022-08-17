@@ -13,6 +13,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Transactional
@@ -65,7 +67,7 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
         historyRequestEntity.setStatus(model.getStatus());
         if (model.getDateHistory() != null){
-            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(model.getDateHistory()));
+            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
             historyRequestEntity.setDateHistory(model.getDateHistory());
         }
         HistoryRequestDto historyRequestDto = HistoryRequestDto.toDto(iHistoryRequestRepository.save(historyRequestEntity));
@@ -74,7 +76,15 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
 
     @Override
     public List<HistoryRequestDto> add(List<HistoryRequestModel> model) {
-        return null;
+        List<HistoryRequestDto> historyRequestDtos = new ArrayList<>();
+
+        for (HistoryRequestModel historyRequestModel : model){
+            HistoryRequestDto historyRequestDto = add(historyRequestModel);
+            if (historyRequestDto != null){
+                historyRequestDtos.add(historyRequestDto);
+            }
+        }
+        return historyRequestDtos;
     }
 
     @Override
@@ -106,6 +116,6 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
 
     @Override
     public boolean deleteByIds(List<Long> ids) {
-        return false;
+        return iHistoryRequestRepository.deleteByIds(ids);
     }
 }
