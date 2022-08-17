@@ -6,6 +6,7 @@ import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
 import cy.models.UserModel;
+import cy.models.UserProfileModel;
 import cy.services.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +38,8 @@ public class UserResources {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @GetMapping
-    public ResponseDto findAll(Pageable page) {
-        return ResponseDto.of(this.userService.findAll(page));
+    public ResponseDto findAll(@RequestParam(name = "isEnable", defaultValue = "1") Boolean isEnable, Pageable page) {
+        return ResponseDto.of(this.userService.filter(page, Specification.where(((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), isEnable)))));
     }
 
 
@@ -69,4 +70,41 @@ public class UserResources {
         JwtLoginResponse jwtUserLoginModel = this.userService.logIn(model);
         return ResponseDto.of(jwtUserLoginModel);
     }
+
+    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @GetMapping("search")
+    public ResponseDto search(@RequestParam @Valid @NotBlank String q, Pageable pageable) {
+        return ResponseDto.of(this.userService.filter(pageable, Specification.where(((root, query, criteriaBuilder) -> {
+            String s = "%" + q + "%";
+            return criteriaBuilder.or(criteriaBuilder.like(root.get(UserEntity_.USER_NAME), s), criteriaBuilder.like(root.get(UserEntity_.FULL_NAME), s));
+        }))));
+    }
+
+    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @PostMapping("set_password")
+    public ResponseDto setPassword(@RequestBody @Valid PasswordModel model) {
+        return ResponseDto.of(this.userService.setPassword(model));
+
+    }
+
+    @GetMapping("my_profile")
+    public ResponseDto getMyProfile() {
+        return ResponseDto.of(this.userService.findById(SecurityUtils.getCurrentUserId()));
+    }
+
+    @PostMapping("change_password")
+    public ResponseDto changePassword(@RequestBody String password) {
+        return ResponseDto.of(this.userService.changePassword(password));
+    }
+
+    @PatchMapping("update_my_profile")
+    public ResponseDto updateMyProfile(@RequestBody UserProfileModel model) {
+        return ResponseDto.of(this.userService.updateMyProfile(model));
+    }
+
+    @PatchMapping("change_my_avatar")
+    public ResponseDto changeMyAvatar(MultipartFile file) {
+        return ResponseDto.of(this.userService.changeMyAvatar(file));
+    }
+
 }
