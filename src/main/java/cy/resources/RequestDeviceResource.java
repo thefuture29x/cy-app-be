@@ -7,6 +7,7 @@ import cy.models.RequestDeviceModel;
 import cy.services.impl.RequestDeviceServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -22,6 +23,7 @@ public class RequestDeviceResource {
     *@description:create request device
     *@update:
     **/
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping("/create")
     public Object add(RequestDeviceModel requestDeviceModel) throws IOException {
         RequestDeviceDto requestDeviceDto=requestDeviceService.add(requestDeviceModel);
@@ -38,6 +40,7 @@ public class RequestDeviceResource {
     *@description:update request device
     *@update:
     **/
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PutMapping("/update")
     public Object update(RequestDeviceModel requestDeviceModel) throws IOException {
         RequestDeviceDto requestDeviceDto=requestDeviceService.update(requestDeviceModel);
@@ -54,17 +57,18 @@ public class RequestDeviceResource {
     *@description:get all
     *@update:
     **/
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping("/getAll")
     public Object findAll(Pageable page){
         return ResponseDto.of(requestDeviceService.findAll(page));
-    }
-    @DeleteMapping("/delete/{id}")
-    /*
+    }/*
     *@author:HieuMM_Cy
-    *@since:8/16/2022-2:21 PM
-    *@description:delete by id request
+    *@since:8/16/2022-3:19 PM
+    *@description:delete
     *@update:
     **/
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @DeleteMapping("/delete/{id}")
     public Object delete(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.deleteById(id));
     }
@@ -74,6 +78,7 @@ public class RequestDeviceResource {
     *@description:find one by id
     *@update:
     **/
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @DeleteMapping("/getOne/{id}")
     public Object findAll(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.findById(id));

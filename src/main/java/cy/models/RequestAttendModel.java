@@ -34,4 +34,5 @@ public class RequestAttendModel {
     private UserDto createdBy;
     private UserDto assignedTo;
     //private List<HistoryRequestModel> historyRequests;
+
 }

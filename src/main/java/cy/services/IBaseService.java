@@ -19,10 +19,11 @@ public interface IBaseService<T, D, M, K> {
     D findById(K id);
     T getById(K id);
 
-    D add(M model) ;
+    D add(M model);
 
     List<D> add(List<M> model);
-    D update(M model) ;
+
+    D update(M model);
 
     boolean deleteById(K id);
 

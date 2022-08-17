@@ -64,7 +64,7 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
     }
 
     @Override
-    public RequestModifiDto add(RequestModifiModel model) {
+    public RequestModifiDto add(RequestModifiModel model){
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         requestModifiEntity.setAssignTo(iUserRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
@@ -83,13 +83,11 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             }
             requestModifiEntity.setFiles(files.toString());
         }
-        // there is no dto of the history request, so leave it null for now
-        requestModifiEntity.setHistoryRequestEntities(null);
         return RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity));
     }
 
     @Override
-    public List<RequestModifiDto> add(List<RequestModifiModel> model)  {
+    public List<RequestModifiDto> add(List<RequestModifiModel> model) {
         List<RequestModifiDto> requestModifiDtoList = new ArrayList<>();
         for (RequestModifiModel requestModifiModel : model) {
             RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(requestModifiModel);
@@ -110,8 +108,6 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
                 }
                 requestModifiEntity.setFiles(files.toString());
             }
-            // there is no dto of the history request, so leave it null for now
-            requestModifiEntity.setHistoryRequestEntities(null);
             requestModifiDtoList.add(RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity)));
         }
         return requestModifiDtoList;
@@ -138,8 +134,6 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
             }
             requestModifiEntity.setFiles(files.toString());
         }
-        // there is no dto of the history request, so leave it null for now
-        requestModifiEntity.setHistoryRequestEntities(null);
         return RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity));
     }
 
