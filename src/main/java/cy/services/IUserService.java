@@ -27,7 +27,6 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
     boolean changePassword(String password);
 
     boolean setPassword(PasswordModel model);
-    boolean changeMyAvatar(MultipartFile file);
 
     List<RequestSendMeDto> getAllRequestSendMe(Long id, Pageable pageable);
 
