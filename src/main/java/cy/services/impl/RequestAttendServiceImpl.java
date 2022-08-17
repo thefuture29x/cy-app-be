@@ -1,17 +1,13 @@
 package cy.services.impl;
 
-import cy.dtos.*;
-
-import cy.entities.HistoryRequestEntity;
-import cy.entities.UserEntity;
-import cy.models.CreateUpdateRequestAttend;
-import cy.entities.RequestAttendEntity;
-import cy.models.CreateUpdateRequestAttend;
-
+import cy.dtos.NotificationDto;
 import cy.entities.*;
 import cy.models.CreateUpdateRequestAttend;
+import cy.dtos.CustomHandleException;
+import cy.dtos.RequestAttendDto;
+import cy.dtos.UserDto;
+
 import cy.entities.UserEntity;
-import cy.models.CreateUpdateRequestAttend;
 import cy.models.NotificationModel;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
@@ -31,8 +27,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @org.springframework.transaction.annotation.Transactional
@@ -40,16 +39,17 @@ import java.util.*;
 public class RequestAttendServiceImpl implements IRequestAttendService {
     @Autowired
     private FileUploadProvider fileUploadProvider;
-
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
     @Autowired
     private IUserRepository userRepository;
 
     @Autowired
-    private IRequestAttendRepository requestAttendRepository;
+    private INotificationRepository notificationRepository;
 
     @Autowired
+    private IRequestAttendRepository requestAttendRepository;
 
-    private INotificationRepository notificationRepository;
     @Autowired
 
     private INotificationService notificationService;
@@ -92,7 +92,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendEntity getById(Long id) {
-        return this.requestAttendRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
+        return this.requestAttendRepository.findById(id).orElseThrow(()->new CustomHandleException(44));
     }
 
     @Override
@@ -267,6 +267,31 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         historyRequest.setStatus(model.getStatus());
         historyRequest.setRequestAttend(entity);
         return entity;
+    }
+
+    @Transactional
+    @Override
+    public RequestAttendDto changeRequestStatus(Long id,String reasonCancel, boolean status) {
+        RequestAttendEntity oldRequest = this.getById(id);
+        if(oldRequest.getStatus()!=0){
+            return RequestAttendDto.builder().reasonCancel("1").build();
+        }
+        if(SecurityUtils.getCurrentUser().getUser().getRoleEntity() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
+            return RequestAttendDto.builder().reasonCancel("2").build();
+        }
+        if(status){
+            oldRequest.setStatus(1);
+            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+            this.notificationRepository.saveAndFlush(notificationEntity);
+            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        }
+        oldRequest.setStatus(2);
+        oldRequest.setReasonCancel(reasonCancel);
+        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+        NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+        this.notificationRepository.saveAndFlush(notificationEntity);
+        return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
     }
 
     @Override

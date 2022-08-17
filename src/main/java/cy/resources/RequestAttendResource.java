@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "request_attend")
 @RestController
@@ -60,13 +61,23 @@ public class RequestAttendResource {
         Page<RequestAttendDto> result = this.requestAttendService.findByUserId(id, pageable);
         return ResponseDto.of(result);
     }
+    @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @PostMapping(value = "/change-status")
+    public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
+        RequestAttendDto requestAttendDto = this.requestAttendService.changeRequestStatus(id,reasonCancel,status);
+        if(requestAttendDto.getReasonCancel().equals("1"))
+            throw new CustomHandleException(42);
+        else if (requestAttendDto.getReasonCancel().equals("2")) {
+            throw new CustomHandleException(43);
+        } else if (requestAttendDto.getId()!=null) {
+            return ResponseDto.of(requestAttendDto);
+        }else
+            throw new CustomHandleException(41);
+    }
 
-    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity
-            .MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping(value = "/check_request_not_exist")
     public ResponseDto checkRequestExist(@RequestParam String day) {
         boolean result = this.requestAttendService.checkRequestAttendNotExist(day);
         return ResponseDto.of(result);
     }
-
 }

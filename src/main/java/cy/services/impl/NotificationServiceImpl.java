@@ -34,7 +34,7 @@ public class NotificationServiceImpl implements INotificationService {
     @Autowired
     private IRequestDeviceService requestDeviceService;
     @Autowired
-    private IResquestModifiService requestModifiService;
+    private IRequestModifiService requestModifiService;
     @Autowired
     private IRequestOTService requestOvertimeService;
 
