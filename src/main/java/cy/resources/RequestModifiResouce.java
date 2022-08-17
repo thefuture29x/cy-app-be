@@ -150,6 +150,9 @@ public class RequestModifiResouce {
     @Operation(summary = "Get all request modifi with Pageable")
     @PostMapping("/checkAttend")
     public ResponseDto checkAttend(@RequestBody RequestAll requestAll ){
+        if (requestAll.getIdUser() == null || requestAll.getDateCheckAttend() == null){
+            return ResponseDto.of(165,requestAll);
+        }
         RequestAttendDto requestAttendDto = iResquestModifiService.checkAttend(requestAll.getDateCheckAttend(),requestAll.getIdUser());
         if (requestAttendDto == null){
             return ResponseDto.of(165,requestAttendDto);
