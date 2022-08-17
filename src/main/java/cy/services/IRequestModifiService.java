@@ -8,7 +8,7 @@ import cy.models.RequestModifiModel;
 
 import java.util.Date;
 
-public interface IResquestModifiService extends IBaseService<RequestModifiEntity, RequestModifiDto, RequestModifiModel,Long>{
+public interface IRequestModifiService extends IBaseService<RequestModifiEntity, RequestModifiDto, RequestModifiModel,Long>{
 
     RequestModifiDto sendResquestModifi(RequestModifiModel requestModifiModel);
     RequestAttendDto checkAttend(Date date,Long idUser);

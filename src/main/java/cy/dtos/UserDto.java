@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.catalina.User;
 
 
 import java.util.Date;
@@ -30,6 +31,7 @@ public class UserDto {
     private Date createdDate;
     private Date updatedDate;
     private List<RoleDto> roles;
+    private UserDto manager;
 
     public static UserDto toDto(UserEntity userEntity) {
         if (userEntity == null) return null;
@@ -52,6 +54,7 @@ public class UserDto {
                                 .roleName(r.getRoleName())
                                 .build())
                         .collect(Collectors.toList()))
+                .manager(UserDto.toDto(userEntity.getManager()))
                 .build();
     }
 }

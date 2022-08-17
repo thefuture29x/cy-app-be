@@ -2,9 +2,13 @@ package cy.services.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestDeviceDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestDeviceEntity;
 import cy.entities.UserEntity;
 import cy.models.RequestDeviceModel;
+import cy.repositories.IHistoryRequestRepository;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestDeviceRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestDeviceService;
@@ -18,7 +22,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +42,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     @Autowired
     IUserRepository userRepository;
 
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
+
+    @Autowired
+    INotificationRepository notificationRepository;
     @Override
     public List<RequestDeviceDto> findAll() {
         return iRequestDeviceRepository.findAll().stream().map(data -> RequestDeviceDto.entityToDto(data)).collect(Collectors.toList());
@@ -89,6 +104,23 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         RequestDeviceDto requestDeviceDto = RequestDeviceDto.entityToDto(requestDeviceEntity);
+
+        // Add notification for user created device request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Gửi yêu cầu mượn/thuê thiết bị thành công!");
+        notificationEntity.setContent("Bạn đã gửi yêu cầu mượn/thuê thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setRequestDevice(requestDeviceEntity);
+        notificationRepository.save(notificationEntity);
+
+        // Save history for this request
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalTime nowTime = LocalTime.now(ZoneId.of("Asia/Saigon"));
+        HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
+        historyRequestEntity.setDateHistory(new Date());
+        historyRequestEntity.setTimeHistory(nowTime.format(dtf));
+        historyRequestEntity.setStatus(0); // waiting for approve
+        historyRequestEntity.setRequestDevice(requestDeviceEntity);
+        historyRequestRepository.save(historyRequestEntity);
         return requestDeviceDto;
     }
 
