@@ -1,6 +1,8 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
+import cy.dtos.CustomHandleException;
+import cy.dtos.RequestOTDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
 import cy.models.RequestOTModel;
@@ -11,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API+"request_ot/")
@@ -28,14 +31,14 @@ public class RequestOTResource {
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Create new request OT")
     @PostMapping
-    public ResponseDto addRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
+    public ResponseDto addRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.add(requestOTModel));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Update request OT")
     @PutMapping
-    public ResponseDto updateRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
+    public ResponseDto updateRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.update(requestOTModel));
     }
 
@@ -51,5 +54,19 @@ public class RequestOTResource {
     @GetMapping("find-by-id")
     public ResponseDto findRequestOT(Long id){
         return ResponseDto.of(requestOTService.findById(id));
+    }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @Operation(summary = "Accept or cancel request OT")
+    @PostMapping("response-request-ot")
+    public ResponseDto responseRequestOT(@Valid Long id, String reasonCancel,@Valid Boolean status){
+        RequestOTDto requestOTDto = requestOTService.responseOtRequest(id, reasonCancel, status);
+        if (requestOTDto != null && requestOTDto.getReasonCancel() != null && !requestOTDto.getReasonCancel().isEmpty()) {
+            if (requestOTDto.getReasonCancel().equals("112"))
+                throw new CustomHandleException(112);
+            if (requestOTDto.getReasonCancel().equals("113"))
+                throw new CustomHandleException(113);
+        }
+        return ResponseDto.of(requestOTDto);
     }
 }
