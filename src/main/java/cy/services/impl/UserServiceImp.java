@@ -4,13 +4,14 @@ import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtProvider;
 import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.CustomHandleException;
+import cy.dtos.RequestModifiDto;
+import cy.dtos.RequestSendMeDto;
 import cy.dtos.UserDto;
-import cy.entities.RoleEntity;
-import cy.entities.UserEntity;
+import cy.entities.*;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
-import cy.repositories.IRoleRepository;
-import cy.repositories.IUserRepository;
+import cy.models.UserProfileModel;
+import cy.repositories.*;
 import cy.services.CustomUserDetail;
 import cy.services.IUserService;
 import cy.services.MailService;
@@ -18,6 +19,7 @@ import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -54,13 +58,22 @@ public class UserServiceImp implements IUserService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final FileUploadProvider fileUploadProvider;
 
+    @Autowired
+    IRequestModifiRepository iRequestModifiRepository;
+    @Autowired
+    IRequestDayOffRepository iRequestDayOffRepository;
+    @Autowired
+    IRequestDeviceRepository iRequestDeviceRepository;
+    @Autowired
+    IRequestOTRepository iRequestOTRepository;
+
+
     public UserServiceImp(IUserRepository userRepository,
                           IRoleRepository roleRepository,
                           JwtProvider jwtProvider,
                           AuthenticationManager authenticationManager,
                           PasswordEncoder passwordEncoder,
-                          MailService mailService,
-                          FileUploadProvider fileUploadProvider) {
+                          MailService mailService, FileUploadProvider fileUploadProvider) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.jwtProvider = jwtProvider;
@@ -73,7 +86,7 @@ public class UserServiceImp implements IUserService {
         // create default roles
         try {
             // for insert default roles
-            if (this.roleRepository.findAllByRoleIdIn(List.of(1L, 2L, 3L, 4L, 5L)).size() < 5) {
+            if (this.roleRepository.findAllByRoleIdIn(List.of(1l, 2l, 3l, 4l, 5l)).size() < 5) {
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(1L).roleName(RoleEntity.ADMINISTRATOR).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(2L).roleName(RoleEntity.ADMIN).build());
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(3L).roleName(RoleEntity.MANAGER).build());
@@ -81,14 +94,16 @@ public class UserServiceImp implements IUserService {
                 this.roleRepository.saveAndFlush(RoleEntity.builder().roleId(5L).roleName(RoleEntity.LEADER).build());
             }
         } catch (Exception e) {
+            System.out.println(e);
             e.printStackTrace();
         }
+
 
         try {
             // for insert default admin
             if (!this.userRepository.findById(1L).isPresent()) {
                 UserEntity administrator = UserEntity.builder()
-                        .userId(1L)
+                        .userId(1l)
                         .fullName("administrator")
                         .status(true)
                         .userName("administrator")
@@ -104,6 +119,7 @@ public class UserServiceImp implements IUserService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println(e);
         }
 
     }
@@ -115,13 +131,11 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public Page<UserDto> findAll(Pageable page) {
-        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(page).map(UserDto::toDto);
     }
 
     @Override
     public List<UserDto> findAll(Specification<UserEntity> specs) {
-        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(specs).stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
@@ -132,7 +146,7 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto findById(Long id) {
-        logger.info("{} is finding users id: {}", SecurityUtils.getCurrentUsername(), id);
+        logger.info("{} finding user id: {%d}", SecurityUtils.getCurrentUsername(), id);
         return UserDto.toDto(this.getById(id));
     }
 
@@ -143,7 +157,6 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto add(UserModel model) {
-        logger.info("{} is adding user", SecurityUtils.getCurrentUsername());
         // check user has existed with email
         UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
         if (checkUser != null)
@@ -161,6 +174,10 @@ public class UserServiceImp implements IUserService {
                 throw new CustomHandleException(14);
         }
 
+        if (model.getPassword() == null || model.getPassword().isEmpty()) {
+            throw new CustomHandleException(16);
+        }
+
 
         UserEntity userEntity = UserModel.toEntity(model);
         if (model.getManager() != null) {
@@ -170,7 +187,9 @@ public class UserServiceImp implements IUserService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        } else
+            userEntity.setManager(this.getById(1L));
+
         userEntity.setStatus(true);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.setRoles(userEntity, model.getRoles());
@@ -184,23 +203,13 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto update(UserModel model) {
+        if (model.getId().equals(1L))
+            throw new CustomHandleException(19);
         logger.info("{} is updating user id: {}", SecurityUtils.getCurrentUsername(), model.getId());
 
         UserEntity original = this.getById(model.getId());
 
-        // check user has existed if user update their email
-        if (!model.getEmail().equals(original.getEmail())) {
-            UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
-            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
-                throw new CustomHandleException(12);
-        }
-
-        // check user has existed if user update their phone
-        if (!model.getPhone().equals(original.getPhone())) {
-            UserEntity checkUser = this.userRepository.findByPhone(model.getPhone());
-            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
-                throw new CustomHandleException(14);
-        }
+        this.checkUserInfoDuplicate(original, model.getEmail(), model.getPhone());
 
         if (model.getManager() != null) {
             try {
@@ -211,6 +220,12 @@ public class UserServiceImp implements IUserService {
             }
         }
 
+        if (model.getPassword() != null) {
+            if (model.getPassword().isEmpty())
+                throw new CustomHandleException(17);
+            else
+                original.setPassword(this.passwordEncoder.encode(model.getPassword()));
+        }
         original.setEmail(model.getEmail());
         original.setBirthDate(model.getBirthDate());
         original.setFullName(model.getFullName());
@@ -229,24 +244,31 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public boolean deleteById(Long id) {
+        if (id.equals(1L))
+            throw new CustomHandleException(18);
         logger.info("{} is deleting user id: {}", SecurityUtils.getCurrentUsername(), id);
         UserEntity userEntity = this.getById(id);
         userEntity.setStatus(false);
-        this.userRepository.saveAndFlush(userEntity);
-        return true;
+        return this.userRepository.saveAndFlush(userEntity) != null;
     }
 
     @Override
     public boolean deleteByIds(List<Long> ids) {
-        return false;
+        ids.forEach(id -> this.deleteById(id));
+        return true;
     }
 
     @Override
     public JwtLoginResponse logIn(JwtUserLoginModel userLogin) {
         UserEntity user = this.findByUsername(userLogin.getUsername());
         UserDetails userDetail = new CustomUserDetail(user);
-        this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetail, userLogin.getPassword(), userDetail.getAuthorities()));
-        long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800L;
+        try {
+            this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetail, userLogin.getPassword(), userDetail.getAuthorities()));
+        } catch (Exception e) {
+            throw e;
+        }
+
+        long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800l;
         return JwtLoginResponse.builder()
                 .token(this.jwtProvider.generateToken(userDetail.getUsername(), timeValid))
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
@@ -276,10 +298,31 @@ public class UserServiceImp implements IUserService {
     }
 
     @Override
-    public boolean setPassword(PasswordModel model) {
-        logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
-        UserEntity userEntity = this.getById(model.getUserId());
-        userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
+    public boolean changeMyAvatar(MultipartFile file) {
+        logger.info("{} is updating avatar", SecurityUtils.getCurrentUsername());
+
+        UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
+        try {
+            String folder = "users" + userEntity.getUserName() + "/";
+            userEntity.setAvatar(this.fileUploadProvider.uploadFile(folder, file));
+        } catch (IOException e) {
+            throw new CustomHandleException(15);
+        }
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+
+    @Override
+    public boolean updateMyProfile(UserProfileModel model) {
+        UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
+        this.checkUserInfoDuplicate(userEntity, model.getEmail(), model.getPhone());
+        userEntity.setFullName(model.getFullName());
+        userEntity.setBirthDate(model.getBirthDate());
+        userEntity.setSex(model.getSex());
+        userEntity.setAddress(model.getAddress());
+        userEntity.setPhone(model.getPhone());
+        userEntity.setEmail(model.getEmail());
         this.userRepository.saveAndFlush(userEntity);
         return true;
     }
@@ -294,17 +337,165 @@ public class UserServiceImp implements IUserService {
     }
 
     @Override
-    public boolean changeMyAvatar(MultipartFile file) {
-        logger.info("{} is updating avatar", SecurityUtils.getCurrentUsername());
-
-        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        try {
-            String folder = "users" + userEntity.getUserName() + "/";
-            userEntity.setAvatar(this.fileUploadProvider.uploadFile(folder, file));
-        } catch (IOException e) {
-            throw new CustomHandleException(15);
-        }
+    public boolean setPassword(PasswordModel model) {
+        logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
+        UserEntity userEntity = this.getById(model.getUserId());
+        userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.userRepository.saveAndFlush(userEntity);
         return true;
+    }
+
+    @Override
+    public boolean changeStatus(Long id) {
+        logger.info("{} is changing status", SecurityUtils.getCurrentUsername());
+        UserEntity userEntity = this.getById(id);
+        userEntity.setStatus(!userEntity.getStatus());
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+    private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
+        // check user has existed if user update their email
+        if (email != null)
+            if (!email.equals(userEntity.getEmail())) {
+                UserEntity checkUser = this.userRepository.findByEmail(phone);
+                if (checkUser != null && !checkUser.getUserId().equals(userEntity.getUserId()))
+                    throw new CustomHandleException(12);
+            }
+
+        // check user has existed if user update their phone
+        if (phone != null)
+            if (!phone.equals(userEntity.getPhone())) {
+                UserEntity checkUser = this.userRepository.findByPhone(phone);
+                if (checkUser != null && !checkUser.getUserId().equals(userEntity.getUserId()))
+                    throw new CustomHandleException(14);
+            }
+
+    }
+    @Override
+    public List<RequestSendMeDto> getAllRequestSendMe(Long id,Pageable pageable) {
+        LocalDate date = LocalDate.now();
+        String startTime = date.toString().concat(" 00:00:00");
+        String endTime = date.toString().concat(" 23:59:59");
+        List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
+        // Get all request modifi send to leader on this day
+        for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("Modifi")
+                    .build());
+        }
+        // Get all request day off send to leader on this day
+        for (RequestDayOffEntity entity: iRequestDayOffRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(null)
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("DayOff")
+                    .build());
+        }
+
+        // Get all request device send to leader on this day
+        for (RequestDeviceEntity entity: iRequestDeviceRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("Device")
+                    .build());
+        }
+
+        // Get all request OT send to leader on this day
+        for (RequestOTEntity entity: iRequestOTRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("OT")
+                    .build());
+        }
+
+
+        return requestSendMeDtoList;
+    }
+
+    @Override
+    public List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable) {
+        List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
+        // Get all request modifi create by me
+        for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("Modifi")
+                    .build());
+        }
+        // Get all request day off create by me
+        for (RequestDayOffEntity entity: iRequestDayOffRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(null)
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("DayOff")
+                    .build());
+        }
+
+        // Get all request device create by me
+        for (RequestDeviceEntity entity: iRequestDeviceRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("Device")
+                    .build());
+        }
+
+        // Get all request OT create by me
+        for (RequestOTEntity entity: iRequestOTRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .status(entity.getStatus())
+                    .description(entity.getDescription())
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("OT")
+                    .build());
+        }
+
+
+        return requestSendMeDtoList;
     }
 }

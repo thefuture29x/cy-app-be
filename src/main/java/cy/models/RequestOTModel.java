@@ -7,8 +7,12 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.sql.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -19,14 +23,23 @@ public class RequestOTModel {
     @ApiModelProperty(notes = "Request OT ID", dataType = "Long", example = "1")
     private Long id;
     @ApiModelProperty(notes = "Time start OT", dataType = "String", example = "17:00")
+    @NotNull
+    @NotEmpty
+    @NotBlank
     private String timeStart;
     @ApiModelProperty(notes = "Time end OT", dataType = "String", example = "18:00")
+    @NotNull
+    @NotEmpty
+    @NotBlank
     private String timeEnd;
     @ApiModelProperty(notes = "The date OT", dataType = "Date", example = "2022-08-16")
     @JsonSerialize(as = Date.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    @NotNull
+    @NotEmpty
+    @NotBlank
     private Date dateOT;
-    @ApiModelProperty(notes = "Request status", dataType = "Int", example = "2022-08-16")
+    @ApiModelProperty(notes = "Request status", dataType = "Int", example = "1")
     private Integer status;
     @ApiModelProperty(notes = "Reason denied OT", dataType = "String")
     private String reasonCancel;
@@ -35,8 +48,10 @@ public class RequestOTModel {
     @ApiModelProperty(notes = "Attached files")
     private MultipartFile files;
     @ApiModelProperty(notes = "Id user created", dataType = "Long", example = "1")
+    @NotNull
     private Long createBy;
     @ApiModelProperty(notes = "Id user assign to", dataType = "Long", example = "2")
+    @NotNull
     private Long assignTo;
     @ApiModelProperty(notes = "History request")
     private List<HistoryRequestModel> historyRequestModelList;
@@ -50,8 +65,8 @@ public class RequestOTModel {
                 .status(requestOTModel.getStatus())
                 .reasonCancel(requestOTModel.getReasonCancel())
                 .description(requestOTModel.getDescription())
-                .files(requestOTModel.getFiles().getOriginalFilename())
                 .id(requestOTModel.getId())
+                .historyRequestEntities(requestOTModel.getHistoryRequestModelList() != null ? requestOTModel.getHistoryRequestModelList().stream().map(data -> HistoryRequestModel.toEntity(data)).collect(Collectors.toList()) : null)
                 .build();
     }
 }

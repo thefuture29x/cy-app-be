@@ -56,8 +56,7 @@ public class BeanConfiguration {
 
     @Bean
     public Executor taskExecutor() {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(500, 5000, 300l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-        return executor;
+        return new ThreadPoolExecutor(500, 5000, 300l, TimeUnit.SECONDS, new LinkedBlockingQueue<  Runnable>());
     }
 
     //Template resolver's resource bean configurer
