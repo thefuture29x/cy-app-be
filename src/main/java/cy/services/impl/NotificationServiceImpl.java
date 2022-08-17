@@ -144,4 +144,10 @@ public class NotificationServiceImpl implements INotificationService {
     public boolean deleteByIds(List<Long> ids) {
         return false;
     }
+
+    @Override
+    public Page<NotificationDto> findAllByUserId(Pageable pageable) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        return this.notificationRepository.findAllByUserId(userId, pageable).map(NotificationDto::toDto);
+    }
 }
