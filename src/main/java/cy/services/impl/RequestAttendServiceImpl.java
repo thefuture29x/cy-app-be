@@ -86,7 +86,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto add(RequestAttendModel model) {
         RequestAttendEntity requestAttendEntity = this.modelToEntity(model);
-        RequestAttendEntity resultAttendEntity = this.requestAttendRepository.save(requestAttendEntity);
 
         // Today can't timekeeping for next day
         if(requestAttendEntity.getDateRequestAttend().after(new Date())){
@@ -94,10 +93,10 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         }
 
         // check request attend follow day and user not exist ???
-
         String day = new SimpleDateFormat("yyyy-MM-dd").format(model.getDateRequestAttend());
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
+
         // cho tao moi neu khong co request attend nao hoac co request nhung da bi reject
         if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
 
