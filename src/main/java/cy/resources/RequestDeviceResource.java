@@ -80,7 +80,7 @@ public class RequestDeviceResource {
     **/
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping("/getOne/{id}")
-    public Object findAll(@PathVariable(value = "id") Long id){
+    public Object getPOne(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.findById(id));
     }
 }
