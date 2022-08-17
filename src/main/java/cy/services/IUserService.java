@@ -23,4 +23,7 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     boolean changeLockStatus(Long userId);
 
+    boolean changeMyAvatar(MultipartFile file);
+
+    boolean updateMyProfile(UserProfileModel model);
 }

@@ -8,6 +8,7 @@ import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.UserEntity;
 import cy.models.UserModel;
+import cy.models.UserProfileModel;
 import cy.repositories.IRoleRepository;
 import cy.repositories.IUserRepository;
 import cy.services.CustomUserDetail;
@@ -159,6 +160,10 @@ public class UserServiceImp implements IUserService {
                 throw new CustomHandleException(14);
         }
 
+        if (model.getPassword() == null || model.getPassword().isEmpty()) {
+            throw new CustomHandleException(16);
+        }
+
 
         UserEntity userEntity = UserModel.toEntity(model);
         if (model.getManager() != null) {
@@ -186,19 +191,7 @@ public class UserServiceImp implements IUserService {
 
         UserEntity original = this.getById(model.getId());
 
-        // check user has existed if user update their email
-        if (!model.getEmail().equals(original.getEmail())) {
-            UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
-            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
-                throw new CustomHandleException(12);
-        }
-
-        // check user has existed if user update their phone
-        if (!model.getPhone().equals(original.getPhone())) {
-            UserEntity checkUser = this.userRepository.findByPhone(model.getPhone());
-            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
-                throw new CustomHandleException(14);
-        }
+        this.checkUserInfoDuplicate(original, model.getEmail(), model.getPhone());
 
         if (model.getManager() != null) {
             try {
@@ -209,6 +202,12 @@ public class UserServiceImp implements IUserService {
             }
         }
 
+        if (model.getPassword() != null) {
+            if (model.getPassword().isEmpty())
+                throw new CustomHandleException(17);
+            else
+                original.setPassword(this.passwordEncoder.encode(model.getPassword()));
+        }
         original.setEmail(model.getEmail());
         original.setBirthDate(model.getBirthDate());
         original.setFullName(model.getFullName());
@@ -298,8 +297,47 @@ public class UserServiceImp implements IUserService {
         return false;
     }
 
+        UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
+        try {
+            String folder = "users" + userEntity.getUserName() + "/";
+            userEntity.setAvatar(this.fileUploadProvider.uploadFile(folder, file));
+        } catch (IOException e) {
+            throw new CustomHandleException(15);
+        }
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
     @Override
-    public boolean changeLockStatus(Long userId) {
-        return false;
+    public boolean updateMyProfile(UserProfileModel model) {
+        UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
+        this.checkUserInfoDuplicate(userEntity, model.getEmail(), model.getPhone());
+        userEntity.setFullName(model.getFullName());
+        userEntity.setBirthDate(model.getBirthDate());
+        userEntity.setSex(model.getSex());
+        userEntity.setAddress(model.getAddress());
+        userEntity.setPhone(model.getPhone());
+        userEntity.setEmail(model.getEmail());
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+    private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
+        // check user has existed if user update their email
+        if (email != null)
+            if (!email.equals(userEntity.getEmail())) {
+                UserEntity checkUser = this.userRepository.findByEmail(phone);
+                if (checkUser != null && !checkUser.getUserId().equals(userEntity.getUserId()))
+                    throw new CustomHandleException(12);
+            }
+
+        // check user has existed if user update their phone
+        if (phone != null)
+            if (!phone.equals(userEntity.getPhone())) {
+                UserEntity checkUser = this.userRepository.findByPhone(phone);
+                if (checkUser != null && !checkUser.getUserId().equals(userEntity.getUserId()))
+                    throw new CustomHandleException(14);
+            }
+
     }
 }
