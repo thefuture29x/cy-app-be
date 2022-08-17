@@ -11,8 +11,7 @@ import cy.entities.*;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
-import cy.repositories.IRoleRepository;
-import cy.repositories.IUserRepository;
+import cy.repositories.*;
 import cy.services.CustomUserDetail;
 import cy.services.IUserService;
 import cy.services.MailService;
@@ -342,33 +341,6 @@ public class UserServiceImp implements IUserService {
         logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
         UserEntity userEntity = this.getById(model.getUserId());
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
-        this.userRepository.saveAndFlush(userEntity);
-        return true;
-    }
-    public boolean changeMyAvatar(MultipartFile file) {
-        logger.info("{} is updating avatar", SecurityUtils.getCurrentUsername());
-
-        UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
-        try {
-            String folder = "users" + userEntity.getUserName() + "/";
-            userEntity.setAvatar(this.fileUploadProvider.uploadFile(folder, file));
-        } catch (IOException e) {
-            throw new CustomHandleException(15);
-        }
-        this.userRepository.saveAndFlush(userEntity);
-        return true;
-    }
-
-    @Override
-    public boolean updateMyProfile(UserProfileModel model) {
-        UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
-        this.checkUserInfoDuplicate(userEntity, model.getEmail(), model.getPhone());
-        userEntity.setFullName(model.getFullName());
-        userEntity.setBirthDate(model.getBirthDate());
-        userEntity.setSex(model.getSex());
-        userEntity.setAddress(model.getAddress());
-        userEntity.setPhone(model.getPhone());
-        userEntity.setEmail(model.getEmail());
         this.userRepository.saveAndFlush(userEntity);
         return true;
     }
