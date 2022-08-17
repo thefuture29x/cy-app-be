@@ -1,16 +1,15 @@
 package cy.services.impl;
 
-import cy.dtos.HistoryRequestDto;
-import cy.entities.HistoryRequestEntity;
-import cy.entities.UserEntity;
-import cy.models.CreateUpdateRequestAttend;
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.UserDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestAttendEntity;
+import cy.entities.UserEntity;
 import cy.models.CreateUpdateRequestAttend;
 import cy.models.RequestAttendModel;
-import cy.repositories.IHistoryRequestRepository;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestAttendService;
@@ -24,7 +23,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -40,6 +38,8 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Autowired
     private IRequestAttendRepository requestAttendRepository;
 
+    @Autowired
+    private INotificationRepository notificationRepository;
     @Override
     public List<RequestAttendDto> findAll() {
         return null;
@@ -74,6 +74,13 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     public RequestAttendDto add(RequestAttendModel model) {
         RequestAttendEntity requestAttendEntity = this.modelToEntity(model);
         RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
+        // Add notification for user request day off
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Chấm công thành công!");
+        notificationEntity.setContent("Bạn đã chấm công thành công.");
+        notificationEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
+        notificationEntity.setRequestAttendEntityId(requestAttendEntity);
+        this.notificationRepository.save(notificationEntity);
         return RequestAttendDto.entityToDto(result);
     }
 
@@ -93,10 +100,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public boolean deleteById(Long id) {
         this.requestAttendRepository.deleteById(id);
-        if(this.requestAttendRepository.findById(id).isEmpty()){
-            return true;
-        }
-        return false;
+        return this.requestAttendRepository.findById(id).isEmpty();
     }
 
     @Override
@@ -104,10 +108,10 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         return false;
     }
 
-    public RequestAttendModel requestToModel(CreateUpdateRequestAttend request, int type){
+    public RequestAttendModel requestToModel(CreateUpdateRequestAttend request, int type) {
         // Check if user already have request attend in this date
         RequestAttendEntity checkRequest = requestAttendRepository.userAlreadyRequest(SecurityUtils.getCurrentUserId(), request.getDateRequestAttend());
-        if(checkRequest != null){
+        if (checkRequest != null) {
             throw new CustomHandleException(37);
         }
 
@@ -115,26 +119,26 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         String reasonCancel = "";
         List<String> fileS3Urls = new ArrayList<>();
         RequestAttendEntity requestAttendEntity = new RequestAttendEntity();
-        if(type == 2){
+        if (type == 2) {
             // Update request, must have id
-            if(request.getId() == null){
+            if (request.getId() == null) {
                 throw new CustomHandleException(34);
             }
 
             // Request attend must exist
             Optional<RequestAttendEntity> findRequestAttend = this.requestAttendRepository.findById(request.getId());
-            if(findRequestAttend.isEmpty()){
+            if (findRequestAttend.isEmpty()) {
                 throw new CustomHandleException(35);
-            }else {
+            } else {
                 requestAttendEntity = findRequestAttend.get();
                 List<Object> objFiles = new JSONObject(requestAttendEntity.getFiles()).getJSONArray("files").toList();
-                for(Object objFile : objFiles){
+                for (Object objFile : objFiles) {
                     fileS3Urls.add(objFile.toString());
                 }
                 // If user deleted files
-                if(request.getDeletedFilesNumber() != null){
-                    for(Integer deletedFileNumber : request.getDeletedFilesNumber()){
-                        if(deletedFileNumber > fileS3Urls.size()){
+                if (request.getDeletedFilesNumber() != null) {
+                    for (Integer deletedFileNumber : request.getDeletedFilesNumber()) {
+                        if (deletedFileNumber > fileS3Urls.size()) {
                             throw new CustomHandleException(32);
                         }
                         fileS3Urls.remove(deletedFileNumber);
@@ -146,12 +150,12 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             }
         }
         final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
-        if(request.getAttachedFiles() != null && request.getAttachedFiles().length > 0){ // Check if user has attached files
-            for(MultipartFile file : request.getAttachedFiles()){
-                try{
+        if (request.getAttachedFiles() != null && request.getAttachedFiles().length > 0) { // Check if user has attached files
+            for (MultipartFile file : request.getAttachedFiles()) {
+                try {
                     String s3Url = fileUploadProvider.uploadFile(folderName, file);
                     fileS3Urls.add(s3Url);
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     ex.printStackTrace();
                     fileS3Urls.add("Error code: 31");
                     throw new CustomHandleException(31);
@@ -161,7 +165,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         // Check if assigned user id exist
         Optional<UserEntity> userAssigned = userRepository.findById(request.getAssignUserId());
-        if(userAssigned.isEmpty()){
+        if (userAssigned.isEmpty()) {
             throw new CustomHandleException(33);
         }
 
@@ -178,7 +182,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 .build();
     }
 
-    private RequestAttendEntity modelToEntity(RequestAttendModel model){
+    private RequestAttendEntity modelToEntity(RequestAttendModel model) {
         RequestAttendEntity entity = new RequestAttendEntity();
         entity.setTimeCheckIn(model.getTimeCheckIn());
         entity.setTimeCheckOut(model.getTimeCheckOut());
@@ -193,7 +197,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         entity.setAssignTo(userRepository.findById(model.getAssignedTo().getId()).get());
         HistoryRequestEntity historyRequest = new HistoryRequestEntity();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         historyRequest.setDateHistory(new Date());
         historyRequest.setTimeHistory(LocalTime.now().toString());
         historyRequest.setStatus(model.getStatus());
