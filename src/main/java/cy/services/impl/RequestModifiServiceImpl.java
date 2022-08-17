@@ -233,6 +233,6 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         if (requestAttendEntity == null){
             return null;
         }
-        return RequestAttendDto.entityToDto(requestAttendEntity);
+        return /*RequestAttendDto.entityToDto(requestAttendEntity);*/null;
     }
 }
