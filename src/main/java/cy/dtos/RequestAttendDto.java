@@ -32,6 +32,21 @@ public class RequestAttendDto {
     private List<HistoryRequestDto> historyRequests;
     private NotificationDto notification;
 
+    public RequestAttendDto(RequestAttendEntity requestAttendEntity) {
+    }
+
+    public RequestAttendDto(Long id, String timeCheckIn, String timeCheckOut, Date dateRequestAttend, Integer status, String reasonCancel, List<String> files, UserDto createdBy, UserDto assignedTo) {
+        this.id = id;
+        this.timeCheckIn = timeCheckIn;
+        this.timeCheckOut = timeCheckOut;
+        this.dateRequestAttend = dateRequestAttend;
+        this.status = status;
+        this.reasonCancel = reasonCancel;
+        this.files = files;
+        this.createdBy = createdBy;
+        this.assignedTo = assignedTo;
+    }
+
     public static RequestAttendDto entityToDto(RequestAttendEntity entity, NotificationDto notificationDto){
         List<Object> s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
         List<String> s3Urls = new ArrayList<>();
