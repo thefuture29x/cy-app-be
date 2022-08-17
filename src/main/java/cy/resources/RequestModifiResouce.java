@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API+"request_modifi/")
-public class RequesModifiResouce {
+public class RequestModifiResouce {
     @Autowired
     IResquestModifiService iResquestModifiService;
 
@@ -27,7 +27,7 @@ public class RequesModifiResouce {
     * @description-VN:  Lấy danh sách tất cả yêu cầu chỉnh sửa
     * @description-EN:  Get all request modifi
     * @param: pageable
-    * @return: 
+    * @return:
     *
     * */
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
@@ -43,10 +43,10 @@ public class RequesModifiResouce {
     * @description-VN:  Tạo mới một yêu cầu chỉnh sửa
     * @description-EN:  Add new request modifi
     * @param: RequestModifiModel
-    * @return: 
+    * @return:
     *
     * */
-    @RolesAllowed({RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Add new request modifi")
     @PostMapping
     public ResponseDto addRequestModifi(RequestModifiModel model) throws IOException {
@@ -59,7 +59,7 @@ public class RequesModifiResouce {
     * @description-VN:  Cập nhật yêu cầu chỉnh sửa chấm công
     * @description-EN:  Update request modifi
     * @param: RequestModifiModel
-    * @return: 
+    * @return:
     *
     * */
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
