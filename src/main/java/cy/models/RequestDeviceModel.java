@@ -33,26 +33,11 @@ public class RequestDeviceModel {
     private Date dateEnd;
     private Integer status;
     private String reasonCancel;
-    private MultipartFile files;
+    private MultipartFile[] files;
     private String description;
     private Long createBy;
     private Long assignTo;
-//    public static RequestDeviceModel entityToModel(RequestDeviceEntity obj) {
-//        return RequestDeviceModel.builder().id(obj.getId())
-//                .type(obj.getType())
-//                .quantity(obj.getQuantity())
-//                .dateRequestDevice(obj.getDateRequestDevice())
-//                .dateStart(obj.getDateStart())
-//                .dateEnd(obj.getDateEnd())
-//                .status(obj.getStatus())
-//                .reasonCancel(obj.getReasonCancel())
-//        /*        .files(obj.getFiles())*/
-//                .description(obj.getDescription())
-//                .createBy(obj.getCreateBy().getUserId())
-//                .assignTo(obj.getAssignTo().getUserId())
-//                .build();
-//
-//    }
+
     public RequestDeviceEntity modelToEntity(RequestDeviceModel model){
        RequestDeviceEntity requestDeviceEntity=new RequestDeviceEntity();
         requestDeviceEntity.setId(model.getId());

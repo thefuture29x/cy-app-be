@@ -19,11 +19,11 @@ public interface IBaseService<T, D, M, K> {
     D findById(K id);
     T getById(K id);
 
-    D add(M model) throws IOException;
+    D add(M model);
 
-    List<D> add(List<M> model) throws IOException;
+    List<D> add(List<M> model);
 
-    D update(M model) throws IOException;
+    D update(M model);
 
     boolean deleteById(K id);
 
