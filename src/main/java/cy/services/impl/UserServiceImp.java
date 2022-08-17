@@ -7,6 +7,7 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.UserEntity;
+import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
 import cy.repositories.IRoleRepository;
@@ -276,26 +277,9 @@ public class UserServiceImp implements IUserService {
         }
     }
 
-
     @Override
-    public boolean updateAvatar(MultipartFile avatar) {
-        if (avatar.isEmpty())
-            throw new RuntimeException("Ảnh đại diện đang để trống!");
-        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        if (userEntity.getAvatar() != null)
-            this.fileUploadProvider.deleteFile(userEntity.getAvatar());
-        try {
-            userEntity.setAvatar(this.fileUploadProvider.uploadFile(UserEntity.FOLDER + userEntity.getUserName() + "/", avatar));
-        } catch (IOException e) {
-            throw new RuntimeException("Tải ảnh đại diện lên thất bại!");
-        }
-        return this.userRepository.save(userEntity) != null;
-    }
-
-    @Override
-    public boolean changeStatus(Long userId) {
-        return false;
-    }
+    public boolean changeMyAvatar(MultipartFile file) {
+        logger.info("{} is updating avatar", SecurityUtils.getCurrentUsername());
 
         UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
         try {
@@ -308,6 +292,7 @@ public class UserServiceImp implements IUserService {
         return true;
     }
 
+
     @Override
     public boolean updateMyProfile(UserProfileModel model) {
         UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
@@ -318,6 +303,24 @@ public class UserServiceImp implements IUserService {
         userEntity.setAddress(model.getAddress());
         userEntity.setPhone(model.getPhone());
         userEntity.setEmail(model.getEmail());
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+    @Override
+    public boolean changePassword(String password) {
+        logger.info("{} is changing password", SecurityUtils.getCurrentUsername());
+        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        userEntity.setPassword(this.passwordEncoder.encode(password));
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+    @Override
+    public boolean setPassword(PasswordModel model) {
+        logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
+        UserEntity userEntity = this.getById(model.getUserId());
+        userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.userRepository.saveAndFlush(userEntity);
         return true;
     }
