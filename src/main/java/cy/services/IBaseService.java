@@ -21,7 +21,7 @@ public interface IBaseService<T, D, M, K> {
 
     D add(M model);
 
-    List<D> add(List<M> model) throws IOException;
+    List<D> add(List<M> model);
 
     D update(M model);
 
