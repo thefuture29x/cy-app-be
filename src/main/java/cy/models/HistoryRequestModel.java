@@ -2,6 +2,7 @@ package cy.models;
 
 import cy.entities.HistoryRequestEntity;
 
+import cy.entities.RequestModifiEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,9 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 
 @NoArgsConstructor
@@ -31,12 +34,18 @@ public class HistoryRequestModel {
     @NotNull
     private Integer status;
 
-    public static HistoryRequestEntity toEntity(HistoryRequestModel model) {
-        if (model == null) throw new RuntimeException("UserModel is null");
+    private RequestOTModel requestOTModel;
+    private RequestAttendModel requestAttendModel;
+    private RequestDeviceModel requestDeviceModel;
+    private RequestModifiModel requestModifiModel;
+    private RequestDayOffModel requestDayOffModel;
+
+    public static HistoryRequestEntity toEntity(HistoryRequestModel object ) {
+        if(object == null ) return null;
         return HistoryRequestEntity.builder()
-                .id(model.getId())
-                .status(model.getStatus())
-                .dateHistory(model.dateHistory)
+                .id(object.getId())
+                .dateHistory(object.getDateHistory())
+                .status(object.status)
                 .build();
     }
 }
