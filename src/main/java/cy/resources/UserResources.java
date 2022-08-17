@@ -117,15 +117,8 @@ public class UserResources {
     public ResponseDto changeMyAvatar(MultipartFile file) {
         return ResponseDto.of(this.userService.changeMyAvatar(file));
     }
-    private Long id;
-    private String timeStart;
-    private String timeEnd;
-    private Integer status;
-    private String reason;
-    private Long idUserCreate;
-    private String nameUserCreate;
 
-    @GetMapping("get_request_send_me")
+    @GetMapping("get_request_sent_to_me")
     public ResponseDto getAllRequestSendMe(Long id,Pageable pageable){
         return ResponseDto.of(this.userService.getAllRequestSendMe(id,pageable));
     }
