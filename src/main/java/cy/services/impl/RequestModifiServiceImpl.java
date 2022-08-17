@@ -8,6 +8,7 @@ import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestAttendEntity;
 import cy.entities.RequestModifiEntity;
 import cy.entities.UserEntity;
+import cy.models.HistoryRequestModel;
 import cy.models.RequestModifiModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.IRequestAttendRepository;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -173,12 +175,9 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
     public RequestModifiDto sendResquestModifi(RequestModifiModel requestModifiModel) {
 
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
-        historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
+        historyRequestEntity.setDateHistory(new Date());
         historyRequestEntity.setStatus(0);
-        if (requestModifiModel.getDateRequestModifi() != null){
-            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
-            historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
-        }
+        historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
 
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(requestModifiModel);
         if (requestModifiModel.getCreateBy() == null){
@@ -220,6 +219,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         if(requestModifiModel.getHistoryRequestModels() == null){
             requestModifiEntity.setHistoryRequestEntities(new ArrayList<>());
         };
+        requestModifiEntity.getHistoryRequestEntities().add(historyRequestEntity);
+        requestModifiEntity.setDateRequestModifi(new Date());
 
 
         iHistoryRequestRepository.save(historyRequestEntity);
