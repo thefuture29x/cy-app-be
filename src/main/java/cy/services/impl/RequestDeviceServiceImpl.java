@@ -141,4 +141,18 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     public boolean deleteByIds(List<Long> ids) {
         return false;
     }
+
+    public RequestDeviceDto updateStatusAccept(Long id) {
+        RequestDeviceEntity requestDeviceEntity = this.getById(id);
+        requestDeviceEntity.setStatus(1);
+        iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
+        return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+    }
+    public RequestDeviceDto updateStatusCancle(Long id,String reason) {
+        RequestDeviceEntity requestDeviceEntity = this.getById(id);
+        requestDeviceEntity.setStatus(2);
+        requestDeviceEntity.setReasonCancel(reason);
+        iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
+        return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+    }
 }
