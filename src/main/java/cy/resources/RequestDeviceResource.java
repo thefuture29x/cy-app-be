@@ -80,7 +80,29 @@ public class RequestDeviceResource {
     **/
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping("/getOne/{id}")
-    public Object getPOne(@PathVariable(value = "id") Long id){
+    public Object getOne(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.findById(id));
     }
+    /*
+    *@author:HieuMM_Cy
+    *@since:8/17/2022-10:21 AM
+    *@description:Xác nhận yêu cầu
+    *@update:
+    **/
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @PutMapping("/acceptRequestDevice")
+    public Object acceptRequestDevice(@RequestParam(value = "id") Long id,@RequestParam(value = "case") int caseSwitch,@RequestParam(value = "reason") String reason){
+        return ResponseDto.of(requestDeviceService.updateStatus(id,caseSwitch,reason));
+    }
+    /*
+    *@author:HieuMM_Cy
+    *@since:8/17/2022-10:22 AM
+    *@description:Cancel yêu cầu
+    *@update:
+    **/
+   /* @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @PutMapping("/cancelRequestDevice")
+    public Object cancelRequestDevice(@RequestParam(value = "id") Long id,@RequestParam(value = "reason") String reason){
+        return ResponseDto.of(requestDeviceService.updateStatusCancle(id,reason));
+    }*/
 }

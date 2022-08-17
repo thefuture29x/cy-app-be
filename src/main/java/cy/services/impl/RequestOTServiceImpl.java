@@ -2,8 +2,12 @@ package cy.services.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestOTDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestOTEntity;
 import cy.models.RequestOTModel;
+import cy.repositories.IHistoryRequestRepository;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestOTRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestOTService;
@@ -17,7 +21,11 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +39,12 @@ public class RequestOTServiceImpl implements IRequestOTService {
 
     @Autowired
     FileUploadProvider fileUploadProvider;
+
+    @Autowired
+    private INotificationRepository notificationRepository;
+
+    @Autowired
+    private IHistoryRequestRepository historyRequestRepository;
 
     @Override
     public List<RequestOTDto> findAll() {
@@ -79,6 +93,24 @@ public class RequestOTServiceImpl implements IRequestOTService {
                 throw new RuntimeException(e);
             }
         }
+
+        // Add notification for user created device request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Gửi yêu cầu làm thêm giờ thành công!");
+        notificationEntity.setContent("Bạn đã gửi yêu cầu làm thêm giờ thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setRequestOT(requestOTEntity);
+        notificationRepository.save(notificationEntity);
+
+        // Save history for this request
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalTime nowTime = LocalTime.now(ZoneId.of("Asia/Saigon"));
+        HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
+        historyRequestEntity.setDateHistory(new Date());
+        historyRequestEntity.setTimeHistory(nowTime.format(dtf));
+        historyRequestEntity.setStatus(0); // waiting for approve
+        historyRequestEntity.setRequestOT(requestOTEntity);
+        historyRequestRepository.save(historyRequestEntity);
+
         return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
     }
 

@@ -13,12 +13,11 @@ import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IRequestModifiRepository;
 import cy.repositories.IUserRepository;
-import cy.services.IResquestModifiService;
+import cy.services.IRequestModifiService;
 import cy.utils.FileUploadProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +32,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class RequestModifiServiceImpl implements IResquestModifiService {
+public class RequestModifiServiceImpl implements IRequestModifiService {
     @Autowired
     IRequestModifiRepository iRequestModifiRepository;
     @Autowired
@@ -230,10 +229,10 @@ public class RequestModifiServiceImpl implements IResquestModifiService {
 
     @Override
     public RequestAttendDto checkAttend(Date date, Long idUser) {
-        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date,idUser);
+        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date, idUser);
         if (requestAttendEntity == null){
             return null;
         }
-        return RequestAttendDto.entityToDto(requestAttendEntity);
+        return /*RequestAttendDto.entityToDto(requestAttendEntity);*/null;
     }
 }
