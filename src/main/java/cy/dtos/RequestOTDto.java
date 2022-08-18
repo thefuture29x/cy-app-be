@@ -25,7 +25,7 @@ public class RequestOTDto {
     private String files;
     private UserDto createBy;
     private UserDto assignTo;
-//    private List<HistoryRequestDto> historyRequestDtoList;
+    private List<HistoryRequestDto> historyRequestDtoList;
 
     public static RequestOTDto toDto(RequestOTEntity requestOTEntity){
         if (requestOTEntity == null)
@@ -41,7 +41,7 @@ public class RequestOTDto {
                 .files(requestOTEntity.getFiles())
                 .createBy(UserDto.toDto(requestOTEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestOTEntity.getAssignTo()))
-//                .historyRequestDtoList();
+                .historyRequestDtoList(requestOTEntity.getHistoryRequestEntities() != null ? requestOTEntity.getHistoryRequestEntities().stream().map(historyRequestEntity -> HistoryRequestDto.toDto(historyRequestEntity)).collect(Collectors.toList()) : null)
                 .build();
     }
 }

@@ -40,9 +40,6 @@ public class RequestDayOffEntity {
     @JoinColumn(name = "assign_id")
     private UserEntity assignTo;
 
-    @OneToMany(mappedBy = "requestDayOff")
-    private List<HistoryRequestEntity> historyRequestEntities;
-
     @CreationTimestamp
     @Column(name = "created_date")
     @Temporal(TemporalType.TIMESTAMP)
@@ -51,4 +48,8 @@ public class RequestDayOffEntity {
     @Column(name = "updated_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedDate;
+
+    @OneToMany(mappedBy = "requestDayOff")
+    private List<HistoryRequestEntity> historyRequestEntities;
+
 }

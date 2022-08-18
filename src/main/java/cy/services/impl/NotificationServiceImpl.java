@@ -65,7 +65,9 @@ public class NotificationServiceImpl implements INotificationService {
 
     @Override
     public NotificationEntity getById(Long id) {
-        return this.notificationRepository.findById(id).orElseThrow(()-> new CustomHandleException(99999));
+        NotificationEntity notificationEntity = this.notificationRepository.findById(id).orElseThrow(()-> new CustomHandleException(131));
+        notificationEntity.setIsRead(true);
+        return this.notificationRepository.save(notificationEntity);
     }
 
     @Transactional
@@ -148,9 +150,6 @@ public class NotificationServiceImpl implements INotificationService {
     @Override
     public Page<NotificationDto> findAllByUserId(Pageable pageable) {
         Long userId = SecurityUtils.getCurrentUserId();
-        this.notificationRepository.findAllByUserId(userId).stream().forEach(notification -> {
-            notification.setIsRead(true);
-        });
         return this.notificationRepository.findAllByUserId(userId, pageable).map(NotificationDto::toDto);
     }
 

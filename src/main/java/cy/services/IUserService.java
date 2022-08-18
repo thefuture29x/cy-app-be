@@ -20,13 +20,18 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     boolean tokenFilter(String substring, HttpServletRequest req, HttpServletResponse res);
 
-    boolean setPassword(PasswordModel model);
+    boolean changeMyAvatar(MultipartFile file);
+
+    boolean updateMyProfile(UserProfileModel model);
 
     boolean changePassword(String password);
 
-    boolean changeMyAvatar(MultipartFile file);
+
+    boolean setPassword(PasswordModel model);
 
     List<RequestSendMeDto> getAllRequestSendMe(Long id, Pageable pageable);
 
     List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable);
+
+    boolean changeStatus(Long id);
 }

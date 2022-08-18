@@ -1,6 +1,7 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
+import cy.dtos.NotificationDto;
 import cy.dtos.ResponseDto;
 import cy.models.NotificationModel;
 import cy.services.INotificationService;
@@ -48,6 +49,11 @@ public class NotificationResource {
     @GetMapping("/user")
     public ResponseDto getAllNotificationByUserId(Pageable pageable) {
         return ResponseDto.of( this.notificationService.findAllByUserId(pageable));
+    }
+
+    @GetMapping("/user/{id}") // id = notificationId
+    public ResponseDto getAllNotificationByUserId(@PathVariable Long id) {
+        return ResponseDto.of(NotificationDto.toDto(this.notificationService.getById(id)));
     }
 
     @GetMapping("/user/notificationNotRead")

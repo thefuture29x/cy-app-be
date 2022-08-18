@@ -1,6 +1,8 @@
 package cy.entities;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 
@@ -35,6 +37,15 @@ public class RequestAttendEntity {
     @Column(name = "files")
     private String files;
 
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdDate;
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date updatedDate;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity createBy;
@@ -42,7 +53,14 @@ public class RequestAttendEntity {
     @ManyToOne
     @JoinColumn(name = "assign_id")
     private UserEntity assignTo;
-
+//    @CreationTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+//    @Column(name = "created_date")
+//    private Date createdDate;
+//    @UpdateTimestamp
+//    @Temporal(TemporalType.TIMESTAMP)
+//    @Column(name = "updated_date")
+//    private Date updatedDate;
     @OneToMany(mappedBy = "requestAttend")
     private List<HistoryRequestEntity> historyRequestEntities;
 }

@@ -7,9 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.sql.Date;
 import java.util.List;
 
@@ -27,19 +25,18 @@ public class UserModel {
     @NotNull
     private String email;
 
+    @ApiModelProperty(notes = "sex", dataType = "String", example = "1 in (nam, nữ, khác)")
+    private String sex;
+
     @ApiModelProperty(notes = "Username", dataType = "String", example = "user")
     @NotNull
-    private String username;
-
-    @ApiModelProperty(notes = "User Email", dataType = "String", example = "email@gmail.com")
-    private String sex;
+    private String userName;
 
     @ApiModelProperty(notes = "User full name", dataType = "String", example = "Nguyen Van A")
     @NotNull
     private String fullName;
 
     @ApiModelProperty(notes = "User password", dataType = "String", example = "123456")
-    @NotNull
     private String password;
 
     @ApiModelProperty(notes = "User birthdate", dataType = "Date", example = "2002-04-29")
@@ -47,7 +44,7 @@ public class UserModel {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date birthDate;
 
-    @ApiModelProperty(notes = "User roles", dataType = "array", example = "1,3,5")
+    @ApiModelProperty(notes = "User roles", dataType = "array", example = "[1,3,5]")
     @NotNull
     private List<Long> roles;
 
@@ -63,14 +60,14 @@ public class UserModel {
     public static UserEntity toEntity(UserModel model) {
         if (model == null) throw new RuntimeException("UserModel is null");
         return UserEntity.builder()
-                .userName(model.username)
+                .userName(model.userName)
                 .fullName(model.getFullName())
                 .email(model.getEmail())
                 .password(model.getPassword())
                 .birthDate(model.getBirthDate())
                 .address(model.address)
+                .sex(model.sex)
                 .phone(model.getPhone())
-                .sex(model.getSex())
                 .userId(model.getId()).build();
     }
 }

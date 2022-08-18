@@ -1,5 +1,14 @@
 package cy.services.impl;
 
+import cy.dtos.CustomHandleException;
+import cy.dtos.RequestAttendDto;
+import cy.dtos.RequestModifiDto;
+import cy.dtos.ResponseDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.RequestAttendEntity;
+import cy.entities.RequestModifiEntity;
+import cy.entities.UserEntity;
+import cy.models.HistoryRequestModel;
 import cy.dtos.*;
 import cy.entities.*;
 import cy.models.AcceptRequestModifiModel;
@@ -11,7 +20,6 @@ import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -170,7 +178,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
     public RequestModifiDto sendResquestModifi(RequestModifiModel requestModifiModel) {
 
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
-        historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
+        historyRequestEntity.setDateHistory(new Date());
         historyRequestEntity.setStatus(0);
         if (requestModifiModel.getDateRequestModifi() != null){
             historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
@@ -217,6 +225,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         if(requestModifiModel.getHistoryRequestModels() == null){
             requestModifiEntity.setHistoryRequestEntities(new ArrayList<>());
         };
+        requestModifiEntity.getHistoryRequestEntities().add(historyRequestEntity);
+        requestModifiEntity.setDateRequestModifi(new Date());
 
 
         iHistoryRequestRepository.save(historyRequestEntity);
@@ -226,7 +236,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
 
     @Override
     public RequestAttendDto checkAttend(Date date, Long idUser) {
-        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date,idUser);
+        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date, idUser);
         if (requestAttendEntity == null){
             return null;
         }
