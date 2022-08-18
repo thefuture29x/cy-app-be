@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Transactional
 public class HistoryRequestServiceImpl implements IHistoryRequestService {
@@ -29,12 +30,22 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
 
     @Override
     public List<HistoryRequestDto> findAll() {
+        List<HistoryRequestEntity> historyRequestEntities = iHistoryRequestRepository.findAll();
+        if (historyRequestEntities != null && historyRequestEntities.size() > 0){
+            List<HistoryRequestDto> historyRequestDtos = historyRequestEntities.stream().map(x->HistoryRequestDto.toDto(x)).collect(Collectors.toList());
+            return historyRequestDtos;
+        }
         return null;
     }
 
     @Override
     public Page<HistoryRequestDto> findAll(Pageable page) {
-        return null;
+        Page<HistoryRequestEntity> historyRequestEntities = iHistoryRequestRepository.findAll(page);
+        Page<HistoryRequestDto> historyRequestDtos = null;
+        if (historyRequestEntities !=null && historyRequestEntities.getTotalElements() > 0){
+            historyRequestDtos = historyRequestEntities.map(x->HistoryRequestDto.toDto(x));
+        }
+        return historyRequestDtos;
     }
 
     @Override
@@ -51,7 +62,7 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
     public HistoryRequestDto findById(Long id) {
         HistoryRequestEntity historyRequestEntity = iHistoryRequestRepository.findById(id).orElse(null);
         if (historyRequestEntity != null){
-            return null;
+            return HistoryRequestDto.toDto(historyRequestEntity);
         }else {
             return null;
         }
@@ -66,10 +77,8 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
     public HistoryRequestDto add(HistoryRequestModel model) {
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
         historyRequestEntity.setStatus(model.getStatus());
-        if (model.getDateHistory() != null){
-            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
-            historyRequestEntity.setDateHistory(model.getDateHistory());
-        }
+        historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
+        historyRequestEntity.setDateHistory(new Date());
         HistoryRequestDto historyRequestDto = HistoryRequestDto.toDto(iHistoryRequestRepository.save(historyRequestEntity));
         return historyRequestDto;
     }
@@ -94,10 +103,8 @@ public class HistoryRequestServiceImpl implements IHistoryRequestService {
             return null;
         }else {
             historyRequestEntity.setStatus(model.getStatus());
-            if (model.getDateHistory() != null){
-                historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(model.getDateHistory()));
-                historyRequestEntity.setDateHistory(model.getDateHistory());
-            }
+            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
+            historyRequestEntity.setDateHistory(new Date());
             HistoryRequestDto historyRequestDto = HistoryRequestDto.toDto(iHistoryRequestRepository.save(historyRequestEntity));
             return historyRequestDto;
         }

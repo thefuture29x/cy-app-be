@@ -35,7 +35,7 @@ public class RequestDayOffDto {
                 .files(requestDayOffEntity.getFiles())
                 .createBy(UserDto.toDto(requestDayOffEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
-                .historyRequest(requestDayOffEntity.getHistoryRequestEntities().stream().map(x->HistoryRequestDto.toDto(x)).collect(Collectors.toList()))
+                .historyRequest(requestDayOffEntity.getHistoryRequestEntities().stream().map(HistoryRequestDto::toDto).collect(Collectors.toList()))
                 .build();
     }
 
