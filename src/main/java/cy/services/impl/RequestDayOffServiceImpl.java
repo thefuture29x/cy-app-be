@@ -117,7 +117,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
             }
             requestDayOff.setFiles(files.toString());
         }
-        requestDayOff.setDateDayOff(new Date());
+        requestDayOff.setDateDayOff(requestDayOffModel.getDateDayOff());
         requestDayOff = iRequestDayOffRepository.save(requestDayOff);
 
         // Add notification for user created device request
