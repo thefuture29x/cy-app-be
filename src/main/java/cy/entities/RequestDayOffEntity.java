@@ -29,6 +29,8 @@ public class RequestDayOffEntity {
     private Integer status;
     @Column(name = "reason_cancel")
     private String reasonCancel;
+    @Column(name = "description")
+    private String description;
     @Column(name = "files")
     private String files;
 

@@ -101,6 +101,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
             if (createdBy != null)
                 requestDayOff.setCreateBy(createdBy);
         }
+        requestDayOff.setDescription(requestDayOffModel.getDescription());
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
         if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().length > 0) {
