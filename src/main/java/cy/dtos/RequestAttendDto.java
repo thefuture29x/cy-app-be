@@ -29,8 +29,6 @@ public class RequestAttendDto {
     private List<String> files;
     private UserDto createdBy;
     private UserDto assignedTo;
-    private List<HistoryRequestDto> historyRequests;
-
     private NotificationDto notification;
 
     public RequestAttendDto(RequestAttendEntity entity) {
@@ -56,12 +54,6 @@ public class RequestAttendDto {
         for(Object s3Url : s3UrlsObj){
             s3Urls.add(s3Url.toString());
         }
-        List<HistoryRequestEntity> historyRequestEntities = entity.getHistoryRequestEntities();
-        List<HistoryRequestDto> historyRequestDtos = new ArrayList<>();
-        if(historyRequestEntities != null){
-            historyRequestDtos = historyRequestEntities.stream()
-                    .map(HistoryRequestDto::toDto).collect(Collectors.toList());
-        }
 
         return RequestAttendDto.builder()
                 .id(entity.getId())
@@ -73,7 +65,6 @@ public class RequestAttendDto {
                 .files(s3Urls)
                 .createdBy(UserDto.toDto(entity.getCreateBy()))
                 .assignedTo(UserDto.toDto(entity.getAssignTo()))
-                .historyRequests(historyRequestDtos)
                 .notification(notificationDto)
                 .build();
     }
@@ -83,12 +74,6 @@ public class RequestAttendDto {
         for(Object s3Url : s3UrlsObj){
             s3Urls.add(s3Url.toString());
         }
-        List<HistoryRequestEntity> historyRequestEntities = entity.getHistoryRequestEntities();
-        List<HistoryRequestDto> historyRequestDtos = new ArrayList<>();
-        if(historyRequestEntities != null){
-            historyRequestDtos = historyRequestEntities.stream()
-                    .map(HistoryRequestDto::toDto).collect(Collectors.toList());
-        }
 
         return RequestAttendDto.builder()
                 .id(entity.getId())
@@ -100,7 +85,6 @@ public class RequestAttendDto {
                 .files(s3Urls)
                 .createdBy(UserDto.toDto(entity.getCreateBy()))
                 .assignedTo(UserDto.toDto(entity.getAssignTo()))
-                .historyRequests(historyRequestDtos)
                 .build();
     }
 }
