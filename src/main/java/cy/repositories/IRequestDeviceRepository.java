@@ -20,6 +20,6 @@ public interface IRequestDeviceRepository extends JpaRepository<RequestDeviceEnt
     Page<RequestDeviceEntity> getAllRequestSendMe(Long id, String startTime, String endTime,Pageable pageable);
 
     @Query(value = "SELECT * FROM `tbl_request_device` \n " +
-            "WHERE user_id = :id", nativeQuery = true)
-    Page<RequestDeviceEntity> getAllRequestCreateByMe(@Param(value = "id") Long id, Pageable pageable);
+            "WHERE user_id = ?1", nativeQuery = true)
+    Page<RequestDeviceEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
 }

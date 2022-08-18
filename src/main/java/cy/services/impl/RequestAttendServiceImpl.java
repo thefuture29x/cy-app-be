@@ -171,7 +171,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         // save history
         Date dateHistory = result.getUpdatedDate();
-        String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+        String timeHistory = new SimpleDateFormat("HH:mm:ss").format(new Date());
         Integer status = result.getStatus();
         HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
                 .dateHistory(dateHistory)
