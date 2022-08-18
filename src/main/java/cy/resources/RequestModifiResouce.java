@@ -160,9 +160,18 @@ public class RequestModifiResouce {
         return ResponseDto.of(requestAttendDto);
     }
 
-//    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    /*
+    * @author: HaiPhong
+    * @since: 17/08/2022 4:39 CH
+    * @description-VN:  Accept or reject request modifi
+    * @description-EN:  Phê duyệt hoặc từ chối yêu cầu chỉnh sửa chấm công
+    * @param: AcceptRequestModifiModel
+    * @return:
+    *
+    * */
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @PostMapping("/acceptRequestModifi")
-    public Object acceptRequestDevice(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
+    public Object acceptRequestModifi(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
         return ResponseDto.of(iResquestModifiService.updateStatus(acceptRequestModifiModel));
     }
 }
