@@ -180,15 +180,11 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
         historyRequestEntity.setDateHistory(new Date());
         historyRequestEntity.setStatus(0);
-        if (requestModifiModel.getDateRequestModifi() != null){
-            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
-            historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
-        }
+        historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
 
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(requestModifiModel);
         if (requestModifiModel.getCreateBy() == null){
             return null;
-
         }
         UserEntity userEntity = iUserRepository.findById(requestModifiModel.getCreateBy()).orElse(null);
         if (userEntity == null){
@@ -240,7 +236,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         if (requestAttendEntity == null){
             return null;
         }
-        return /*RequestAttendDto.entityToDto(requestAttendEntity);*/null;
+        return RequestAttendDto.entityToDto(requestAttendEntity);
     }
 
     public void createHistory(RequestModifiEntity requestModifiEntity,int status){
