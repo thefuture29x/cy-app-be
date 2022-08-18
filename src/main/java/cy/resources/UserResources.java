@@ -115,7 +115,6 @@ public class UserResources {
 
     }
 
-    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
     @GetMapping("get_managers")
     public ResponseDto getManagers(Pageable page) {
         return ResponseDto.of(this.userService.filter(page,
