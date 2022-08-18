@@ -231,6 +231,7 @@ public class UserServiceImp implements IUserService {
         original.setSex(model.getSex());
         original.setPhone(model.getPhone());
         original.setAddress(model.getAddress());
+        this.setRoles(original,model.getRoles());
         return UserDto.toDto(this.userRepository.saveAndFlush(original));
     }
 
