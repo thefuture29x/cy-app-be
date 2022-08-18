@@ -89,7 +89,7 @@ public class RequestAttendResource {
         return ResponseDto.of(result);
     }
 
-    @PostMapping(value = "/check_request_exist")
+    @GetMapping(value = "/check_request_day_exist")
     public ResponseDto checkRequestExist(@RequestParam Date day) {
         boolean result = this.requestAttendService.checkRequestAttendExist(day);
         return ResponseDto.of(result);
