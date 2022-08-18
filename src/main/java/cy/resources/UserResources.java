@@ -157,7 +157,9 @@ public class UserResources {
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
     }
 
-
-
+    @PostMapping("get_user_by_role_name")
+    public ResponseDto getUserByRoleName(@RequestParam String roleName,Pageable pageable){
+        return ResponseDto.of(this.userService.getUserByRoleName(roleName,pageable));
+    }
 
 }
