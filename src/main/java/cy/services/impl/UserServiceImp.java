@@ -4,7 +4,6 @@ import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtProvider;
 import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.CustomHandleException;
-import cy.dtos.RequestModifiDto;
 import cy.dtos.RequestSendMeDto;
 import cy.dtos.UserDto;
 import cy.entities.*;
@@ -38,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -163,7 +163,7 @@ public class UserServiceImp implements IUserService {
             throw new CustomHandleException(12);
 
         // check user has existed with username
-        checkUser = this.userRepository.findByUserName(model.getUsername());
+        checkUser = this.userRepository.findByUserName(model.getUserName());
         if (checkUser != null)
             throw new CustomHandleException(13);
 
@@ -232,6 +232,7 @@ public class UserServiceImp implements IUserService {
         original.setSex(model.getSex());
         original.setPhone(model.getPhone());
         original.setAddress(model.getAddress());
+        this.setRoles(original,model.getRoles());
         return UserDto.toDto(this.userRepository.saveAndFlush(original));
     }
 
@@ -354,6 +355,11 @@ public class UserServiceImp implements IUserService {
         return true;
     }
 
+    @Override
+    public Page<UserDto> getUserByRoleName(String roleName, Pageable pageable) {
+        return this.userRepository.findAllByRoleName(roleName, pageable).map(UserDto::toDto);
+    }
+
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
         // check user has existed if user update their email
         if (email != null)
@@ -378,12 +384,16 @@ public class UserServiceImp implements IUserService {
         String startTime = date.toString().concat(" 00:00:00");
         String endTime = date.toString().concat(" 23:59:59");
         List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
+
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+
         // Get all request modifi send to leader on this day
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -396,7 +406,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -410,7 +420,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -424,7 +434,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -440,16 +450,20 @@ public class UserServiceImp implements IUserService {
     @Override
     public List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable) {
         List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+
         // Get all request modifi create by me
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestCreateByMe(id,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("Modifi")
                     .build());
         }
@@ -458,11 +472,13 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("DayOff")
                     .build());
         }
@@ -472,11 +488,13 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("Device")
                     .build());
         }
@@ -486,11 +504,13 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("OT")
                     .build());
         }

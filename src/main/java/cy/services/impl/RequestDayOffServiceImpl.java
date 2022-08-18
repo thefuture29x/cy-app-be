@@ -103,7 +103,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         }
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
-        if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().size() > 0) {
+        if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().length > 0) {
             List<String> files = new ArrayList<>();
             for (MultipartFile fileMultipart : requestDayOffModel.getFiles()) {
                 if (!fileMultipart.isEmpty()) {
@@ -117,7 +117,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
             }
             requestDayOff.setFiles(files.toString());
         }
-        requestDayOff.setDateDayOff(new Date());
+        requestDayOff.setDateDayOff(requestDayOffModel.getDateDayOff());
         requestDayOff = iRequestDayOffRepository.save(requestDayOff);
 
         // Add notification for user created device request
@@ -165,7 +165,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         }
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
-        if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().size() > 0) {
+        if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().length > 0) {
             List<String> files = new ArrayList<>();
             for (MultipartFile fileMultipart : requestDayOffModel.getFiles()) {
                 if (!fileMultipart.isEmpty()) {

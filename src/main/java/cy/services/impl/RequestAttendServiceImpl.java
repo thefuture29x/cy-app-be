@@ -171,7 +171,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         // save history
         Date dateHistory = result.getUpdatedDate();
-        String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+        String timeHistory = new SimpleDateFormat("HH:mm:ss").format(new Date());
         Integer status = result.getStatus();
         HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
                 .dateHistory(dateHistory)
@@ -297,7 +297,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         if(oldRequest.getStatus()!=0){
             return RequestAttendDto.builder().reasonCancel("1").build();
         }
-        if(SecurityUtils.getCurrentUser().getUser().getRoleEntity() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
+        if(SecurityUtils.getCurrentUser().getUser() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
             return RequestAttendDto.builder().reasonCancel("2").build();
         }
         if(status){
@@ -323,5 +323,16 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             return true; // Request attend not exist
         }
         return false; // Request attend exist
+    }
+
+    @Override
+    public Boolean checkRequestAttendExist(java.sql.Date dayRequestAttend) {
+        String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
+        if(requestAttendExist.isEmpty()){
+            return false; // Request attend not exist
+        }
+        return true; // Request attend exist
     }
 }
