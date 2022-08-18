@@ -15,21 +15,15 @@ import cy.repositories.IUserRepository;
 import cy.services.IRequestDeviceService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.transaction.Transactional;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,11 +45,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     @Autowired
     INotificationRepository notificationRepository;
 
-    @Autowired
-    IHistoryRequestRepository historyRequestRepository;
-
-    @Autowired
-    INotificationRepository notificationRepository;
+    
     @Override
     public List<RequestDeviceDto> findAll() {
         return iRequestDeviceRepository.findAll().stream().map(data -> RequestDeviceDto.entityToDto(data)).collect(Collectors.toList());
@@ -87,7 +77,6 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     }
     public void createHistory(RequestDeviceEntity requestDeviceEntity,int status){
         HistoryRequestEntity historyRequest=new HistoryRequestEntity();
-        String pattern = "yyyy-MM-dd";
         historyRequest.setDateHistory(new Date());
         historyRequest.setTimeHistory(LocalTime.now().toString().substring(0,5));
         historyRequest.setStatus(status);
@@ -130,25 +119,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         }
 
 
+        createHistory(requestDeviceEntity,0);
+        createNotification(requestDeviceEntity,false,"Gửi yêu cầu mượn/thuê thiết bị thành công!","Bạn đã gửi yêu cầu mượn/thuê thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         RequestDeviceDto requestDeviceDto = RequestDeviceDto.entityToDto(requestDeviceEntity);
-
-        // Add notification for user created device request
-        NotificationEntity notificationEntity = new NotificationEntity();
-        notificationEntity.setTitle("Gửi yêu cầu mượn/thuê thiết bị thành công!");
-        notificationEntity.setContent("Bạn đã gửi yêu cầu mượn/thuê thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
-        notificationEntity.setRequestDevice(requestDeviceEntity);
-        notificationRepository.save(notificationEntity);
-
-        // Save history for this request
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
-        LocalTime nowTime = LocalTime.now(ZoneId.of("Asia/Saigon"));
-        HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
-        historyRequestEntity.setDateHistory(new Date());
-        historyRequestEntity.setTimeHistory(nowTime.format(dtf));
-        historyRequestEntity.setStatus(0); // waiting for approve
-        historyRequestEntity.setRequestDevice(requestDeviceEntity);
-        historyRequestRepository.save(historyRequestEntity);
         return requestDeviceDto;
     }
 
