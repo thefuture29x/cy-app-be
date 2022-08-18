@@ -170,6 +170,7 @@ public class RequestModifiResouce {
     *
     * */
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @Operation(summary = "Accept request modifi")
     @PostMapping("/acceptRequestModifi")
     public Object acceptRequestModifi(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
         return ResponseDto.of(iResquestModifiService.updateStatus(acceptRequestModifiModel));
