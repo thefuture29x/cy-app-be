@@ -35,7 +35,7 @@ public class RequestModifiResouce {
     * @description-VN:  Lấy danh sách tất cả yêu cầu chỉnh sửa
     * @description-EN:  Get all request modifi
     * @param: pageable
-    * @return: 
+    * @return:
     *
     * */
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
@@ -152,11 +152,11 @@ public class RequestModifiResouce {
     @PostMapping("/checkAttend")
     public ResponseDto checkAttend(@RequestBody RequestAll requestAll ){
         if (requestAll.getIdUser() == null || requestAll.getDateCheckAttend() == null){
-            return ResponseDto.of(165,requestAll);
+            return ResponseDto.of(182,requestAll);
         }
         RequestAttendDto requestAttendDto = iResquestModifiService.checkAttend(requestAll.getDateCheckAttend(),requestAll.getIdUser());
         if (requestAttendDto == null){
-            return ResponseDto.of(165,requestAttendDto);
+            return ResponseDto.of(180,requestAttendDto);
         }
         return ResponseDto.of(requestAttendDto);
     }
