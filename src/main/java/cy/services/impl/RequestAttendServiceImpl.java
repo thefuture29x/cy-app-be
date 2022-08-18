@@ -257,8 +257,8 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         return RequestAttendModel.builder()
                 .id(requestAttendEntity.getId())
-                .timeCheckIn(request.getTimeCheckIn())
-                .timeCheckOut(request.getTimeCheckOut())
+                .timeCheckIn(request.getTimeCheckIn() == null ? requestAttendEntity.getTimeCheckIn() : request.getTimeCheckIn())
+                .timeCheckOut(request.getTimeCheckOut() == null ? null : request.getTimeCheckOut())
                 .dateRequestAttend(request.getDateRequestAttend())
                 .status(status)
                 .reasonCancel(reasonCancel)
@@ -270,8 +270,8 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     private RequestAttendEntity modelToEntity(RequestAttendModel model){
         RequestAttendEntity entity = new RequestAttendEntity();
-        entity.setTimeCheckIn(model.getTimeCheckIn());
-        entity.setTimeCheckOut(model.getTimeCheckOut());
+        entity.setTimeCheckIn(model.getTimeCheckIn() == null ? null : model.getTimeCheckIn());
+        entity.setTimeCheckOut(model.getTimeCheckOut() == null ? null : model.getTimeCheckOut());
         entity.setDateRequestAttend(model.getDateRequestAttend() != null ? model.getDateRequestAttend() : null);
         entity.setStatus(model.getStatus());
         entity.setReasonCancel(model.getReasonCancel());
