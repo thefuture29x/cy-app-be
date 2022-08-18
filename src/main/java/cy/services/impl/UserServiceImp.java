@@ -4,7 +4,6 @@ import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtProvider;
 import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.CustomHandleException;
-import cy.dtos.RequestModifiDto;
 import cy.dtos.RequestSendMeDto;
 import cy.dtos.UserDto;
 import cy.entities.*;
@@ -163,7 +162,7 @@ public class UserServiceImp implements IUserService {
             throw new CustomHandleException(12);
 
         // check user has existed with username
-        checkUser = this.userRepository.findByUserName(model.getUsername());
+        checkUser = this.userRepository.findByUserName(model.getUserName());
         if (checkUser != null)
             throw new CustomHandleException(13);
 

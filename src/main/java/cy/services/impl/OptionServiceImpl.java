@@ -61,8 +61,8 @@ public class OptionServiceImpl implements IOptionService {
                         .builder()
                         .id(model.getId())
                         .optionKey(model.getOptionKey())
-                        .optionValue(model.getOptionValue())
                         .build());
+        optionEntity.setOptionValue(model.getOptionValue());
         this.optionRepository.saveAndFlush(optionEntity);
         return OptionDto.toDto(optionEntity);
     }
