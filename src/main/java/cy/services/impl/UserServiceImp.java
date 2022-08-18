@@ -354,6 +354,11 @@ public class UserServiceImp implements IUserService {
         return true;
     }
 
+    @Override
+    public Page<UserDto> getUserByRoleName(String roleName, Pageable pageable) {
+        return this.userRepository.findAllByRoleName(roleName, pageable).map(UserDto::toDto);
+    }
+
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
         // check user has existed if user update their email
         if (email != null)

@@ -7,6 +7,7 @@ import cy.dtos.UserDto;
 import cy.entities.UserEntity;
 import cy.models.*;
 import cy.models.UserModel;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,4 +35,6 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
     List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable);
 
     boolean changeStatus(Long id);
+
+    Page<UserDto> getUserByRoleName(String roleName, Pageable pageable);
 }
