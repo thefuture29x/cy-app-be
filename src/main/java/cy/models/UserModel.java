@@ -7,9 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.sql.Date;
 import java.util.List;
 
@@ -32,7 +30,7 @@ public class UserModel {
 
     @ApiModelProperty(notes = "Username", dataType = "String", example = "user")
     @NotNull
-    private String username;
+    private String userName;
 
     @ApiModelProperty(notes = "User full name", dataType = "String", example = "Nguyen Van A")
     @NotNull
@@ -62,7 +60,7 @@ public class UserModel {
     public static UserEntity toEntity(UserModel model) {
         if (model == null) throw new RuntimeException("UserModel is null");
         return UserEntity.builder()
-                .userName(model.username)
+                .userName(model.userName)
                 .fullName(model.getFullName())
                 .email(model.getEmail())
                 .password(model.getPassword())
