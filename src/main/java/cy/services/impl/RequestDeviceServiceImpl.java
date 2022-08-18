@@ -199,6 +199,10 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
                     break;
             }
 
+        }else {
+            System.out.printf("userId: "+userEntity.getUserId()+" assignTo: "+requestDeviceEntity.getAssignTo().getUserId());
+            System.out.printf("userIdLogin:"+SecurityUtils.getCurrentUser().getUser().getUserId());
+            System.out.printf("Không có quyền chỉnh sửa yêu cầu này");
         }
        /* requestDeviceEntity.setStatus(1);
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
