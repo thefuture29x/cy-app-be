@@ -19,6 +19,6 @@ public interface IRequestModifiRepository extends JpaRepository<RequestModifiEnt
     Page<RequestModifiEntity> getAllRequestSendMe(Long id, String startTime, String endTime, Pageable pageable);
 
     @Query(value = "SELECT * FROM `tbl_request_modifi` \n " +
-            "WHERE user_id = ?1", nativeQuery = true)
-    Page<RequestModifiEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
+            "WHERE user_id = :id", nativeQuery = true)
+    Page<RequestModifiEntity> getAllRequestCreateByMe(@Param(value = "id") Long id, Pageable pageable);
 }
