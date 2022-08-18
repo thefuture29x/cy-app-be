@@ -27,5 +27,6 @@ public class RequestDayOffModel {
     private MultipartFile[] files;
     private Long assignId;
     private Long createdById;
+    private String description;
 
 }
