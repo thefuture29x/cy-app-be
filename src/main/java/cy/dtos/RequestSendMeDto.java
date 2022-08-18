@@ -19,6 +19,8 @@ public class RequestSendMeDto {
     private String description;
     private Long idUserCreate;
     private String nameUserCreate;
+    private Long idUserAssign;
+    private String nameUserAssign;
     private String type;
 
 
