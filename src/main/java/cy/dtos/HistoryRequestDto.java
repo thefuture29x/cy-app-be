@@ -1,6 +1,7 @@
 package cy.dtos;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import cy.entities.*;
 
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class HistoryRequestDto {
     private Long id;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date dateHistory;
     private String timeHistory;
     private Integer status;

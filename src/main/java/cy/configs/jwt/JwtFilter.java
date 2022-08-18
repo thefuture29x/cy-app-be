@@ -37,14 +37,14 @@ public class JwtFilter extends OncePerRequestFilter {
             if (token == null) {
                 // token null
                 res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                res.getWriter().println(new JSONObject(ResponseDto.ofError(1)));
+                res.getWriter().println(new JSONObject(ResponseDto.ofError(3)));
             } else {
                 if (this.userService.tokenFilter(token.substring(7), req, res))
                     filterChain.doFilter(req, res);
                 else {
                     // token not valid
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    res.getWriter().println(new JSONObject(ResponseDto.ofError(1)));
+                    res.getWriter().println(new JSONObject(ResponseDto.ofError(3)));
                 }
             }
         }
