@@ -12,11 +12,11 @@ import java.util.List;
 
 public interface IRequestOTRepository extends JpaRepository<RequestOTEntity, Long>, JpaSpecificationExecutor<RequestOTEntity> {
     @Query(value = "SELECT * FROM `tbl_request_ot` \n " +
-            "WHERE user_id = ?1 \n " +
+            "WHERE assign_id = ?1 \n " +
             "and created_date between ?2 and ?3", nativeQuery = true)
     Page<RequestOTEntity> getAllRequestSendMe(Long id, String startTime, String endTime,Pageable pageable);
 
     @Query(value = "SELECT * FROM `tbl_request_ot` \n " +
-            "WHERE assign_id = ?1", nativeQuery = true)
+            "WHERE user_id = ?1", nativeQuery = true)
     Page<RequestOTEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
 }
