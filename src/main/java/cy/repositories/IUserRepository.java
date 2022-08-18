@@ -1,6 +1,8 @@
 package cy.repositories;
 
 import cy.entities.UserEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +27,7 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
     Optional<UserEntity> findUserEntityByUserNameOrEmail(String userName, String userName1);
 
     Optional<List<UserEntity>> findAllByUserIdIsIn(List<Long> ids);
+
+    @Query(value = "select * from tbl_user as u join tbl_user_role as ur on ur.user_id=u.user_id join tbl_role as r on r.role_id = ur.role_id  where r.role_name = ?1", nativeQuery = true)
+    Page<UserEntity> findAllByRoleName(String roleName, Pageable pageable);
 }

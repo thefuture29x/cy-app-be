@@ -15,6 +15,7 @@ import cy.models.UserModel;
 import cy.models.UserProfileModel;
 import cy.services.IUserService;
 import cy.utils.SecurityUtils;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "users")
@@ -138,25 +142,24 @@ public class UserResources {
     public ResponseDto changeMyAvatar(MultipartFile file) {
         return ResponseDto.of(this.userService.changeMyAvatar(file));
     }
-    private Long id;
-    private String timeStart;
-    private String timeEnd;
-    private Integer status;
-    private String reason;
-    private Long idUserCreate;
-    private String nameUserCreate;
 
-    @GetMapping("get_request_send_me")
-    public ResponseDto getAllRequestSendMe(Long id,Pageable pageable){
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER')")
+    @Operation(summary = "Get all request sent to me")
+    @GetMapping("get_request_sent_to_me")
+    public ResponseDto getAllRequestSendMe(@RequestParam(value = "id") Long id,Pageable pageable){
         return ResponseDto.of(this.userService.getAllRequestSendMe(id,pageable));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_EMPLOYEE','')")
+    @Operation(summary = "Get all request create by me")
     @GetMapping("get_request_create_by_me")
-    public ResponseDto getAllRequestCreateByMe(Long id,Pageable pageable){
+    public ResponseDto getAllRequestCreateByMe(@RequestParam(value = "id")Long id,Pageable pageable){
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
     }
 
-
-
+    @PostMapping("get_user_by_role_name")
+    public ResponseDto getUserByRoleName(@RequestParam String roleName,Pageable pageable){
+        return ResponseDto.of(this.userService.getUserByRoleName(roleName,pageable));
+    }
 
 }
