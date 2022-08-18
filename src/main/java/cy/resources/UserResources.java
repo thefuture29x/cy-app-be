@@ -88,13 +88,24 @@ public class UserResources {
         return ResponseDto.of(jwtUserLoginModel);
     }
 
-    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
     @GetMapping("search")
-    public ResponseDto search(@RequestParam @Valid @NotBlank String q, Pageable pageable) {
-        return ResponseDto.of(this.userService.filter(pageable, Specification.where(((root, query, criteriaBuilder) -> {
+    public ResponseDto search(@RequestParam @Valid @NotBlank String q, @RequestParam(name = "isEmp", defaultValue = "1") Boolean isEmp, Pageable pageable) {
+        Specification<UserEntity> specs;
+
+        Specification<UserEntity> likeSpec = ((root, query, criteriaBuilder) -> {
             String s = "%" + q + "%";
             return criteriaBuilder.or(criteriaBuilder.like(root.get(UserEntity_.USER_NAME), s), criteriaBuilder.like(root.get(UserEntity_.FULL_NAME), s));
-        }))));
+        });
+
+        if (!isEmp)
+            specs = Specification.where(likeSpec).and(((root, query, criteriaBuilder) -> {
+                Join<UserEntity, RoleEntity> join = root.join(UserEntity_.ROLE_ENTITY);
+                return criteriaBuilder.equal(join.get(RoleEntity_.ROLE_NAME), RoleEntity.EMPLOYEE).not();
+            }));
+        else
+            specs = Specification.where(likeSpec);
+
+        return ResponseDto.of(this.userService.filter(pageable, Specification.where(specs)));
     }
 
     @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
