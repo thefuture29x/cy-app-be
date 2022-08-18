@@ -324,4 +324,15 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         }
         return false; // Request attend exist
     }
+
+    @Override
+    public Boolean checkRequestAttendExist(java.sql.Date dayRequestAttend) {
+        String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
+        if(requestAttendExist.isEmpty()){
+            return false; // Request attend not exist
+        }
+        return true; // Request attend exist
+    }
 }
