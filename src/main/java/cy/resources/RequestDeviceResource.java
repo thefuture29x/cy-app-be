@@ -4,6 +4,7 @@ import cy.configs.FrontendConfiguration;
 import cy.dtos.RequestDeviceDto;
 import cy.dtos.ResponseDto;
 import cy.models.RequestDeviceModel;
+import cy.models.RequestDeviceUpdateStatusModel;
 import cy.services.impl.RequestDeviceServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -91,8 +92,8 @@ public class RequestDeviceResource {
     **/
     @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PutMapping("/acceptRequestDevice")
-    public Object acceptRequestDevice(@RequestParam(value = "id") Long id,@RequestParam(value = "case") int caseSwitch,@RequestParam(value = "reason") String reason){
-        return ResponseDto.of(requestDeviceService.updateStatus(id,caseSwitch,reason));
+    public Object acceptRequestDevice(RequestDeviceUpdateStatusModel requestDeviceUpdateStatusModel){
+        return ResponseDto.of(requestDeviceService.updateStatus(requestDeviceUpdateStatusModel));
     }
     /*
     *@author:HieuMM_Cy

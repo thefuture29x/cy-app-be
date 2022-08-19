@@ -5,6 +5,7 @@ import cy.dtos.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -42,5 +43,10 @@ public class HandleException {
     public ResponseDto handleError(CustomHandleException ex) {
         ex.printStackTrace();
         return ResponseDto.ofError(ex.getCode());
+    }
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseDto handleLackPermission(AccessDeniedException ex) {
+        ex.printStackTrace();
+        return ResponseDto.ofError(5);
     }
 }

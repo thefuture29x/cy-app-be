@@ -18,6 +18,6 @@ public interface IRequestOTRepository extends JpaRepository<RequestOTEntity, Lon
     Page<RequestOTEntity> getAllRequestSendMe(Long id, String startTime, String endTime,Pageable pageable);
 
     @Query(value = "SELECT * FROM `tbl_request_ot` \n " +
-            "WHERE user_id = :id", nativeQuery = true)
-    Page<RequestOTEntity> getAllRequestCreateByMe(@Param(value = "id") Long id, Pageable pageable);
+            "WHERE user_id = ?1", nativeQuery = true)
+    Page<RequestOTEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
 }

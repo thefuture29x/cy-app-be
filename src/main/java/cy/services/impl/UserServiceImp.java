@@ -230,6 +230,7 @@ public class UserServiceImp implements IUserService {
         original.setSex(model.getSex());
         original.setPhone(model.getPhone());
         original.setAddress(model.getAddress());
+        this.setRoles(original,model.getRoles());
         return UserDto.toDto(this.userRepository.saveAndFlush(original));
     }
 
@@ -365,6 +366,11 @@ public class UserServiceImp implements IUserService {
                 return RequestOTDto.toDto(iRequestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
         }
         return null;
+    }
+
+    @Override
+    public Page<UserDto> getUserByRoleName(String roleName, Pageable pageable) {
+        return this.userRepository.findAllByRoleName(roleName, pageable).map(UserDto::toDto);
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
