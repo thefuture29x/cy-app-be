@@ -34,6 +34,7 @@ import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -56,7 +57,7 @@ public class UserResources {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @GetMapping
     public ResponseDto findAll(@RequestParam(name = "isEnable", defaultValue = "1") Boolean isEnable, Pageable page) {
-        return ResponseDto.of(this.userService.filter(page, Specification.where(((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), isEnable)))));
+        return ResponseDto.of(this.userService.filter(page, Specification.where(((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), isEnable)))).stream().filter(x->x.getId()!=1).collect(Collectors.toList()));
     }
 
 
@@ -91,6 +92,9 @@ public class UserResources {
     @GetMapping("search")
     public ResponseDto search(@RequestParam @Valid @NotBlank String q, @RequestParam(name = "isEmp", defaultValue = "1") Boolean isEmp, Pageable pageable) {
         Specification<UserEntity> specs;
+        Specification<UserEntity> statusCheck = ((root, query, criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get(UserEntity_.STATUS),true);
+        });
 
         Specification<UserEntity> likeSpec = ((root, query, criteriaBuilder) -> {
             String s = "%" + q + "%";
@@ -103,7 +107,7 @@ public class UserResources {
                 return criteriaBuilder.equal(join.get(RoleEntity_.ROLE_NAME), RoleEntity.EMPLOYEE).not();
             }));
         else
-            specs = Specification.where(likeSpec);
+            specs = Specification.where(likeSpec).and(statusCheck);
 
         return ResponseDto.of(this.userService.filter(pageable, Specification.where(specs)));
     }
