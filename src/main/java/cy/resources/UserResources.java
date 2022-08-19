@@ -57,7 +57,15 @@ public class UserResources {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @GetMapping
     public ResponseDto findAll(@RequestParam(name = "isEnable", defaultValue = "1") Boolean isEnable, Pageable page) {
-        return ResponseDto.of(this.userService.filter(page, Specification.where(((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), isEnable)))).stream().filter(x->x.getId()!=1).collect(Collectors.toList()));
+        Specification<UserEntity> specs;
+        Specification<UserEntity> statusCheck = ((root, query, criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get(UserEntity_.STATUS),isEnable);
+        });
+        Specification<UserEntity> isRoot = ((root, query, criteriaBuilder) -> {
+            return criteriaBuilder.notEqual(root.get(UserEntity_.USER_ID),1);
+        });
+        specs = Specification.where(statusCheck).and(isRoot);
+        return ResponseDto.of(this.userService.filter(page,specs));
     }
 
 
