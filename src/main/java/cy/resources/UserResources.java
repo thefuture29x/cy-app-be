@@ -166,6 +166,12 @@ public class UserResources {
     public ResponseDto getAllRequestCreateByMe(@RequestParam(value = "id")Long id,Pageable pageable){
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
     }
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER','ROLE_EMPLOYEE','')")
+    @Operation(summary = "Get request by id and type")
+    @GetMapping("get_request_by_id_and_type")
+    public ResponseDto findRequestByIdAndType(@RequestParam(value = "id") Long id, @RequestParam(value = "type") String type){
+        return ResponseDto.of(this.userService.getRequestByIdAndType(id,type));
+    }
 
     @PostMapping("get_user_by_role_name")
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
