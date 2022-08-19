@@ -271,6 +271,7 @@ public class UserServiceImp implements IUserService {
 
         long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800l;
         return JwtLoginResponse.builder()
+                .id(user.getUserId())
                 .token(this.jwtProvider.generateToken(userDetail.getUsername(), timeValid))
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .timeValid(timeValid)
@@ -317,6 +318,8 @@ public class UserServiceImp implements IUserService {
     @Override
     public boolean updateMyProfile(UserProfileModel model) {
         UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         this.checkUserInfoDuplicate(userEntity, model.getEmail(), model.getPhone());
         userEntity.setFullName(model.getFullName());
         userEntity.setBirthDate(model.getBirthDate());
@@ -332,6 +335,8 @@ public class UserServiceImp implements IUserService {
     public boolean changePassword(String password) {
         logger.info("{} is changing password", SecurityUtils.getCurrentUsername());
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setPassword(this.passwordEncoder.encode(password));
         this.userRepository.saveAndFlush(userEntity);
         return true;
@@ -341,6 +346,8 @@ public class UserServiceImp implements IUserService {
     public boolean setPassword(PasswordModel model) {
         logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
         UserEntity userEntity = this.getById(model.getUserId());
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.userRepository.saveAndFlush(userEntity);
         return true;
@@ -350,6 +357,8 @@ public class UserServiceImp implements IUserService {
     public boolean changeStatus(Long id) {
         logger.info("{} is changing status", SecurityUtils.getCurrentUsername());
         UserEntity userEntity = this.getById(id);
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setStatus(!userEntity.getStatus());
         this.userRepository.saveAndFlush(userEntity);
         return true;

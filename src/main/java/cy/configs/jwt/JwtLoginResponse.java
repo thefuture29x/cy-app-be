@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 @Builder
 public class JwtLoginResponse {
+    private Long id;
     private String token;
     private String type;
     private Long timeValid;
