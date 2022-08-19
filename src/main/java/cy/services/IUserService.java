@@ -3,6 +3,7 @@ package cy.services;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.RequestSendMeDto;
+import cy.dtos.ResponseDto;
 import cy.dtos.UserDto;
 import cy.entities.UserEntity;
 import cy.models.*;
@@ -35,6 +36,8 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
     List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable);
 
     boolean changeStatus(Long id);
+
+    Object getRequestByIdAndType(Long id,String type);
 
     Page<UserDto> getUserByRoleName(String roleName, Pageable pageable);
 }

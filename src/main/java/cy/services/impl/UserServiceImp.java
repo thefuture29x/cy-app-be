@@ -3,9 +3,7 @@ package cy.services.impl;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtProvider;
 import cy.configs.jwt.JwtUserLoginModel;
-import cy.dtos.CustomHandleException;
-import cy.dtos.RequestSendMeDto;
-import cy.dtos.UserDto;
+import cy.dtos.*;
 import cy.entities.*;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
@@ -353,6 +351,21 @@ public class UserServiceImp implements IUserService {
         userEntity.setStatus(!userEntity.getStatus());
         this.userRepository.saveAndFlush(userEntity);
         return true;
+    }
+
+    @Override
+    public Object getRequestByIdAndType(Long id, String type) {
+        switch (type){
+            case "Modifi":
+                return RequestModifiDto.toDto(iRequestModifiRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "Device":
+                return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "DayOff":
+                return RequestDayOffDto.toDto(iRequestDayOffRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "OT":
+                return RequestOTDto.toDto(iRequestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+        }
+        return null;
     }
 
     @Override
