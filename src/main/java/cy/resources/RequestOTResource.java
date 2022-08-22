@@ -30,21 +30,28 @@ public class RequestOTResource {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Create new request OT")
-    @PostMapping
-    public ResponseDto addRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
+    @PostMapping("create")
+    public ResponseDto addRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
+        return ResponseDto.of(requestOTService.add(requestOTModel));
+    }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
+    @Operation(summary = "Create new request OT")
+    @PostMapping("create1")
+    public ResponseDto addRequestOT1(@RequestBody RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.add(requestOTModel));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Update request OT")
-    @PutMapping
-    public ResponseDto updateRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
+    @PutMapping("update")
+    public ResponseDto updateRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.update(requestOTModel));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Delete request OT")
-    @DeleteMapping
+    @DeleteMapping("delete")
     public ResponseDto deleteRequestOT(Long id) {
         return ResponseDto.of(requestOTService.deleteById(id));
     }
