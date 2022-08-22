@@ -45,7 +45,7 @@ public class RequestModifiDto {
                 .reasonCancel(object.getReasonCancel())
                 .files(object.getFiles())
                 .createBy(object.getCreateBy() != null ? UserDto.toDto(object.getCreateBy()) : null)
-                .assignTo(object.getAssignTo() != null ? UserDto.toDto(object.getCreateBy()) : null)
+                .assignTo(object.getAssignTo() != null ? UserDto.toDto(object.getAssignTo()) : null)
                 .historyRequestDtos(object.getHistoryRequestEntities() != null ? object.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
 
