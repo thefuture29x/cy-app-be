@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface INotificationRepository extends JpaRepository<NotificationEntity, Long> {
-    @Query(value = "SELECT * FROM tbl_notification WHERE user_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT * FROM tbl_notification WHERE user_id = ?1 ORDER BY date_noti ASC", nativeQuery = true)
     Page<NotificationEntity> findAllByUserId(Long userId, Pageable pageable);
 
     @Query(value = "SELECT * FROM tbl_notification WHERE user_id = ?1", nativeQuery = true)
