@@ -92,19 +92,14 @@ public class RequestOTServiceImpl implements IRequestOTService {
         if (model.getAssignTo() != null) {
             requestOTEntity.setAssignTo(userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
         }
-        if (model.getFiles() != null && model.getFiles().length > 0) {
-            List<String> files = new ArrayList<>();
-            for (MultipartFile fileMultipart : model.getFiles()) {
-                if (!fileMultipart.isEmpty()) {
-                    try {
-                        String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
-                        files.add(result);
-                    } catch (Exception e) {
-                        System.out.println("upload file failed");
-                    }
-                }
+        if (model.getFiles() != null && !model.getFiles().isEmpty()) {
+            try {
+                String result = fileUploadProvider.uploadFile("requestOT", model.getFiles());
+                requestOTEntity.setFiles(result);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            requestOTEntity.setFiles(files.toString());
+
         }
 
         // Add notification for user created device request
@@ -141,19 +136,14 @@ public class RequestOTServiceImpl implements IRequestOTService {
             if (requestOTModel.getAssignTo() != null) {
                 requestOTEntity.setAssignTo(userRepository.findById(requestOTModel.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
             }
-            if (requestOTModel.getFiles() != null && requestOTModel.getFiles().length > 0) {
-                List<String> files = new ArrayList<>();
-                for (MultipartFile fileMultipart : requestOTModel.getFiles()) {
-                    if (!fileMultipart.isEmpty()) {
-                        try {
-                            String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
-                            files.add(result);
-                        } catch (Exception e) {
-                            System.out.println("upload file failed");
-                        }
-                    }
+            if (requestOTModel.getFiles() != null && !requestOTModel.getFiles().isEmpty()) {
+                try {
+                    String result = fileUploadProvider.uploadFile("requestOT", requestOTModel.getFiles());
+                    requestOTEntity.setFiles(result);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-                requestOTEntity.setFiles(files.toString());
+
             }
             requestOTDtoList.add(RequestOTDto.toDto(requestOTRepository.save(requestOTEntity)));
         }
@@ -171,19 +161,14 @@ public class RequestOTServiceImpl implements IRequestOTService {
         if (model.getAssignTo() != null) {
             requestOTEntity.setAssignTo(userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
         }
-        if (model.getFiles() != null && model.getFiles().length > 0) {
-            List<String> files = new ArrayList<>();
-            for (MultipartFile fileMultipart : model.getFiles()) {
-                if (!fileMultipart.isEmpty()) {
-                    try {
-                        String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
-                        files.add(result);
-                    } catch (Exception e) {
-                        System.out.println("upload file failed");
-                    }
-                }
+        if (model.getFiles() != null && !model.getFiles().isEmpty()) {
+            try {
+                String result = fileUploadProvider.uploadFile("requestOT", model.getFiles());
+                requestOTEntity.setFiles(result);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            requestOTEntity.setFiles(files.toString());
+
         }
         return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
     }

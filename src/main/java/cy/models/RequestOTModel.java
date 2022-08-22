@@ -35,10 +35,12 @@ public class RequestOTModel {
     @ApiModelProperty(notes = "Description of OT", dataType = "String")
     private String description;
     @ApiModelProperty(notes = "Attached files")
-    private MultipartFile[] files;
+    private MultipartFile files;
     @ApiModelProperty(notes = "Id user created", dataType = "Long", example = "1")
+    @NotNull
     private Long createBy;
     @ApiModelProperty(notes = "Id user assign to", dataType = "Long", example = "2")
+    @NotNull
     private Long assignTo;
     @ApiModelProperty(notes = "History request")
     private List<HistoryRequestModel> historyRequestModelList;
