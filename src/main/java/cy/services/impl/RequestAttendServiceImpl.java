@@ -335,4 +335,14 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         }
         return true; // Request attend exist
     }
+
+    public RequestAttendDto findByDay(java.sql.Date dayRequestAttend){
+        String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
+        if(requestAttendExist.isEmpty()){
+            return null; // Request attend not exist
+        }
+        return RequestAttendDto.entityToDto(requestAttendExist.stream().findFirst().get()); // Request attend exist
+    }
 }

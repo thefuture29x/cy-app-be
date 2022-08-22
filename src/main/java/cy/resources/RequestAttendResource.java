@@ -94,4 +94,10 @@ public class RequestAttendResource {
         boolean result = this.requestAttendService.checkRequestAttendExist(day);
         return ResponseDto.of(result);
     }
+
+    @GetMapping(value = "/find_by_day")
+    public ResponseDto findByDay(@RequestParam Date day) {
+        RequestAttendDto result = this.requestAttendService.findByDay(day);
+        return ResponseDto.of(result);
+    }
 }
