@@ -15,7 +15,9 @@ import org.springframework.context.annotation.Role;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
 
 import javax.validation.Valid;
 import java.io.IOException;
@@ -30,10 +32,11 @@ public class RequestDayOffResource {
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping(value = "findById")
+    @Transactional
     public ResponseDto findById(@RequestParam(name = "id") Long id){
         ResponseDto responseDto = new ResponseDto();
         responseDto.setCode(200);
-        responseDto.setData(RequestDayOffDto.toDto(iRequestDayOffRepository.findById(id).get()));
+        responseDto.setData(RequestDayOffDto.toDto(iRequestDayOffRepository.findById(id).orElseThrow( () -> new CustomHandleException(11))));
         return responseDto;
     }
 
