@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
-@RequestMapping(FrontendConfiguration.PREFIX_API + "request-device/")
+@RequestMapping(FrontendConfiguration.PREFIX_API + "request-device")
 public class RequestDeviceResource {
     @Autowired
     RequestDeviceServiceImpl requestDeviceService;
