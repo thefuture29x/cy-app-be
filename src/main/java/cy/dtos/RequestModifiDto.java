@@ -26,9 +26,9 @@ public class RequestModifiDto {
     private String reasonCancel;
     private String files;
 
-    private Long createBy;
+    private UserDto createBy;
 
-    private Long assignTo;
+    private UserDto assignTo;
 
     private List<HistoryRequestDto> historyRequestDtos;
 
@@ -44,8 +44,8 @@ public class RequestModifiDto {
                 .status(object.getStatus())
                 .reasonCancel(object.getReasonCancel())
                 .files(object.getFiles())
-                .createBy(object.getCreateBy() != null ? object.getCreateBy().getUserId() : null)
-                .assignTo(object.getAssignTo() != null ? object.getAssignTo().getUserId() : null)
+                .createBy(object.getCreateBy() != null ? UserDto.toDto(object.getCreateBy()) : null)
+                .assignTo(object.getAssignTo() != null ? UserDto.toDto(object.getCreateBy()) : null)
                 .historyRequestDtos(object.getHistoryRequestEntities() != null ? object.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
 
