@@ -100,7 +100,7 @@ public class UserResources {
     @GetMapping("search")
     public ResponseDto search(@RequestParam @Valid @NotBlank String q, @RequestParam(name = "isEmp", defaultValue = "1") Boolean isEmp, Pageable pageable) {
         Specification<UserEntity> specs;
-        Specification<UserEntity> isEnable = ((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), isEmp));
+        Specification<UserEntity> isEnable = ((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), true));
         Specification<UserEntity> excludeAdministrator = ((root, query, criteriaBuilder) -> criteriaBuilder.notEqual(root.get(UserEntity_.USER_ID), 1L));
 
         Specification<UserEntity> likeSpec = ((root, query, criteriaBuilder) -> {
@@ -109,7 +109,9 @@ public class UserResources {
         });
 
         if (!isEmp)
-            specs = Specification.where(likeSpec).and(excludeAdministrator).and(((root, query, criteriaBuilder) -> {
+            specs = Specification.where(likeSpec)
+                    .and(excludeAdministrator)
+                    .and(((root, query, criteriaBuilder) -> {
                 Join<UserEntity, RoleEntity> join = root.join(UserEntity_.ROLE_ENTITY);
                 return criteriaBuilder.equal(join.get(RoleEntity_.ROLE_NAME), RoleEntity.EMPLOYEE).not();
             })).and(isEnable);
