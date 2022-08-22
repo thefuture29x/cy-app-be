@@ -100,9 +100,7 @@ public class UserResources {
     @GetMapping("search")
     public ResponseDto search(@RequestParam @Valid @NotBlank String q, @RequestParam(name = "isEmp", defaultValue = "1") Boolean isEmp, Pageable pageable) {
         Specification<UserEntity> specs;
-        Specification<UserEntity> statusCheck = ((root, query, criteriaBuilder) -> {
-            return criteriaBuilder.equal(root.get(UserEntity_.STATUS),true);
-        });
+        Specification<UserEntity> isEnable = ((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), isEmp));
 
         Specification<UserEntity> likeSpec = ((root, query, criteriaBuilder) -> {
             String s = "%" + q + "%";
@@ -113,11 +111,11 @@ public class UserResources {
             specs = Specification.where(likeSpec).and(((root, query, criteriaBuilder) -> {
                 Join<UserEntity, RoleEntity> join = root.join(UserEntity_.ROLE_ENTITY);
                 return criteriaBuilder.equal(join.get(RoleEntity_.ROLE_NAME), RoleEntity.EMPLOYEE).not();
-            }));
+            })).and(isEnable);
         else
-            specs = Specification.where(likeSpec).and(statusCheck);
+            specs = Specification.where(likeSpec).and(isEnable);
 
-        return ResponseDto.of(this.userService.filter(pageable, Specification.where(specs)));
+        return ResponseDto.of(this.userService.filter(pageable, specs));
     }
 
     @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
@@ -175,7 +173,7 @@ public class UserResources {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_EMPLOYEE','')")
     @Operation(summary = "Get all request create by me")
     @GetMapping("get_request_create_by_me")
-    public ResponseDto getAllRequestCreateByMe(Long id,Pageable pageable){
+    public ResponseDto getAllRequestCreateByMe(@RequestParam(value = "id")Long id,Pageable pageable){
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
     }
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER','ROLE_EMPLOYEE','')")
