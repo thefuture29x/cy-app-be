@@ -8,6 +8,8 @@ import cy.entities.*;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
+import cy.repositories.IRoleRepository;
+import cy.repositories.IUserRepository;
 import cy.repositories.*;
 import cy.services.CustomUserDetail;
 import cy.services.IUserService;
@@ -129,11 +131,13 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public Page<UserDto> findAll(Pageable page) {
+        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(page).map(UserDto::toDto);
     }
 
     @Override
     public List<UserDto> findAll(Specification<UserEntity> specs) {
+        logger.info("{} is finding all users", SecurityUtils.getCurrentUsername());
         return this.userRepository.findAll(specs).stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
@@ -155,6 +159,7 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto add(UserModel model) {
+        logger.info("{} is adding user", SecurityUtils.getCurrentUsername());
         // check user has existed with email
         UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
         if (checkUser != null)
@@ -207,7 +212,19 @@ public class UserServiceImp implements IUserService {
 
         UserEntity original = this.getById(model.getId());
 
-        this.checkUserInfoDuplicate(original, model.getEmail(), model.getPhone());
+        // check user has existed if user update their email
+        if (!model.getEmail().equals(original.getEmail())) {
+            UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
+            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
+                throw new CustomHandleException(12);
+        }
+
+        // check user has existed if user update their phone
+        if (!model.getPhone().equals(original.getPhone())) {
+            UserEntity checkUser = this.userRepository.findByPhone(model.getPhone());
+            if (checkUser != null && !checkUser.getUserId().equals(original.getUserId()))
+                throw new CustomHandleException(14);
+        }
 
         if (model.getManager() != null) {
             try {
@@ -269,6 +286,7 @@ public class UserServiceImp implements IUserService {
 
         long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800l;
         return JwtLoginResponse.builder()
+                .id(user.getUserId())
                 .token(this.jwtProvider.generateToken(userDetail.getUsername(), timeValid))
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .timeValid(timeValid)
@@ -315,6 +333,8 @@ public class UserServiceImp implements IUserService {
     @Override
     public boolean updateMyProfile(UserProfileModel model) {
         UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         this.checkUserInfoDuplicate(userEntity, model.getEmail(), model.getPhone());
         userEntity.setFullName(model.getFullName());
         userEntity.setBirthDate(model.getBirthDate());
@@ -330,6 +350,8 @@ public class UserServiceImp implements IUserService {
     public boolean changePassword(String password) {
         logger.info("{} is changing password", SecurityUtils.getCurrentUsername());
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setPassword(this.passwordEncoder.encode(password));
         this.userRepository.saveAndFlush(userEntity);
         return true;
@@ -339,6 +361,8 @@ public class UserServiceImp implements IUserService {
     public boolean setPassword(PasswordModel model) {
         logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
         UserEntity userEntity = this.getById(model.getUserId());
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.userRepository.saveAndFlush(userEntity);
         return true;
@@ -348,6 +372,8 @@ public class UserServiceImp implements IUserService {
     public boolean changeStatus(Long id) {
         logger.info("{} is changing status", SecurityUtils.getCurrentUsername());
         UserEntity userEntity = this.getById(id);
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setStatus(!userEntity.getStatus());
         this.userRepository.saveAndFlush(userEntity);
         return true;

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import java.sql.Date;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "request_attend")
 @RestController
@@ -82,10 +83,15 @@ public class RequestAttendResource {
         }else
             throw new CustomHandleException(41);
     }
-
     @PostMapping(value = "/check_request_not_exist")
     public ResponseDto checkRequestExist(@RequestParam String day) {
         boolean result = this.requestAttendService.checkRequestAttendNotExist(day);
+        return ResponseDto.of(result);
+    }
+
+    @GetMapping(value = "/check_request_day_exist")
+    public ResponseDto checkRequestExist(@RequestParam Date day) {
+        boolean result = this.requestAttendService.checkRequestAttendExist(day);
         return ResponseDto.of(result);
     }
 }

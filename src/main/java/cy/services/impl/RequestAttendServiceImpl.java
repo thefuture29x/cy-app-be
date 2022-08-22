@@ -257,8 +257,8 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         return RequestAttendModel.builder()
                 .id(requestAttendEntity.getId())
-                .timeCheckIn(request.getTimeCheckIn())
-                .timeCheckOut(request.getTimeCheckOut())
+                .timeCheckIn(request.getTimeCheckIn() == null ? requestAttendEntity.getTimeCheckIn() : request.getTimeCheckIn())
+                .timeCheckOut(request.getTimeCheckOut() == null ? null : request.getTimeCheckOut())
                 .dateRequestAttend(request.getDateRequestAttend())
                 .status(status)
                 .reasonCancel(reasonCancel)
@@ -270,8 +270,8 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     private RequestAttendEntity modelToEntity(RequestAttendModel model){
         RequestAttendEntity entity = new RequestAttendEntity();
-        entity.setTimeCheckIn(model.getTimeCheckIn());
-        entity.setTimeCheckOut(model.getTimeCheckOut());
+        entity.setTimeCheckIn(model.getTimeCheckIn() == null ? null : model.getTimeCheckIn());
+        entity.setTimeCheckOut(model.getTimeCheckOut() == null ? null : model.getTimeCheckOut());
         entity.setDateRequestAttend(model.getDateRequestAttend() != null ? model.getDateRequestAttend() : null);
         entity.setStatus(model.getStatus());
         entity.setReasonCancel(model.getReasonCancel());
@@ -323,5 +323,16 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             return true; // Request attend not exist
         }
         return false; // Request attend exist
+    }
+
+    @Override
+    public Boolean checkRequestAttendExist(java.sql.Date dayRequestAttend) {
+        String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
+        if(requestAttendExist.isEmpty()){
+            return false; // Request attend not exist
+        }
+        return true; // Request attend exist
     }
 }

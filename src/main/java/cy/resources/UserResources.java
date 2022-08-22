@@ -34,6 +34,7 @@ import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -56,7 +57,15 @@ public class UserResources {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @GetMapping
     public ResponseDto findAll(@RequestParam(name = "isEnable", defaultValue = "1") Boolean isEnable, Pageable page) {
-        return ResponseDto.of(this.userService.filter(page, Specification.where(((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(UserEntity_.STATUS), isEnable)))));
+        Specification<UserEntity> specs;
+        Specification<UserEntity> statusCheck = ((root, query, criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get(UserEntity_.STATUS),isEnable);
+        });
+        Specification<UserEntity> isRoot = ((root, query, criteriaBuilder) -> {
+            return criteriaBuilder.notEqual(root.get(UserEntity_.USER_ID),1);
+        });
+        specs = Specification.where(statusCheck).and(isRoot);
+        return ResponseDto.of(this.userService.filter(page,specs));
     }
 
 
@@ -88,13 +97,27 @@ public class UserResources {
         return ResponseDto.of(jwtUserLoginModel);
     }
 
-    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
     @GetMapping("search")
-    public ResponseDto search(@RequestParam @Valid @NotBlank String q, Pageable pageable) {
-        return ResponseDto.of(this.userService.filter(pageable, Specification.where(((root, query, criteriaBuilder) -> {
+    public ResponseDto search(@RequestParam @Valid @NotBlank String q, @RequestParam(name = "isEmp", defaultValue = "1") Boolean isEmp, Pageable pageable) {
+        Specification<UserEntity> specs;
+        Specification<UserEntity> statusCheck = ((root, query, criteriaBuilder) -> {
+            return criteriaBuilder.equal(root.get(UserEntity_.STATUS),true);
+        });
+
+        Specification<UserEntity> likeSpec = ((root, query, criteriaBuilder) -> {
             String s = "%" + q + "%";
             return criteriaBuilder.or(criteriaBuilder.like(root.get(UserEntity_.USER_NAME), s), criteriaBuilder.like(root.get(UserEntity_.FULL_NAME), s));
-        }))));
+        });
+
+        if (!isEmp)
+            specs = Specification.where(likeSpec).and(((root, query, criteriaBuilder) -> {
+                Join<UserEntity, RoleEntity> join = root.join(UserEntity_.ROLE_ENTITY);
+                return criteriaBuilder.equal(join.get(RoleEntity_.ROLE_NAME), RoleEntity.EMPLOYEE).not();
+            }));
+        else
+            specs = Specification.where(likeSpec).and(statusCheck);
+
+        return ResponseDto.of(this.userService.filter(pageable, Specification.where(specs)));
     }
 
     @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
@@ -104,7 +127,6 @@ public class UserResources {
 
     }
 
-    @RolesAllowed({RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
     @GetMapping("get_managers")
     public ResponseDto getManagers(Pageable page) {
         return ResponseDto.of(this.userService.filter(page,
@@ -153,7 +175,7 @@ public class UserResources {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_EMPLOYEE','')")
     @Operation(summary = "Get all request create by me")
     @GetMapping("get_request_create_by_me")
-    public ResponseDto getAllRequestCreateByMe(@RequestParam(value = "id")Long id,Pageable pageable){
+    public ResponseDto getAllRequestCreateByMe(Long id,Pageable pageable){
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id,pageable));
     }
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER','ROLE_EMPLOYEE','')")
