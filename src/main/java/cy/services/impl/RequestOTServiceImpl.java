@@ -2,13 +2,19 @@ package cy.services.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestOTDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestOTEntity;
+import cy.entities.RoleEntity;
 import cy.models.RequestOTModel;
+import cy.repositories.IHistoryRequestRepository;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestOTRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestOTService;
 import cy.utils.FileUploadProvider;
 
+import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +23,12 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +42,12 @@ public class RequestOTServiceImpl implements IRequestOTService {
 
     @Autowired
     FileUploadProvider fileUploadProvider;
+
+    @Autowired
+    private INotificationRepository notificationRepository;
+
+    @Autowired
+    private IHistoryRequestRepository historyRequestRepository;
 
     @Override
     public List<RequestOTDto> findAll() {
@@ -65,6 +82,9 @@ public class RequestOTServiceImpl implements IRequestOTService {
     @Override
     public RequestOTDto add(RequestOTModel model) {
         RequestOTEntity requestOTEntity = RequestOTModel.toEntity(model);
+        if (model.getStatus() == null){
+            requestOTEntity.setStatus(0);
+        }
         if (model.getCreateBy() != null) {
             requestOTEntity.setCreateBy(userRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         }
@@ -79,6 +99,24 @@ public class RequestOTServiceImpl implements IRequestOTService {
                 throw new RuntimeException(e);
             }
         }
+
+        // Add notification for user created device request
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Gửi yêu cầu làm thêm giờ thành công!");
+        notificationEntity.setContent("Bạn đã gửi yêu cầu làm thêm giờ thành công. Vui lòng chờ quản lí công ty phê duyệt!");
+        notificationEntity.setRequestOT(requestOTEntity);
+        notificationRepository.save(notificationEntity);
+
+        // Save history for this request
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+        LocalTime nowTime = LocalTime.now(ZoneId.of("Asia/Saigon"));
+        HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
+        historyRequestEntity.setDateHistory(new Date());
+        historyRequestEntity.setTimeHistory(nowTime.format(dtf));
+        historyRequestEntity.setStatus(0); // waiting for approve
+        historyRequestEntity.setRequestOT(requestOTEntity);
+        historyRequestRepository.save(historyRequestEntity);
+
         return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
     }
 
@@ -87,6 +125,9 @@ public class RequestOTServiceImpl implements IRequestOTService {
         List<RequestOTDto> requestOTDtoList = new ArrayList<>();
         for (RequestOTModel requestOTModel: model){
             RequestOTEntity requestOTEntity = RequestOTModel.toEntity(requestOTModel);
+            if (requestOTModel.getStatus() == null){
+                requestOTEntity.setStatus(0);
+            }
             if (requestOTModel.getCreateBy() != null) {
                 requestOTEntity.setCreateBy(userRepository.findById(requestOTModel.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
             }
@@ -108,7 +149,7 @@ public class RequestOTServiceImpl implements IRequestOTService {
 
     @Override
     public RequestOTDto update(RequestOTModel model) {
-        RequestOTEntity requestOTEntity = requestOTRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(111));
+        RequestOTEntity requestOTEntity = this.getById(model.getId());
         requestOTEntity = RequestOTModel.toEntity(model);
 
         if (model.getCreateBy() != null) {
@@ -147,5 +188,51 @@ public class RequestOTServiceImpl implements IRequestOTService {
         } catch (Exception e){
             return false;
         }
+    }
+
+    @Override
+    public RequestOTDto responseOtRequest(Long requestOtId, String reasonCancel, Boolean status) {
+        RequestOTEntity requestOTEntity = this.getById(requestOtId);
+        if (requestOTEntity.getStatus() != 0){
+            return RequestOTDto.builder().reasonCancel("112").build();
+        }
+        if ( SecurityUtils.getCurrentUser().getUser() != requestOTEntity.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
+            return RequestOTDto.builder().reasonCancel("113").build();
+        }
+        if (status){
+            requestOTEntity.setStatus(1);
+            historyRequestRepository.save(HistoryRequestEntity.builder()
+                    .requestOT(requestOTEntity)
+                    .status(1)
+                    .dateHistory(new Date())
+                    .timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")))
+                    .build());
+            notificationRepository.save(NotificationEntity.builder()
+                    .requestOT(requestOTEntity)
+                    .content("Yêu cầu OT đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName())
+                    .title("Yêu cầu OT đã được phê duyệt")
+                    .dateNoti(new Date())
+                    .userId(requestOTEntity.getCreateBy())
+                    .isRead(false)
+                    .build());
+            return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
+        }
+        requestOTEntity.setStatus(2);
+        requestOTEntity.setReasonCancel(reasonCancel);
+        historyRequestRepository.save(HistoryRequestEntity.builder()
+                .requestOT(requestOTEntity)
+                .status(2)
+                .dateHistory(new Date())
+                .timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")))
+                .build());
+        notificationRepository.save(NotificationEntity.builder()
+                .requestOT(requestOTEntity)
+                .content("Yêu cầu OT đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel)
+                .title("Yêu cầu OT đã bị hủy bỏ")
+                .dateNoti(new Date())
+                .userId(requestOTEntity.getCreateBy())
+                .isRead(false)
+                .build());
+        return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
     }
 }

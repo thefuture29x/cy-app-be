@@ -29,22 +29,23 @@ public class RequestAttendDto {
     private List<String> files;
     private UserDto createdBy;
     private UserDto assignedTo;
-    private List<HistoryRequestDto> historyRequests;
     private NotificationDto notification;
 
-    public RequestAttendDto(RequestAttendEntity requestAttendEntity) {
-    }
-
-    public RequestAttendDto(Long id, String timeCheckIn, String timeCheckOut, Date dateRequestAttend, Integer status, String reasonCancel, List<String> files, UserDto createdBy, UserDto assignedTo) {
-        this.id = id;
-        this.timeCheckIn = timeCheckIn;
-        this.timeCheckOut = timeCheckOut;
-        this.dateRequestAttend = dateRequestAttend;
-        this.status = status;
-        this.reasonCancel = reasonCancel;
-        this.files = files;
-        this.createdBy = createdBy;
-        this.assignedTo = assignedTo;
+    public RequestAttendDto(RequestAttendEntity entity) {
+        List<Object> fileUrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
+        List<String> fileUrls = new ArrayList<>();
+        for(Object obj : fileUrlsObj){
+            fileUrls.add(obj.toString());
+        }
+        this.id = entity.getId();
+        this.timeCheckIn = entity.getTimeCheckIn();
+        this.timeCheckOut = entity.getTimeCheckOut();
+        this.dateRequestAttend = entity.getDateRequestAttend();
+        this.status = entity.getStatus();
+        this.reasonCancel = entity.getReasonCancel();
+        this.files = fileUrls;
+        this.createdBy = UserDto.toDto(entity.getCreateBy());
+        this.assignedTo = UserDto.toDto(entity.getAssignTo());
     }
 
     public static RequestAttendDto entityToDto(RequestAttendEntity entity, NotificationDto notificationDto){
@@ -52,12 +53,6 @@ public class RequestAttendDto {
         List<String> s3Urls = new ArrayList<>();
         for(Object s3Url : s3UrlsObj){
             s3Urls.add(s3Url.toString());
-        }
-        List<HistoryRequestEntity> historyRequestEntities = entity.getHistoryRequestEntities();
-        List<HistoryRequestDto> historyRequestDtos = new ArrayList<>();
-        if(historyRequestEntities != null){
-            historyRequestDtos = historyRequestEntities.stream()
-                    .map(HistoryRequestDto::toDto).collect(Collectors.toList());
         }
 
         return RequestAttendDto.builder()
@@ -70,7 +65,6 @@ public class RequestAttendDto {
                 .files(s3Urls)
                 .createdBy(UserDto.toDto(entity.getCreateBy()))
                 .assignedTo(UserDto.toDto(entity.getAssignTo()))
-                .historyRequests(historyRequestDtos)
                 .notification(notificationDto)
                 .build();
     }
@@ -80,12 +74,6 @@ public class RequestAttendDto {
         for(Object s3Url : s3UrlsObj){
             s3Urls.add(s3Url.toString());
         }
-        List<HistoryRequestEntity> historyRequestEntities = entity.getHistoryRequestEntities();
-        List<HistoryRequestDto> historyRequestDtos = new ArrayList<>();
-        if(historyRequestEntities != null){
-            historyRequestDtos = historyRequestEntities.stream()
-                    .map(HistoryRequestDto::toDto).collect(Collectors.toList());
-        }
 
         return RequestAttendDto.builder()
                 .id(entity.getId())
@@ -97,7 +85,6 @@ public class RequestAttendDto {
                 .files(s3Urls)
                 .createdBy(UserDto.toDto(entity.getCreateBy()))
                 .assignedTo(UserDto.toDto(entity.getAssignTo()))
-                .historyRequests(historyRequestDtos)
                 .build();
     }
 }

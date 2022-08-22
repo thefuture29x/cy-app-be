@@ -21,6 +21,7 @@ import cy.utils.SecurityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -50,7 +51,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     private IRequestAttendRepository requestAttendRepository;
 
     @Autowired
-
     private INotificationService notificationService;
 
     @Override
@@ -75,12 +75,23 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Override
     public RequestAttendDto findById(Long id) {
-        return null;
+        RequestAttendDto findByIdToDto = this.requestAttendRepository.findByIdToDto(id);
+        if(findByIdToDto == null){
+            throw new CustomHandleException(40);
+        }
+        return findByIdToDto;
+    }
+
+    public Page<RequestAttendDto> findByUserId(Long userId, Pageable pageable){
+        List<RequestAttendDto> findByUserId = this.requestAttendRepository.findByUserId(userId);
+        final long start = pageable.getOffset();
+        final long end = Math.min(start + pageable.getPageSize(), findByUserId.size());
+        return new PageImpl<>(findByUserId.subList((int)start, (int)end), pageable, findByUserId.size());
     }
 
     @Override
     public RequestAttendEntity getById(Long id) {
-        return this.requestAttendRepository.findById(id).orElseThrow(()->new CustomHandleException(44));
+        return this.requestAttendRepository.findById(id).orElseThrow(()-> new CustomHandleException(44));
     }
 
     @Override
@@ -99,11 +110,11 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         // cho tao moi neu khong co request attend nao hoac co request nhung da bi reject
         if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
-
             RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
 
-            String title = "Request Attend";
-            String content = "You have created a new request attend on " + model.getDateRequestAttend() + " from " + model.getTimeCheckIn() + " to " + model.getTimeCheckOut();
+            // save notification
+            String title = "Yêu cầu chấm công";
+            String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
             NotificationModel notificationModel = NotificationModel.builder()
                     .title(title)
                     .content(content)
@@ -111,6 +122,19 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                     .build();
 
             NotificationDto notificationDto = this.notificationService.add(notificationModel);
+
+            // save history
+            Date dateHistory = result.getCreatedDate();
+            String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+            Integer status = result.getStatus();
+            HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
+                    .dateHistory(dateHistory)
+                    .timeHistory(timeHistory)
+                    .status(status)
+                    .requestAttend(result)
+                    .build();
+            this.historyRequestRepository.save(historyRequestEntity);
+
             return RequestAttendDto.entityToDto(result, notificationDto);
         }else {
             throw new CustomHandleException(37);
@@ -127,30 +151,37 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     public RequestAttendDto update(RequestAttendModel model) {
         RequestAttendEntity requestAttendUpdateEntity = this.modelToEntity(model);
         requestAttendUpdateEntity.setId(model.getId());
+        RequestAttendEntity oldRequestAttend = this.getById(model.getId());
+        requestAttendUpdateEntity.setDateRequestAttend(oldRequestAttend.getDateRequestAttend());
 
         // Today can't timekeeping for next day
         if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
             throw new CustomHandleException(38);
         }
 
-        // check request attend follow day and user not exist ???
-        String day = new SimpleDateFormat("yyyy-MM-dd").format(model.getDateRequestAttend());
-        if(this.checkRequestAttendNotExist(day)) {
-            RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
-            String title = "Request Attend";
-            String content = "You have updated a request attend on " + model.getDateRequestAttend() + " from " + model.getTimeCheckIn() + " to " + model.getTimeCheckOut();
-            NotificationModel notificationModel = NotificationModel.builder()
-                    .title(title)
-                    .content(content)
-                    .requestAttendId(result.getId())
-                    .build();
-            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
+        String title = "Yêu cầu chỉnh sửa chấm công";
+        String content = "Bạn đã chỉnh sửa một yêu cầu chấm công ngày " + requestAttendUpdateEntity.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+        NotificationModel notificationModel = NotificationModel.builder()
+                .title(title)
+                .content(content)
+                .requestAttendId(result.getId())
+                .build();
+        NotificationDto notificationDto = this.notificationService.add(notificationModel);
 
-            return RequestAttendDto.entityToDto(result, notificationDto);
+        // save history
+        Date dateHistory = result.getUpdatedDate();
+        String timeHistory = new SimpleDateFormat("HH:mm:ss").format(new Date());
+        Integer status = result.getStatus();
+        HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
+                .dateHistory(dateHistory)
+                .timeHistory(timeHistory)
+                .status(status)
+                .requestAttend(result)
+                .build();
+        this.historyRequestRepository.save(historyRequestEntity);
 
-        }else {
-            throw new CustomHandleException(37);
-        }
+        return RequestAttendDto.entityToDto(result, notificationDto);
     }
 
     @Override
@@ -203,15 +234,17 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             }
         }
         final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
-        if(request.getAttachedFiles() != null){ // Check if user has attached files
+        if(request.getAttachedFiles() != null && request.getAttachedFiles().length > 0){ // Check if user has attached files
             for(MultipartFile file : request.getAttachedFiles()){
-                try{
-                    String s3Url = fileUploadProvider.uploadFile(folderName, file);
-                    fileS3Urls.add(s3Url);
-                }catch (Exception ex){
-                    ex.printStackTrace();
-                    fileS3Urls.add("Error code: 31");
-                    throw new CustomHandleException(31);
+                if(!file.getOriginalFilename().equals("")) {
+                    try {
+                        String s3Url = fileUploadProvider.uploadFile(folderName, file);
+                        fileS3Urls.add(s3Url);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        fileS3Urls.add("Error code: 31");
+                        throw new CustomHandleException(31);
+                    }
                 }
             }
         }
@@ -224,8 +257,8 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         return RequestAttendModel.builder()
                 .id(requestAttendEntity.getId())
-                .timeCheckIn(request.getTimeCheckIn())
-                .timeCheckOut(request.getTimeCheckOut())
+                .timeCheckIn(request.getTimeCheckIn() == null ? requestAttendEntity.getTimeCheckIn() : request.getTimeCheckIn())
+                .timeCheckOut(request.getTimeCheckOut() == null ? null : request.getTimeCheckOut())
                 .dateRequestAttend(request.getDateRequestAttend())
                 .status(status)
                 .reasonCancel(reasonCancel)
@@ -237,9 +270,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     private RequestAttendEntity modelToEntity(RequestAttendModel model){
         RequestAttendEntity entity = new RequestAttendEntity();
-        entity.setTimeCheckIn(model.getTimeCheckIn());
-        entity.setTimeCheckOut(model.getTimeCheckOut());
-        entity.setDateRequestAttend(model.getDateRequestAttend());
+        entity.setTimeCheckIn(model.getTimeCheckIn() == null ? null : model.getTimeCheckIn());
+        entity.setTimeCheckOut(model.getTimeCheckOut() == null ? null : model.getTimeCheckOut());
+        entity.setDateRequestAttend(model.getDateRequestAttend() != null ? model.getDateRequestAttend() : null);
         entity.setStatus(model.getStatus());
         entity.setReasonCancel(model.getReasonCancel());
         List<String> s3Urls = model.getFiles();
@@ -250,7 +283,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         entity.setAssignTo(userRepository.findById(model.getAssignedTo().getId()).get());
         HistoryRequestEntity historyRequest = new HistoryRequestEntity();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         historyRequest.setDateHistory(new Date());
         historyRequest.setTimeHistory(LocalTime.now().toString());
         historyRequest.setStatus(model.getStatus());
@@ -265,7 +297,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         if(oldRequest.getStatus()!=0){
             return RequestAttendDto.builder().reasonCancel("1").build();
         }
-        if(SecurityUtils.getCurrentUser().getUser().getRoleEntity() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
+        if(SecurityUtils.getCurrentUser().getUser() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
             return RequestAttendDto.builder().reasonCancel("2").build();
         }
         if(status){
@@ -291,5 +323,16 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             return true; // Request attend not exist
         }
         return false; // Request attend exist
+    }
+
+    @Override
+    public Boolean checkRequestAttendExist(java.sql.Date dayRequestAttend) {
+        String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
+        if(requestAttendExist.isEmpty()){
+            return false; // Request attend not exist
+        }
+        return true; // Request attend exist
     }
 }

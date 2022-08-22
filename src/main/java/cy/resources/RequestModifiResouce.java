@@ -1,10 +1,12 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
+import cy.dtos.AcceptRequestModifiDto;
 import cy.dtos.RequestAttendDto;
 import cy.dtos.RequestModifiDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
+import cy.models.AcceptRequestModifiModel;
 import cy.models.NotificationModel;
 import cy.models.RequestAll;
 import cy.models.RequestModifiModel;
@@ -13,6 +15,7 @@ import cy.services.IRequestModifiService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -103,7 +106,7 @@ public class RequestModifiResouce {
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Find request modifi by id")
     @GetMapping("find-by-id")
-    public ResponseDto findRequestModifi(Long id){
+    public ResponseDto findRequestModifi(@RequestParam(value = "id") Long id){
         return ResponseDto.of(iResquestModifiService.findById(id));
     }
     /*
@@ -149,12 +152,28 @@ public class RequestModifiResouce {
     @PostMapping("/checkAttend")
     public ResponseDto checkAttend(@RequestBody RequestAll requestAll ){
         if (requestAll.getIdUser() == null || requestAll.getDateCheckAttend() == null){
-            return ResponseDto.of(165,requestAll);
+            return ResponseDto.of(182,requestAll);
         }
         RequestAttendDto requestAttendDto = iResquestModifiService.checkAttend(requestAll.getDateCheckAttend(),requestAll.getIdUser());
         if (requestAttendDto == null){
-            return ResponseDto.of(165,requestAttendDto);
+            return ResponseDto.of(180,requestAttendDto);
         }
         return ResponseDto.of(requestAttendDto);
+    }
+
+    /*
+    * @author: HaiPhong
+    * @since: 17/08/2022 4:39 CH
+    * @description-VN:  Accept or reject request modifi
+    * @description-EN:  Phê duyệt hoặc từ chối yêu cầu chỉnh sửa chấm công
+    * @param: AcceptRequestModifiModel
+    * @return:
+    *
+    * */
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @Operation(summary = "Accept request modifi")
+    @PostMapping("/acceptRequestModifi")
+    public Object acceptRequestModifi(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
+        return ResponseDto.of(iResquestModifiService.updateStatus(acceptRequestModifiModel));
     }
 }

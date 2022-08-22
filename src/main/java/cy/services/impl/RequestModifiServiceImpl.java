@@ -8,13 +8,15 @@ import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestAttendEntity;
 import cy.entities.RequestModifiEntity;
 import cy.entities.UserEntity;
+import cy.models.HistoryRequestModel;
+import cy.dtos.*;
+import cy.entities.*;
+import cy.models.AcceptRequestModifiModel;
 import cy.models.RequestModifiModel;
-import cy.repositories.IHistoryRequestRepository;
-import cy.repositories.IRequestAttendRepository;
-import cy.repositories.IRequestModifiRepository;
-import cy.repositories.IUserRepository;
+import cy.repositories.*;
 import cy.services.IRequestModifiService;
 import cy.utils.FileUploadProvider;
+import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,6 +47,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
 
     @Autowired
     IRequestAttendRepository iRequestAttendRepository;
+    @Autowired
+    INotificationRepository iNotificationRepository;
 
     @Override
     public List<RequestModifiDto> findAll() {
@@ -76,7 +81,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
     }
 
     @Override
-    public RequestModifiDto add(RequestModifiModel model) {
+    public RequestModifiDto add(RequestModifiModel model){
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         requestModifiEntity.setAssignTo(iUserRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
@@ -173,17 +178,13 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
     public RequestModifiDto sendResquestModifi(RequestModifiModel requestModifiModel) {
 
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
-        historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
+        historyRequestEntity.setDateHistory(new Date());
         historyRequestEntity.setStatus(0);
-        if (requestModifiModel.getDateRequestModifi() != null){
-            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
-            historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
-        }
+        historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
 
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(requestModifiModel);
         if (requestModifiModel.getCreateBy() == null){
             return null;
-
         }
         UserEntity userEntity = iUserRepository.findById(requestModifiModel.getCreateBy()).orElse(null);
         if (userEntity == null){
@@ -220,6 +221,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         if(requestModifiModel.getHistoryRequestModels() == null){
             requestModifiEntity.setHistoryRequestEntities(new ArrayList<>());
         };
+        requestModifiEntity.getHistoryRequestEntities().add(historyRequestEntity);
+        requestModifiEntity.setDateRequestModifi(new Date());
 
 
         iHistoryRequestRepository.save(historyRequestEntity);
@@ -229,10 +232,54 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
 
     @Override
     public RequestAttendDto checkAttend(Date date, Long idUser) {
-        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date,idUser);
+        RequestAttendEntity requestAttendEntity = iRequestAttendRepository.checkAttend(date, idUser);
         if (requestAttendEntity == null){
             return null;
         }
         return RequestAttendDto.entityToDto(requestAttendEntity);
+    }
+
+    public void createHistory(RequestModifiEntity requestModifiEntity,int status){
+        HistoryRequestEntity historyRequest=new HistoryRequestEntity();
+        historyRequest.setDateHistory(new Date());
+        historyRequest.setTimeHistory(LocalTime.now().toString().substring(0,5));
+        historyRequest.setStatus(status);
+        historyRequest.setRequestModifi(requestModifiEntity);
+        iHistoryRequestRepository.save(historyRequest);
+    }
+    public void createNotification(RequestModifiEntity requestModifiEntity,Boolean isRead,String title,String content){
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setDateNoti(new java.util.Date());
+        notificationEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
+        notificationEntity.setIsRead(isRead);
+        notificationEntity.setTitle(title);
+        notificationEntity.setContent(content);
+        notificationEntity.setRequestModifi(requestModifiEntity);
+        iNotificationRepository.save(notificationEntity);
+    }
+
+    @Override
+    public RequestModifiDto updateStatus(AcceptRequestModifiModel acceptRequestModifiModel) {
+        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        RequestModifiEntity requestModifiEntity = this.getById(acceptRequestModifiModel.getId());
+        if(userEntity.getUserId()==requestModifiEntity.getAssignTo().getUserId()){
+            switch (acceptRequestModifiModel.getCaseSwitch()){
+                case 1:
+                    requestModifiEntity.setStatus(1);
+                    iRequestModifiRepository.saveAndFlush(requestModifiEntity);
+                    createHistory(requestModifiEntity,1);
+                    createNotification(requestModifiEntity,true,"Yêu cầu sửa đổi thông tin chấm công","Yêu cầu thay đổi thông tin chấm công đã được xét duyệt bởi "+userEntity.getFullName());
+                    break;
+                case 2:
+                    requestModifiEntity.setStatus(2);
+                    requestModifiEntity.setReasonCancel(acceptRequestModifiModel.getReason());
+                    iRequestModifiRepository.saveAndFlush(requestModifiEntity);
+                    createHistory(requestModifiEntity,2);
+                    createNotification(requestModifiEntity,true,"Yêu cầu sửa đổi thông tin chấm công","Yêu cầu thay đổi thông tin chấm công đã bị từ chối bởi "+userEntity.getFullName());
+                    break;
+            }
+
+        }
+        return RequestModifiDto.toDto(iRequestModifiRepository.findById(acceptRequestModifiModel.getId()).orElseThrow(() -> new CustomHandleException(11)));
     }
 }

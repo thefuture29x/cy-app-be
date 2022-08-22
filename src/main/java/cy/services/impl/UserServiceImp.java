@@ -3,10 +3,7 @@ package cy.services.impl;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtProvider;
 import cy.configs.jwt.JwtUserLoginModel;
-import cy.dtos.CustomHandleException;
-import cy.dtos.RequestModifiDto;
-import cy.dtos.RequestSendMeDto;
-import cy.dtos.UserDto;
+import cy.dtos.*;
 import cy.entities.*;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
@@ -40,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -168,7 +166,7 @@ public class UserServiceImp implements IUserService {
             throw new CustomHandleException(12);
 
         // check user has existed with username
-        checkUser = this.userRepository.findByUserName(model.getUsername());
+        checkUser = this.userRepository.findByUserName(model.getUserName());
         if (checkUser != null)
             throw new CustomHandleException(13);
 
@@ -192,7 +190,9 @@ public class UserServiceImp implements IUserService {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        } else
+            userEntity.setManager(this.getById(1L));
+
         userEntity.setStatus(true);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.setRoles(userEntity, model.getRoles());
@@ -206,7 +206,9 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto update(UserModel model) {
-        logger.info("{} is updating userid: {%d}", SecurityUtils.getCurrentUsername(), model.getId());
+        if (model.getId().equals(1L))
+            throw new CustomHandleException(19);
+        logger.info("{} is updating user id: {}", SecurityUtils.getCurrentUsername(), model.getId());
 
         UserEntity original = this.getById(model.getId());
 
@@ -245,6 +247,7 @@ public class UserServiceImp implements IUserService {
         original.setSex(model.getSex());
         original.setPhone(model.getPhone());
         original.setAddress(model.getAddress());
+        this.setRoles(original,model.getRoles());
         return UserDto.toDto(this.userRepository.saveAndFlush(original));
     }
 
@@ -257,6 +260,8 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public boolean deleteById(Long id) {
+        if (id.equals(1L))
+            throw new CustomHandleException(18);
         logger.info("{} is deleting user id: {}", SecurityUtils.getCurrentUsername(), id);
         UserEntity userEntity = this.getById(id);
         userEntity.setStatus(false);
@@ -281,6 +286,7 @@ public class UserServiceImp implements IUserService {
 
         long timeValid = userLogin.isRemember() ? 86400 * 7 : 1800l;
         return JwtLoginResponse.builder()
+                .id(user.getUserId())
                 .token(this.jwtProvider.generateToken(userDetail.getUsername(), timeValid))
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .timeValid(timeValid)
@@ -327,6 +333,8 @@ public class UserServiceImp implements IUserService {
     @Override
     public boolean updateMyProfile(UserProfileModel model) {
         UserEntity userEntity = this.getById(SecurityUtils.getCurrentUserId());
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         this.checkUserInfoDuplicate(userEntity, model.getEmail(), model.getPhone());
         userEntity.setFullName(model.getFullName());
         userEntity.setBirthDate(model.getBirthDate());
@@ -342,6 +350,8 @@ public class UserServiceImp implements IUserService {
     public boolean changePassword(String password) {
         logger.info("{} is changing password", SecurityUtils.getCurrentUsername());
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setPassword(this.passwordEncoder.encode(password));
         this.userRepository.saveAndFlush(userEntity);
         return true;
@@ -351,12 +361,45 @@ public class UserServiceImp implements IUserService {
     public boolean setPassword(PasswordModel model) {
         logger.info("{} is setting password for user id: {}", SecurityUtils.getCurrentUsername(), model.getUserId());
         UserEntity userEntity = this.getById(model.getUserId());
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
         userEntity.setPassword(this.passwordEncoder.encode(model.getPassword()));
         this.userRepository.saveAndFlush(userEntity);
         return true;
     }
 
-        private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
+    @Override
+    public boolean changeStatus(Long id) {
+        logger.info("{} is changing status", SecurityUtils.getCurrentUsername());
+        UserEntity userEntity = this.getById(id);
+        if (userEntity.getUserId().equals(1L))
+            throw new CustomHandleException(19);
+        userEntity.setStatus(!userEntity.getStatus());
+        this.userRepository.saveAndFlush(userEntity);
+        return true;
+    }
+
+    @Override
+    public Object getRequestByIdAndType(Long id, String type) {
+        switch (type){
+            case "Modifi":
+                return RequestModifiDto.toDto(iRequestModifiRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "Device":
+                return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "DayOff":
+                return RequestDayOffDto.toDto(iRequestDayOffRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "OT":
+                return RequestOTDto.toDto(iRequestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+        }
+        return null;
+    }
+
+    @Override
+    public Page<UserDto> getUserByRoleName(String roleName, Pageable pageable) {
+        return this.userRepository.findAllByRoleName(roleName, pageable).map(UserDto::toDto);
+    }
+
+    private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
         // check user has existed if user update their email
         if (email != null)
             if (!email.equals(userEntity.getEmail())) {
@@ -380,12 +423,16 @@ public class UserServiceImp implements IUserService {
         String startTime = date.toString().concat(" 00:00:00");
         String endTime = date.toString().concat(" 23:59:59");
         List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
+
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+
         // Get all request modifi send to leader on this day
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -398,7 +445,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -412,7 +459,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -426,7 +473,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
@@ -442,16 +489,20 @@ public class UserServiceImp implements IUserService {
     @Override
     public List<RequestSendMeDto> getAllRequestCreateByMe(Long id, Pageable pageable) {
         List<RequestSendMeDto> requestSendMeDtoList = new ArrayList<>();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+
         // Get all request modifi create by me
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestCreateByMe(id,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("Modifi")
                     .build());
         }
@@ -460,11 +511,13 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("DayOff")
                     .build());
         }
@@ -474,11 +527,13 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("Device")
                     .build());
         }
@@ -488,11 +543,13 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(entity.getCreatedDate() == null ? null : entity.getCreatedDate().toString())
+                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .idUserAssign(entity.getAssignTo().getUserId())
+                    .nameUserAssign(entity.getAssignTo().getFullName())
                     .type("OT")
                     .build());
         }

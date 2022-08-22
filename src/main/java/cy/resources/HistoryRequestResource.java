@@ -26,7 +26,7 @@ public class HistoryRequestResource {
         if (delete == true){
             return ResponseDto.of(delete);
         }else {
-            return ResponseDto.of(161,delete);
+            return ResponseDto.of(181,delete);
         }
     }
     @GetMapping("findById/{id}")
@@ -36,7 +36,7 @@ public class HistoryRequestResource {
         if (historyRequestDto != null){
             return ResponseDto.of(historyRequestDto);
         }else {
-            return ResponseDto.of(162,historyRequestDto);
+            return ResponseDto.of(181,historyRequestDto);
         }
     }
     @PostMapping("add")
@@ -46,7 +46,7 @@ public class HistoryRequestResource {
         if (historyRequestDto != null){
             return ResponseDto.of(historyRequestDto);
         }else {
-            return ResponseDto.of(163,historyRequestDto);
+            return ResponseDto.of(180,historyRequestDto);
         }
     }
     @PostMapping("update")
@@ -56,7 +56,7 @@ public class HistoryRequestResource {
         if (historyRequestDto != null){
             return ResponseDto.of(historyRequestDto);
         }else {
-            return ResponseDto.of(164,historyRequestDto);
+            return ResponseDto.of(180,historyRequestDto);
         }
     }
 
@@ -67,7 +67,7 @@ public class HistoryRequestResource {
         if (historyRequestDtos != null){
             return ResponseDto.of(historyRequestDtos);
         }else {
-            return ResponseDto.of(163,historyRequestDtos);
+            return ResponseDto.of(180,historyRequestDtos);
         }
     }
 
@@ -79,7 +79,7 @@ public class HistoryRequestResource {
         if (historyRequestDtos != null){
             return ResponseDto.of(historyRequestDtos);
         }else {
-            return ResponseDto.of(162,historyRequestDtos);
+            return ResponseDto.of(180,historyRequestDtos);
         }
     }
 }

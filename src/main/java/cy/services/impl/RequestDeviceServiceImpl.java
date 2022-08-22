@@ -2,9 +2,14 @@ package cy.services.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.RequestDeviceDto;
+import cy.entities.HistoryRequestEntity;
+import cy.entities.NotificationEntity;
 import cy.entities.RequestDeviceEntity;
 import cy.entities.UserEntity;
 import cy.models.RequestDeviceModel;
+import cy.models.RequestDeviceUpdateStatusModel;
+import cy.repositories.IHistoryRequestRepository;
+import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestDeviceRepository;
 import cy.repositories.IUserRepository;
 import cy.services.IRequestDeviceService;
@@ -16,13 +21,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
+import javax.transaction.Transactional;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class RequestDeviceServiceImpl implements IRequestDeviceService {
     @Autowired
     IRequestDeviceRepository iRequestDeviceRepository;
@@ -31,7 +40,12 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
     @Autowired
     IUserRepository userRepository;
+    @Autowired
+    IHistoryRequestRepository historyRequestRepository;
+    @Autowired
+    INotificationRepository notificationRepository;
 
+    
     @Override
     public List<RequestDeviceDto> findAll() {
         return iRequestDeviceRepository.findAll().stream().map(data -> RequestDeviceDto.entityToDto(data)).collect(Collectors.toList());
@@ -61,6 +75,24 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     public RequestDeviceEntity getById(Long id) {
         return this.iRequestDeviceRepository.findById(id).orElseThrow(()->new CustomHandleException(11));
     }
+    public void createHistory(RequestDeviceEntity requestDeviceEntity,int status){
+        HistoryRequestEntity historyRequest=new HistoryRequestEntity();
+        historyRequest.setDateHistory(new Date());
+        historyRequest.setTimeHistory(LocalTime.now().toString().substring(0,5));
+        historyRequest.setStatus(status);
+        historyRequest.setRequestDevice(requestDeviceEntity);
+        historyRequestRepository.save(historyRequest);
+    }
+    public void createNotification(RequestDeviceEntity requestDeviceEntity,Boolean isRead,String title,String content){
+        NotificationEntity notificationEntity=new NotificationEntity();
+        notificationEntity.setDateNoti(new java.util.Date());
+        notificationEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
+        notificationEntity.setIsRead(isRead);
+        notificationEntity.setTitle(title);
+        notificationEntity.setContent(content);
+        notificationEntity.setRequestDevice(requestDeviceEntity);
+        notificationRepository.save(notificationEntity);
+    }
 
     @Override
     public RequestDeviceDto add(RequestDeviceModel model)  {
@@ -86,6 +118,9 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
             requestDeviceEntity.setFiles(files.toString());
         }
 
+
+        createHistory(requestDeviceEntity,0);
+        createNotification(requestDeviceEntity,false,"Gửi yêu cầu mượn/thuê thiết bị thành công!","Bạn đã gửi yêu cầu mượn/thuê thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
 
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         RequestDeviceDto requestDeviceDto = RequestDeviceDto.entityToDto(requestDeviceEntity);
@@ -141,4 +176,45 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     public boolean deleteByIds(List<Long> ids) {
         return false;
     }
+
+    public RequestDeviceDto updateStatus(RequestDeviceUpdateStatusModel model) {
+        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        RequestDeviceEntity requestDeviceEntity = this.getById(model.getId());
+        if(userEntity.getUserId()==requestDeviceEntity.getAssignTo().getUserId()){
+            switch (model.getSwitchCase()){
+                case 1:
+                    requestDeviceEntity.setStatus(1);
+                    iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
+                    createHistory(requestDeviceEntity,1);
+                    createNotification(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    // return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+                    break;
+                case 2:
+                    requestDeviceEntity.setStatus(2);
+                    requestDeviceEntity.setReasonCancel(model.getReasonCancel());
+                    iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
+                    createHistory(requestDeviceEntity,2);
+                    createNotification(requestDeviceEntity,true,"Đã bị hủy bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    //   return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+                    break;
+            }
+
+        }else {
+            System.out.printf("userId: "+userEntity.getUserId()+" assignTo: "+requestDeviceEntity.getAssignTo().getUserId());
+            System.out.printf("userIdLogin:"+SecurityUtils.getCurrentUser().getUser().getUserId());
+            System.out.printf("Không có quyền chỉnh sửa yêu cầu này");
+        }
+       /* requestDeviceEntity.setStatus(1);
+        iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
+        createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());*/
+        return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11)));
+    }
+    /*public RequestDeviceDto updateStatusCancle(Long id,String reason) {
+        RequestDeviceEntity requestDeviceEntity = this.getById(id);
+        requestDeviceEntity.setStatus(2);
+        requestDeviceEntity.setReasonCancel(reason);
+        iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
+        createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());
+        return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+    }*/
 }
