@@ -35,6 +35,13 @@ public class RequestOTResource {
         return ResponseDto.of(requestOTService.add(requestOTModel));
     }
 
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
+    @Operation(summary = "Create new request OT")
+    @PostMapping("create1")
+    public ResponseDto addRequestOT1(@RequestBody RequestOTModel requestOTModel) {
+        return ResponseDto.of(requestOTService.add(requestOTModel));
+    }
+
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Update request OT")
     @PutMapping("update")
