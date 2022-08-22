@@ -31,21 +31,14 @@ public class RequestOTResource {
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Create new request OT")
     @PostMapping("create")
-    public ResponseDto addRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
-        return ResponseDto.of(requestOTService.add(requestOTModel));
-    }
-
-    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
-    @Operation(summary = "Create new request OT")
-    @PostMapping("create1")
-    public ResponseDto addRequestOT1(@RequestBody RequestOTModel requestOTModel) {
+    public ResponseDto addRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.add(requestOTModel));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Update request OT")
     @PutMapping("update")
-    public ResponseDto updateRequestOT(@ModelAttribute RequestOTModel requestOTModel) {
+    public ResponseDto updateRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.update(requestOTModel));
     }
 
