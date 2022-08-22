@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -91,13 +92,19 @@ public class RequestOTServiceImpl implements IRequestOTService {
         if (model.getAssignTo() != null) {
             requestOTEntity.setAssignTo(userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
         }
-        if (model.getFiles() != null && !model.getFiles().isEmpty()) {
-            try {
-                String path = fileUploadProvider.uploadFile("request-ot", model.getFiles());
-                requestOTEntity.setFiles(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        if (model.getFiles() != null && model.getFiles().length > 0) {
+            List<String> files = new ArrayList<>();
+            for (MultipartFile fileMultipart : model.getFiles()) {
+                if (!fileMultipart.isEmpty()) {
+                    try {
+                        String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
+                        files.add(result);
+                    } catch (Exception e) {
+                        System.out.println("upload file failed");
+                    }
+                }
             }
+            requestOTEntity.setFiles(files.toString());
         }
 
         // Add notification for user created device request
@@ -134,13 +141,19 @@ public class RequestOTServiceImpl implements IRequestOTService {
             if (requestOTModel.getAssignTo() != null) {
                 requestOTEntity.setAssignTo(userRepository.findById(requestOTModel.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
             }
-            if (requestOTModel.getFiles() != null && !requestOTModel.getFiles().isEmpty()) {
-                try {
-                    String path = fileUploadProvider.uploadFile("request-ot", requestOTModel.getFiles());
-                    requestOTEntity.setFiles(path);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            if (requestOTModel.getFiles() != null && requestOTModel.getFiles().length > 0) {
+                List<String> files = new ArrayList<>();
+                for (MultipartFile fileMultipart : requestOTModel.getFiles()) {
+                    if (!fileMultipart.isEmpty()) {
+                        try {
+                            String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
+                            files.add(result);
+                        } catch (Exception e) {
+                            System.out.println("upload file failed");
+                        }
+                    }
                 }
+                requestOTEntity.setFiles(files.toString());
             }
             requestOTDtoList.add(RequestOTDto.toDto(requestOTRepository.save(requestOTEntity)));
         }
@@ -158,13 +171,19 @@ public class RequestOTServiceImpl implements IRequestOTService {
         if (model.getAssignTo() != null) {
             requestOTEntity.setAssignTo(userRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
         }
-        if (model.getFiles() != null && !model.getFiles().isEmpty()) {
-            try {
-                String path = fileUploadProvider.uploadFile("request-ot", model.getFiles());
-                requestOTEntity.setFiles(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        if (model.getFiles() != null && model.getFiles().length > 0) {
+            List<String> files = new ArrayList<>();
+            for (MultipartFile fileMultipart : model.getFiles()) {
+                if (!fileMultipart.isEmpty()) {
+                    try {
+                        String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
+                        files.add(result);
+                    } catch (Exception e) {
+                        System.out.println("upload file failed");
+                    }
+                }
             }
+            requestOTEntity.setFiles(files.toString());
         }
         return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
     }
