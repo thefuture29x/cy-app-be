@@ -35,7 +35,7 @@ public class RequestModifiResouce {
     * @description-VN:  Lấy danh sách tất cả yêu cầu chỉnh sửa
     * @description-EN:  Get all request modifi
     * @param: pageable
-    * @return: 
+    * @return:
     *
     * */
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
@@ -152,18 +152,28 @@ public class RequestModifiResouce {
     @PostMapping("/checkAttend")
     public ResponseDto checkAttend(@RequestBody RequestAll requestAll ){
         if (requestAll.getIdUser() == null || requestAll.getDateCheckAttend() == null){
-            return ResponseDto.of(165,requestAll);
+            return ResponseDto.of(182,requestAll);
         }
         RequestAttendDto requestAttendDto = iResquestModifiService.checkAttend(requestAll.getDateCheckAttend(),requestAll.getIdUser());
         if (requestAttendDto == null){
-            return ResponseDto.of(165,requestAttendDto);
+            return ResponseDto.of(180,requestAttendDto);
         }
         return ResponseDto.of(requestAttendDto);
     }
 
+    /*
+    * @author: HaiPhong
+    * @since: 17/08/2022 4:39 CH
+    * @description-VN:  Accept or reject request modifi
+    * @description-EN:  Phê duyệt hoặc từ chối yêu cầu chỉnh sửa chấm công
+    * @param: AcceptRequestModifiModel
+    * @return:
+    *
+    * */
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @Operation(summary = "Accept request modifi")
     @PostMapping("/acceptRequestModifi")
-    public Object acceptRequestDevice(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
+    public Object acceptRequestModifi(@RequestBody AcceptRequestModifiModel acceptRequestModifiModel){
         return ResponseDto.of(iResquestModifiService.updateStatus(acceptRequestModifiModel));
     }
 }

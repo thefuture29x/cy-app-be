@@ -45,7 +45,8 @@ public class RequestDeviceDto {
 **/
 
     public static RequestDeviceDto entityToDto(RequestDeviceEntity obj) {
-        return RequestDeviceDto.builder().id(obj.getId())
+        return RequestDeviceDto.builder()
+                .id(obj.getId())
                 .type(obj.getType())
                 .title(obj.getTitle())
                 .quantity(obj.getQuantity())
@@ -60,8 +61,8 @@ public class RequestDeviceDto {
                 .assignTo(obj.getAssignTo() !=null ? obj.getAssignTo().getUserId() : null)
                 .userDtoCreateBy(obj.getCreateBy() !=null ? UserDto.toDto(obj.getCreateBy()) : null)
                 .userDtoAssignTo(obj.getAssignTo() !=null ? UserDto.toDto(obj.getAssignTo()) : null)
-                .historyRequestEntities(obj.getHistoryRequestEntities().stream()
-                        .map(HistoryRequestDto::toDto).collect(Collectors.toList()))
+                .historyRequestEntities(obj.getHistoryRequestEntities() != null
+                        ? obj.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
 
     }

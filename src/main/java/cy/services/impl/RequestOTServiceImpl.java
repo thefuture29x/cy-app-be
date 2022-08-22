@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -93,11 +94,12 @@ public class RequestOTServiceImpl implements IRequestOTService {
         }
         if (model.getFiles() != null && !model.getFiles().isEmpty()) {
             try {
-                String path = fileUploadProvider.uploadFile("request-ot", model.getFiles());
-                requestOTEntity.setFiles(path);
+                String result = fileUploadProvider.uploadFile("requestOT", model.getFiles());
+                requestOTEntity.setFiles(result);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
         }
 
         // Add notification for user created device request
@@ -136,11 +138,12 @@ public class RequestOTServiceImpl implements IRequestOTService {
             }
             if (requestOTModel.getFiles() != null && !requestOTModel.getFiles().isEmpty()) {
                 try {
-                    String path = fileUploadProvider.uploadFile("request-ot", requestOTModel.getFiles());
-                    requestOTEntity.setFiles(path);
+                    String result = fileUploadProvider.uploadFile("requestOT", requestOTModel.getFiles());
+                    requestOTEntity.setFiles(result);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+
             }
             requestOTDtoList.add(RequestOTDto.toDto(requestOTRepository.save(requestOTEntity)));
         }
@@ -160,11 +163,12 @@ public class RequestOTServiceImpl implements IRequestOTService {
         }
         if (model.getFiles() != null && !model.getFiles().isEmpty()) {
             try {
-                String path = fileUploadProvider.uploadFile("request-ot", model.getFiles());
-                requestOTEntity.setFiles(path);
+                String result = fileUploadProvider.uploadFile("requestOT", model.getFiles());
+                requestOTEntity.setFiles(result);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
         }
         return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
     }

@@ -17,6 +17,7 @@ import cy.repositories.*;
 import cy.services.IRequestModifiService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,8 +87,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(model);
         requestModifiEntity.setCreateBy(iUserRepository.findById(model.getCreateBy()).orElseThrow(() -> new CustomHandleException(11)));
         requestModifiEntity.setAssignTo(iUserRepository.findById(model.getAssignTo()).orElseThrow(() -> new CustomHandleException(11)));
+        List<String> s3Urls = new ArrayList<>();
         if(model.getFiles() != null && model.getFiles().length > 0){
-            List<String> files = new ArrayList<>();
             for(MultipartFile fileMultipart : model.getFiles()){
                 if(!fileMultipart.isEmpty()){
                     String result = null;
@@ -95,10 +97,11 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    files.add(result);
+                    s3Urls.add(result);
                 }
             }
-            requestModifiEntity.setFiles(files.toString());
+            JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
+            requestModifiEntity.setFiles(jsonObject.toString());
         }
         // there is no dto of the history request, so leave it null for now
         requestModifiEntity.setHistoryRequestEntities(null);
@@ -180,15 +183,11 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         HistoryRequestEntity historyRequestEntity = new HistoryRequestEntity();
         historyRequestEntity.setDateHistory(new Date());
         historyRequestEntity.setStatus(0);
-        if (requestModifiModel.getDateRequestModifi() != null){
-            historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
-            historyRequestEntity.setDateHistory(requestModifiModel.getDateRequestModifi());
-        }
+        historyRequestEntity.setTimeHistory(new SimpleDateFormat("HH:ss").format(new Date()));
 
         RequestModifiEntity requestModifiEntity = RequestModifiModel.toEntity(requestModifiModel);
         if (requestModifiModel.getCreateBy() == null){
             return null;
-
         }
         UserEntity userEntity = iUserRepository.findById(requestModifiModel.getCreateBy()).orElse(null);
         if (userEntity == null){
@@ -240,7 +239,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         if (requestAttendEntity == null){
             return null;
         }
-        return /*RequestAttendDto.entityToDto(requestAttendEntity);*/null;
+        return RequestAttendDto.entityToDto(requestAttendEntity);
     }
 
     public void createHistory(RequestModifiEntity requestModifiEntity,int status){

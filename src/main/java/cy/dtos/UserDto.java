@@ -55,7 +55,32 @@ public class UserDto {
                                 .roleName(r.getRoleName())
                                 .build())
                         .collect(Collectors.toList()))
-                .manager(UserDto.toDto(userEntity.getManager()))
+                .manager(getManager(userEntity.getManager()))
+                .build();
+    }
+
+    private static UserDto getManager(UserEntity userEntity) {
+        if (userEntity == null) return null;
+        return UserDto.builder()
+                .id(userEntity.getUserId())
+                .userName(userEntity.getUserName())
+                .email(userEntity.getEmail())
+                .phone(userEntity.getPhone())
+                .sex(userEntity.getSex())
+                .fullName(userEntity.getFullName())
+                .avatar(userEntity.getAvatar() == null ? UserEntity.USER_NO_AVATAR : userEntity.getAvatar())
+                .birthDate(userEntity.getBirthDate())
+                .status(userEntity.getStatus())
+                .createdDate(userEntity.getCreatedDate())
+                .updatedDate(userEntity.getUpdatedDate())
+                .address(userEntity.getAddress())
+                .roles(userEntity.getRoleEntity()
+                        .stream()
+                        .map(r -> RoleDto.builder()
+                                .roleId(r.getRoleId())
+                                .roleName(r.getRoleName())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
     }
 }
