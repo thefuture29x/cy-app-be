@@ -348,7 +348,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     }
 
     public List<RequestAttendDto> findByMonthAndYear(java.sql.Date monthAndYear){
-        String monthYear = new SimpleDateFormat("yyyy-MM").format(monthAndYear) + "-%";
+        String monthYear = new SimpleDateFormat("yyyy-MM").format(monthAndYear) + "%";
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByMonthAndYearAndUser(monthYear, userId);
         if(requestAttendExist.isEmpty()){
@@ -356,4 +356,5 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         }
         return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
     }
+
 }
