@@ -5,6 +5,7 @@ import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestModifiEntity;
 import cy.models.RequestModifiModel;
 import lombok.*;
+import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.List;
@@ -24,11 +25,11 @@ public class RequestModifiDto {
     private Date dateRequestModifi;
     private Integer status;
     private String reasonCancel;
-    private String files;
+    private List<Object> files;
 
-    private Long createBy;
+    private UserDto createBy;
 
-    private Long assignTo;
+    private UserDto assignTo;
 
     private List<HistoryRequestDto> historyRequestDtos;
 
@@ -43,9 +44,9 @@ public class RequestModifiDto {
                 .dateRequestModifi(object.getDateRequestModifi())
                 .status(object.getStatus())
                 .reasonCancel(object.getReasonCancel())
-                .files(object.getFiles())
-                .createBy(object.getCreateBy() != null ? object.getCreateBy().getUserId() : null)
-                .assignTo(object.getAssignTo() != null ? object.getAssignTo().getUserId() : null)
+                .files(object.getFiles() != null ? new JSONObject(object.getFiles()).getJSONArray("files").toList() : null)
+                .createBy(object.getCreateBy() != null ? UserDto.toDto(object.getCreateBy()) : null)
+                .assignTo(object.getAssignTo() != null ? UserDto.toDto(object.getAssignTo()) : null)
                 .historyRequestDtos(object.getHistoryRequestEntities() != null ? object.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
 

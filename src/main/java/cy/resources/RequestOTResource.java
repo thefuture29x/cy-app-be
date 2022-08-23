@@ -30,21 +30,21 @@ public class RequestOTResource {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER,RoleEntity.EMPLOYEE})
     @Operation(summary = "Create new request OT")
-    @PostMapping
+    @PostMapping("create")
     public ResponseDto addRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.add(requestOTModel));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Update request OT")
-    @PutMapping
+    @PutMapping("update")
     public ResponseDto updateRequestOT(@Valid @ModelAttribute RequestOTModel requestOTModel) {
         return ResponseDto.of(requestOTService.update(requestOTModel));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Delete request OT")
-    @DeleteMapping
+    @DeleteMapping("delete")
     public ResponseDto deleteRequestOT(Long id) {
         return ResponseDto.of(requestOTService.deleteById(id));
     }
