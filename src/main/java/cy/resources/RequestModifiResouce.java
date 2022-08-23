@@ -124,8 +124,7 @@ public class RequestModifiResouce {
     public ResponseDto sendRequestModifi(@ModelAttribute RequestModifiModel requestModifiModel){
         RequestModifiDto requestModifiDto = iResquestModifiService.sendResquestModifi(requestModifiModel);
         if (requestModifiDto == null){
-
-            return ResponseDto.of(165,requestModifiDto);
+            return ResponseDto.of(181,requestModifiDto);
         }
         NotificationModel notificationModel = new NotificationModel();
         notificationModel.setRequestModifiId(requestModifiDto.getId());
@@ -135,7 +134,7 @@ public class RequestModifiResouce {
             notificationService.add(notificationModel);
             return ResponseDto.of(requestModifiDto);
         }catch (Exception e){
-            return ResponseDto.of(165,requestModifiDto);
+            return ResponseDto.of(180,requestModifiDto);
         }
     }
     /*

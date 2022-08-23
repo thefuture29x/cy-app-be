@@ -190,16 +190,16 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
             return null;
         }
         UserEntity userEntity = iUserRepository.findById(requestModifiModel.getCreateBy()).orElse(null);
-        if (userEntity == null){
+        if (userEntity == null ||userEntity.getStatus() == false){
             return null;
         }
         requestModifiEntity.setCreateBy(userEntity);
 
-        if (requestModifiModel.getAssignTo() == null){
+        if (requestModifiModel.getAssignTo() == null ){
             return null;
         }
         UserEntity assignTo = iUserRepository.findById(requestModifiModel.getAssignTo()).orElse(null);
-        if (assignTo == null){
+        if (assignTo == null ||userEntity.getStatus() == false){
             return null;
         }
         requestModifiEntity.setAssignTo(assignTo);
