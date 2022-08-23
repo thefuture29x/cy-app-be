@@ -63,7 +63,8 @@ public class RequestDeviceDto {
                 .assignTo(obj.getAssignTo() !=null ? obj.getAssignTo().getUserId() : null)
                 .userDtoCreateBy(obj.getCreateBy() !=null ? UserDto.toDto(obj.getCreateBy()) : null)
                 .userDtoAssignTo(obj.getAssignTo() !=null ? UserDto.toDto(obj.getAssignTo()) : null)
-                .historyRequestEntities(obj.getHistoryRequestEntities() != null ? obj.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
+                .historyRequestEntities(obj.getHistoryRequestEntities() != null
+                        ? obj.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
 
     }

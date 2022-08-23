@@ -129,7 +129,7 @@ public class RequestModifiResouce {
         }
         NotificationModel notificationModel = new NotificationModel();
         notificationModel.setRequestModifiId(requestModifiDto.getId());
-        notificationModel.setContent("Yêu cầu thay đổi ngày chấm công đã được giử");
+        notificationModel.setContent("Yêu cầu thay đổi ngày chấm công đã được gửi");
         notificationModel.setTitle("Yêu cầu sửa đổi bảng chấm công");
         try{
             notificationService.add(notificationModel);

@@ -152,7 +152,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 .content(content)
                 .requestAttendId(result.getId())
                 .build();
-
         NotificationDto notificationDto = this.notificationService.add(notificationModel);
 
         // save history
@@ -291,7 +290,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 .dateRequestAttend(request.getDateRequestAttend())
                 .status(status)
                 .reasonCancel(reasonCancel)
-                .files(fileS3Urls)
+                .files(fileS3Urls.size() > 0 ? fileS3Urls : null)
                 .createdBy(UserDto.toDto(SecurityUtils.getCurrentUser().getUser()))
                 .assignedTo(UserDto.toDto(userAssigned.get()))
                 .build();
