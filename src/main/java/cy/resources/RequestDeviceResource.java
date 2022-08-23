@@ -91,7 +91,7 @@ public class RequestDeviceResource {
     **/
     @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PutMapping("/acceptRequestDevice")
-    public Object acceptRequestDevice(RequestDeviceUpdateStatusModel requestDeviceUpdateStatusModel){
+    public Object acceptRequestDevice(@RequestBody RequestDeviceUpdateStatusModel requestDeviceUpdateStatusModel){
         return ResponseDto.of(requestDeviceService.updateStatus(requestDeviceUpdateStatusModel));
     }
     /*
