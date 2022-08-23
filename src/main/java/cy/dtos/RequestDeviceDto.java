@@ -24,6 +24,7 @@ public class RequestDeviceDto {
     private Long id;
     private String type;
     private String title;
+    private Integer typeRequestDevice;
     private Integer quantity;
     private Date dateRequestDevice;
     private Date dateStart;
@@ -50,6 +51,7 @@ public class RequestDeviceDto {
                 .type(obj.getType())
                 .title(obj.getTitle())
                 .quantity(obj.getQuantity())
+                .typeRequestDevice(obj.getTypeRequestDevice())
                 .dateRequestDevice(obj.getDateRequestDevice())
                 .dateStart(obj.getDateStart())
                 .dateEnd(obj.getDateEnd())
