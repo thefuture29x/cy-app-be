@@ -2,6 +2,8 @@ package cy.repositories;
 
 import cy.dtos.RequestAttendDto;
 import cy.entities.RequestAttendEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -23,4 +25,7 @@ public interface IRequestAttendRepository extends JpaRepository<RequestAttendEnt
     RequestAttendEntity checkAttend(Date date,Long id);
     @Query(value = "SELECT NEW cy.dtos.RequestAttendDto(r) FROM RequestAttendEntity r WHERE r.id = ?1")
     RequestAttendDto findByIdToDto(Long id);
+
+    @Query(value = "SELECT * FROM tbl_request_attend WHERE date_request_attend LIKE ?1 AND user_id = ?2", nativeQuery = true)
+    List<RequestAttendEntity> findByMonthAndYearAndUser(String monthAndYear, Long userId);
 }

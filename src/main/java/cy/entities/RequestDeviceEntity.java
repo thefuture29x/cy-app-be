@@ -20,7 +20,11 @@ public class RequestDeviceEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "type")
-    private String type;
+    private String type;//Loại thiết bị mượn
+    @Column(name = "type_request_device")
+    private Integer typeRequestDevice;//mượn hay là mua?
+    //0 là mượn
+    //1 là mua
     @Column(name = "title")
     private String title;
     @Column(name = "quantity")

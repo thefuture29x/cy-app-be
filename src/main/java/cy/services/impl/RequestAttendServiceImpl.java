@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @org.springframework.transaction.annotation.Transactional
 @Service
@@ -336,13 +337,25 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         return true; // Request attend exist
     }
 
-    public RequestAttendDto findByDay(java.sql.Date dayRequestAttend){
+    public List<RequestAttendDto> findByDay(java.sql.Date dayRequestAttend){
         String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
         if(requestAttendExist.isEmpty()){
             return null; // Request attend not exist
         }
-        return RequestAttendDto.entityToDto(requestAttendExist.stream().findFirst().get()); // Request attend exist
+        return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
     }
+
+    @Transactional
+    public List<RequestAttendDto> findByMonthAndYear(java.sql.Date monthAndYear){
+        String monthYear = new SimpleDateFormat("yyyy-MM").format(monthAndYear) + "%";
+        Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByMonthAndYearAndUser(monthYear, userId);
+        if(requestAttendExist.isEmpty()){
+            return null; // Request attend not exist
+        }
+        return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
+    }
+
 }

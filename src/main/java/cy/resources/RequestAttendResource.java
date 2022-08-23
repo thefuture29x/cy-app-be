@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.sql.Date;
+import java.util.List;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "request_attend")
 @RestController
@@ -97,7 +98,13 @@ public class RequestAttendResource {
 
     @GetMapping(value = "/find_by_day")
     public ResponseDto findByDay(@RequestParam Date day) {
-        RequestAttendDto result = this.requestAttendService.findByDay(day);
+        List<RequestAttendDto> result = this.requestAttendService.findByDay(day);
+        return ResponseDto.of(result);
+    }
+
+    @GetMapping(value = "/find_by_day_and_user_id")
+    public ResponseDto findByDayAndUserId(@RequestParam Date day) {
+        List<RequestAttendDto> result = this.requestAttendService.findByMonthAndYear(day);
         return ResponseDto.of(result);
     }
 }
