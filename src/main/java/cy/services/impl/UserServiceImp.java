@@ -392,6 +392,8 @@ public class UserServiceImp implements IUserService {
                 return RequestDayOffDto.toDto(iRequestDayOffRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
             case "OT":
                 return RequestOTDto.toDto(iRequestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "Attend":
+                return RequestAttendDto.entityToDto(iRequestAttendRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
         }
         return null;
     }
