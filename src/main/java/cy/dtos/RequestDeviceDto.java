@@ -59,10 +59,10 @@ public class RequestDeviceDto {
                 .reasonCancel(obj.getReasonCancel())
                 .files(obj.getFiles())
                 .description(obj.getDescription())
-                .createBy(obj.getCreateBy() !=null ? obj.getCreateBy().getUserId() : null)
-                .assignTo(obj.getAssignTo() !=null ? obj.getAssignTo().getUserId() : null)
-                .userDtoCreateBy(obj.getCreateBy() !=null ? UserDto.toDto(obj.getCreateBy()) : null)
-                .userDtoAssignTo(obj.getAssignTo() !=null ? UserDto.toDto(obj.getAssignTo()) : null)
+                .createBy(obj.getCreateBy() != null ? obj.getCreateBy().getUserId() : null)
+                .assignTo(obj.getAssignTo() != null ? obj.getAssignTo().getUserId() : null)
+                .userDtoCreateBy(obj.getCreateBy() != null ? UserDto.toDto(obj.getCreateBy()) : null)
+                .userDtoAssignTo(obj.getAssignTo() != null ? UserDto.toDto(obj.getAssignTo()) : null)
                 .historyRequestEntities(obj.getHistoryRequestEntities() != null
                         ? obj.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
