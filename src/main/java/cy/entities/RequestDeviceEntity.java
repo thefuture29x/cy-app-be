@@ -21,7 +21,7 @@ public class RequestDeviceEntity {
     private Long id;
     @Column(name = "type")
     private String type;//Loại thiết bị mượn
-    @Column(name = "type")
+    @Column(name = "type_request_device")
     private Integer typeRequestDevice;//mượn hay là mua?
     //0 là mượn
     //1 là mua
