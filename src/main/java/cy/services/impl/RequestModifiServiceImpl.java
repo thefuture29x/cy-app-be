@@ -52,6 +52,9 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
     @Autowired
     INotificationRepository iNotificationRepository;
 
+    @Autowired
+    private IRequestAttendRepository requestAttendRepository;
+
     @Override
     public List<RequestModifiDto> findAll() {
         return iRequestModifiRepository.findAll().stream().map(data -> RequestModifiDto.toDto(data)).collect(Collectors.toList());
@@ -105,6 +108,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
         }
         // there is no dto of the history request, so leave it null for now
         requestModifiEntity.setHistoryRequestEntities(null);
+
         return RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity));
     }
 
@@ -272,6 +276,12 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
                     iRequestModifiRepository.saveAndFlush(requestModifiEntity);
                     createHistory(requestModifiEntity,1);
                     createNotification(requestModifiEntity,true,"Yêu cầu sửa đổi thông tin chấm công","Yêu cầu thay đổi thông tin chấm công đã được xét duyệt bởi "+userEntity.getFullName());
+                    // update date-timeStart and timeEnd to request Attend
+                    RequestAttendEntity oldRequestAttend = this.iRequestAttendRepository.checkAttend(requestModifiEntity.getDateRequestModifi(),userEntity.getUserId() );
+                    oldRequestAttend.setDateRequestAttend((java.sql.Date) requestModifiEntity.getDateRequestModifi());
+                    oldRequestAttend.setTimeCheckIn(requestModifiEntity.getTimeStart());
+                    oldRequestAttend.setTimeCheckOut(requestModifiEntity.getTimeEnd());
+                    this.iRequestAttendRepository.saveAndFlush(oldRequestAttend);
                     break;
                 case 2:
                     requestModifiEntity.setStatus(2);
