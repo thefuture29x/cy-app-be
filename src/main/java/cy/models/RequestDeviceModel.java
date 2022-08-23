@@ -25,6 +25,7 @@ public class RequestDeviceModel {
     private String type;
     private String title;
     private Integer quantity;
+    private Integer typeRequestDevice;
     @JsonSerialize(as = Date.class)
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateRequestDevice;
@@ -49,6 +50,7 @@ public class RequestDeviceModel {
         requestDeviceEntity.setId(model.getId());
         requestDeviceEntity.setType(model.getType());
         requestDeviceEntity.setTitle(model.getTitle());
+        requestDeviceEntity.setTypeRequestDevice(model.getTypeRequestDevice());
         requestDeviceEntity.setQuantity(model.getQuantity());
         requestDeviceEntity.setDateRequestDevice(model.getDateRequestDevice());
         requestDeviceEntity.setDateStart(model.getDateStart());

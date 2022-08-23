@@ -24,6 +24,7 @@ public class RequestDeviceDto {
     private Long id;
     private String type;
     private String title;
+    private Integer typeRequestDevice;
     private Integer quantity;
     private Date dateRequestDevice;
     private Date dateStart;
@@ -50,6 +51,7 @@ public class RequestDeviceDto {
                 .type(obj.getType())
                 .title(obj.getTitle())
                 .quantity(obj.getQuantity())
+                .typeRequestDevice(obj.getTypeRequestDevice())
                 .dateRequestDevice(obj.getDateRequestDevice())
                 .dateStart(obj.getDateStart())
                 .dateEnd(obj.getDateEnd())
@@ -61,7 +63,8 @@ public class RequestDeviceDto {
                 .assignTo(obj.getAssignTo() !=null ? obj.getAssignTo().getUserId() : null)
                 .userDtoCreateBy(obj.getCreateBy() !=null ? UserDto.toDto(obj.getCreateBy()) : null)
                 .userDtoAssignTo(obj.getAssignTo() !=null ? UserDto.toDto(obj.getAssignTo()) : null)
-                .historyRequestEntities(obj.getHistoryRequestEntities() != null ? obj.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
+                .historyRequestEntities(obj.getHistoryRequestEntities() != null
+                        ? obj.getHistoryRequestEntities().stream().map(data -> HistoryRequestDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
 
     }

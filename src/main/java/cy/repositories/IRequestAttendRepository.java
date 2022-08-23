@@ -2,6 +2,7 @@ package cy.repositories;
 
 import cy.dtos.RequestAttendDto;
 import cy.entities.RequestAttendEntity;
+import cy.entities.RequestDayOffEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,4 +29,9 @@ public interface IRequestAttendRepository extends JpaRepository<RequestAttendEnt
 
     @Query(value = "SELECT * FROM tbl_request_attend WHERE date_request_attend LIKE ?1 AND user_id = ?2", nativeQuery = true)
     List<RequestAttendEntity> findByMonthAndYearAndUser(String monthAndYear, Long userId);
+    @Query(value = "SELECT * FROM `tbl_request_attend` \n " +
+            "WHERE assign_id = ?1 \n " +
+            "and created_date between ?2 and ?3", nativeQuery = true)
+    Page<RequestAttendEntity> getAllRequestSendMe(Long id, String startTime, String endTime, Pageable pageable);
+
 }

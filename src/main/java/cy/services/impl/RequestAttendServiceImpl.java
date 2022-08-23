@@ -110,36 +110,63 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
 
         // cho tao moi neu khong co request attend nao hoac co request nhung da bi reject
-        if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
-            RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
+//        if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
+//            RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
+//
+//            // save notification
+//            String title = "Yêu cầu chấm công";
+//            String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+//            NotificationModel notificationModel = NotificationModel.builder()
+//                    .title(title)
+//                    .content(content)
+//                    .requestAttendId(result.getId())
+//                    .build();
+//
+//            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+//
+//            // save history
+//            Date dateHistory = result.getCreatedDate();
+//            String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+//            Integer status = result.getStatus();
+//            HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
+//                    .dateHistory(dateHistory)
+//                    .timeHistory(timeHistory)
+//                    .status(status)
+//                    .requestAttend(result)
+//                    .build();
+//            this.historyRequestRepository.save(historyRequestEntity);
+//
+//            return RequestAttendDto.entityToDto(result, notificationDto);
+//        }else {
+//            throw new CustomHandleException(37);
+//        }
 
-            // save notification
-            String title = "Yêu cầu chấm công";
-            String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
-            NotificationModel notificationModel = NotificationModel.builder()
-                    .title(title)
-                    .content(content)
-                    .requestAttendId(result.getId())
-                    .build();
+        // test du lieu
+        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
 
-            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+        // save notification
+        String title = "Yêu cầu chấm công";
+        String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+        NotificationModel notificationModel = NotificationModel.builder()
+                .title(title)
+                .content(content)
+                .requestAttendId(result.getId())
+                .build();
+        NotificationDto notificationDto = this.notificationService.add(notificationModel);
 
-            // save history
-            Date dateHistory = result.getCreatedDate();
-            String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
-            Integer status = result.getStatus();
-            HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
-                    .dateHistory(dateHistory)
-                    .timeHistory(timeHistory)
-                    .status(status)
-                    .requestAttend(result)
-                    .build();
-            this.historyRequestRepository.save(historyRequestEntity);
+        // save history
+        Date dateHistory = result.getCreatedDate();
+        String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+        Integer status = result.getStatus();
+        HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
+                .dateHistory(dateHistory)
+                .timeHistory(timeHistory)
+                .status(status)
+                .requestAttend(result)
+                .build();
+        this.historyRequestRepository.save(historyRequestEntity);
 
-            return RequestAttendDto.entityToDto(result, notificationDto);
-        }else {
-            throw new CustomHandleException(37);
-        }
+        return RequestAttendDto.entityToDto(result, notificationDto);
 
     }
 
@@ -263,7 +290,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 .dateRequestAttend(request.getDateRequestAttend())
                 .status(status)
                 .reasonCancel(reasonCancel)
-                .files(fileS3Urls)
+                .files(fileS3Urls.size() > 0 ? fileS3Urls : null)
                 .createdBy(UserDto.toDto(SecurityUtils.getCurrentUser().getUser()))
                 .assignedTo(UserDto.toDto(userAssigned.get()))
                 .build();

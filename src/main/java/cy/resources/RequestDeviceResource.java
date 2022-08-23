@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
-@RequestMapping(FrontendConfiguration.PREFIX_API + "request-device/")
+@RequestMapping(FrontendConfiguration.PREFIX_API + "request-device")
 public class RequestDeviceResource {
     @Autowired
     RequestDeviceServiceImpl requestDeviceService;
@@ -30,7 +30,6 @@ public class RequestDeviceResource {
         RequestDeviceDto requestDeviceDto=requestDeviceService.add(requestDeviceModel);
         if(requestDeviceDto==null){
             return ResponseDto.of(130, "CREATE");
-
         }else {
             return ResponseDto.of(requestDeviceDto);
         }
