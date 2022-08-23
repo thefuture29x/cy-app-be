@@ -177,7 +177,8 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         return false;
     }
 
-    public RequestDeviceDto updateStatus(RequestDeviceUpdateStatusModel model) {
+    public Boolean updateStatus(RequestDeviceUpdateStatusModel model) {
+        Boolean status = false;
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
         RequestDeviceEntity requestDeviceEntity = this.getById(model.getId());
         if(userEntity.getUserId()==requestDeviceEntity.getAssignTo().getUserId()){
@@ -198,16 +199,18 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
                     //   return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
                     break;
             }
-
+                        status= true;
         }else {
             System.out.printf("userId: "+userEntity.getUserId()+" assignTo: "+requestDeviceEntity.getAssignTo().getUserId());
             System.out.printf("userIdLogin:"+SecurityUtils.getCurrentUser().getUser().getUserId());
             System.out.printf("Không có quyền chỉnh sửa yêu cầu này");
+            status=false;
         }
        /* requestDeviceEntity.setStatus(1);
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());*/
-        return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11)));
+    /*    return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11)));*/
+        return status;
     }
     /*public RequestDeviceDto updateStatusCancle(Long id,String reason) {
         RequestDeviceEntity requestDeviceEntity = this.getById(id);
