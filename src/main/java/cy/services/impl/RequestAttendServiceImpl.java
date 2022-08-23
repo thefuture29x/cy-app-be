@@ -114,19 +114,19 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
 
             // save notification
-            String title = "Yêu cầu chấm công";
-            String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
-            NotificationModel notificationModel = NotificationModel.builder()
-                    .title(title)
-                    .content(content)
-                    .requestAttendId(result.getId())
-                    .build();
-
-            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+//            String title = "Yêu cầu chấm công";
+//            String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+//            NotificationModel notificationModel = NotificationModel.builder()
+//                    .title(title)
+//                    .content(content)
+//                    .requestAttendId(result.getId())
+//                    .build();
+//
+//            NotificationDto notificationDto = this.notificationService.add(notificationModel);
 
             // save history
             Date dateHistory = result.getCreatedDate();
-            String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+            String timeHistory = new SimpleDateFormat("HH:mm:ss").format(new Date());
             Integer status = result.getStatus();
             HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
                     .dateHistory(dateHistory)
@@ -136,7 +136,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                     .build();
             this.historyRequestRepository.save(historyRequestEntity);
 
-            return RequestAttendDto.entityToDto(result, notificationDto);
+            return RequestAttendDto.entityToDto(result);
         }else {
             throw new CustomHandleException(37);
         }
@@ -153,15 +153,17 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         requestAttendUpdateEntity.setId(model.getId());
         RequestAttendEntity oldRequestAttend = this.getById(model.getId());
         requestAttendUpdateEntity.setDateRequestAttend(oldRequestAttend.getDateRequestAttend());
+        requestAttendUpdateEntity.setTimeCheckIn(oldRequestAttend.getTimeCheckIn());
 
         // Today can't timekeeping for next day
         if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
             throw new CustomHandleException(38);
         }
 
-        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
-        String title = "Yêu cầu chỉnh sửa chấm công";
-        String content = "Bạn đã chỉnh sửa một yêu cầu chấm công ngày " + requestAttendUpdateEntity.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+        RequestAttendEntity result = this.requestAttendRepository.saveAndFlush(requestAttendUpdateEntity);
+
+        String title = "Yêu chấm công";
+        String content = "Bạn đã gửi yêu cầu chấm công ngày " + requestAttendUpdateEntity.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
         NotificationModel notificationModel = NotificationModel.builder()
                 .title(title)
                 .content(content)
@@ -172,6 +174,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         // save history
         Date dateHistory = result.getUpdatedDate();
         String timeHistory = new SimpleDateFormat("HH:mm:ss").format(new Date());
+
         Integer status = result.getStatus();
         HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
                 .dateHistory(dateHistory)
