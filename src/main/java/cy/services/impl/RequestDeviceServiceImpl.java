@@ -15,6 +15,7 @@ import cy.repositories.IUserRepository;
 import cy.services.IRequestDeviceService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,12 +23,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -103,21 +106,22 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
 
         requestDeviceEntity.setAssignTo(assignUser);
 
-        if (model.getFiles() != null && model.getFiles().length > 0) {
-            List<String> files = new ArrayList<>();
-            for (MultipartFile fileMultipart : model.getFiles()) {
-                if (!fileMultipart.isEmpty()) {
+        List<String> s3Urls = new ArrayList<>();
+        if(model.getFiles() != null && model.getFiles().length > 0){
+            for(MultipartFile fileMultipart : model.getFiles()){
+                if(!fileMultipart.isEmpty()){
+                    String result = null;
                     try {
-                        String result = fileUploadProvider.uploadFile("device", fileMultipart);
-                        files.add(result);
-                    } catch (Exception e) {
-                        System.out.println("upload file failed");
+                        result = fileUploadProvider.uploadFile("device",fileMultipart);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
+                    s3Urls.add(result);
                 }
             }
-            requestDeviceEntity.setFiles(files.toString());
+            JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
+            requestDeviceEntity.setFiles(jsonObject.toString());
         }
-
 
         createHistory(requestDeviceEntity,0);
         createNotification(requestDeviceEntity,false,"Gửi yêu cầu mượn/thuê thiết bị thành công!","Bạn đã gửi yêu cầu mượn/thuê thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");

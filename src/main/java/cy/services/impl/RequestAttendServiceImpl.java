@@ -162,7 +162,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         RequestAttendEntity result = this.requestAttendRepository.saveAndFlush(requestAttendUpdateEntity);
 
-        String title = "Yêu chấm công";
+        String title = "Yêu cầu chấm công";
         String content = "Bạn đã gửi yêu cầu chấm công ngày " + requestAttendUpdateEntity.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
         NotificationModel notificationModel = NotificationModel.builder()
                 .title(title)

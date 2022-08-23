@@ -490,7 +490,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
+                    .timeCreate(simpleDateFormat.format(entity.getUpdatedDate()))
                     .status(entity.getStatus())
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
