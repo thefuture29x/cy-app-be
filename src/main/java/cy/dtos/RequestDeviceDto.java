@@ -26,6 +26,7 @@ public class RequestDeviceDto {
     private String title;
     private Integer quantity;
     private Date dateRequestDevice;
+    private Integer typeRequestDevice;//m
     private Date dateStart;
     private Date dateEnd;
     private Integer status;
@@ -50,6 +51,7 @@ public class RequestDeviceDto {
                 .type(obj.getType())
                 .title(obj.getTitle())
                 .quantity(obj.getQuantity())
+                .typeRequestDevice(obj.getTypeRequestDevice())
                 .dateRequestDevice(obj.getDateRequestDevice())
                 .dateStart(obj.getDateStart())
                 .dateEnd(obj.getDateEnd())
