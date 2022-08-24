@@ -313,8 +313,10 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         if(oldRequest.getStatus()!=0){
             return RequestAttendDto.builder().reasonCancel("1").build();
         }
-        if(SecurityUtils.getCurrentUser().getUser() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
-            return RequestAttendDto.builder().reasonCancel("2").build();
+        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
+            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
+                return RequestAttendDto.builder().reasonCancel("2").build();
+            }
         }
         if(status){
             oldRequest.setStatus(1);
