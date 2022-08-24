@@ -62,8 +62,6 @@ public class RequestOTResource {
     public ResponseDto responseRequestOT(@Valid Long id, String reasonCancel,@Valid Boolean status){
         RequestOTDto requestOTDto = requestOTService.responseOtRequest(id, reasonCancel, status);
         if (requestOTDto != null && requestOTDto.getReasonCancel() != null && !requestOTDto.getReasonCancel().isEmpty()) {
-            if (requestOTDto.getReasonCancel().equals("112"))
-                throw new CustomHandleException(112);
             if (requestOTDto.getReasonCancel().equals("113"))
                 throw new CustomHandleException(113);
         }
