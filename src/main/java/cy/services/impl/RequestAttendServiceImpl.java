@@ -114,19 +114,19 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
 
             // save notification
-            String title = "Yêu cầu chấm công";
-            String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
-            NotificationModel notificationModel = NotificationModel.builder()
-                    .title(title)
-                    .content(content)
-                    .requestAttendId(result.getId())
-                    .build();
-
-            NotificationDto notificationDto = this.notificationService.add(notificationModel);
+//            String title = "Yêu cầu chấm công";
+//            String content = "Bạn đã tạo một yêu cầu chấm công ngày " + model.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+//            NotificationModel notificationModel = NotificationModel.builder()
+//                    .title(title)
+//                    .content(content)
+//                    .requestAttendId(result.getId())
+//                    .build();
+//
+//            NotificationDto notificationDto = this.notificationService.add(notificationModel);
 
             // save history
             Date dateHistory = result.getCreatedDate();
-            String timeHistory = new SimpleDateFormat("HH:ss").format(new Date());
+            String timeHistory = new SimpleDateFormat("HH:mm:ss").format(new Date());
             Integer status = result.getStatus();
             HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
                     .dateHistory(dateHistory)
@@ -136,11 +136,10 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                     .build();
             this.historyRequestRepository.save(historyRequestEntity);
 
-            return RequestAttendDto.entityToDto(result, notificationDto);
+            return RequestAttendDto.entityToDto(result);
         }else {
             throw new CustomHandleException(37);
         }
-
     }
 
     @Override
@@ -154,15 +153,17 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         requestAttendUpdateEntity.setId(model.getId());
         RequestAttendEntity oldRequestAttend = this.getById(model.getId());
         requestAttendUpdateEntity.setDateRequestAttend(oldRequestAttend.getDateRequestAttend());
+        requestAttendUpdateEntity.setTimeCheckIn(oldRequestAttend.getTimeCheckIn());
 
         // Today can't timekeeping for next day
         if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
             throw new CustomHandleException(38);
         }
 
-        RequestAttendEntity result = this.requestAttendRepository.save(requestAttendUpdateEntity);
-        String title = "Yêu cầu chỉnh sửa chấm công";
-        String content = "Bạn đã chỉnh sửa một yêu cầu chấm công ngày " + requestAttendUpdateEntity.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
+        RequestAttendEntity result = this.requestAttendRepository.saveAndFlush(requestAttendUpdateEntity);
+
+        String title = "Yêu cầu chấm công";
+        String content = "Bạn đã gửi yêu cầu chấm công ngày " + requestAttendUpdateEntity.getDateRequestAttend() + " từ " + model.getTimeCheckIn() + " giờ đến " + model.getTimeCheckOut() + " giờ";
         NotificationModel notificationModel = NotificationModel.builder()
                 .title(title)
                 .content(content)
@@ -173,6 +174,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         // save history
         Date dateHistory = result.getUpdatedDate();
         String timeHistory = new SimpleDateFormat("HH:mm:ss").format(new Date());
+
         Integer status = result.getStatus();
         HistoryRequestEntity historyRequestEntity = HistoryRequestEntity.builder()
                 .dateHistory(dateHistory)
@@ -202,6 +204,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     public RequestAttendModel requestToModel(CreateUpdateRequestAttend request, int type){
         int status = 0;
         String reasonCancel = "";
+        if(request.getAssignUserId() == null){
+            throw new CustomHandleException(48);
+        }
         List<String> fileS3Urls = new ArrayList<>();
         RequestAttendEntity requestAttendEntity = new RequestAttendEntity();
         if(type == 2){
@@ -218,16 +223,25 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             if(findRequestAttend.isEmpty()){
                 throw new CustomHandleException(35);
             }else {
+                List<Object> objFiles = new ArrayList<>();
                 requestAttendEntity = findRequestAttend.get();
-                List<Object> objFiles = new JSONObject(requestAttendEntity.getFiles()).getJSONArray("files").toList();
-                for(Object objFile : objFiles){
-                    fileS3Urls.add(objFile.toString());
+                if(requestAttendEntity.getFiles() != null){
+                    objFiles = new JSONObject(requestAttendEntity.getFiles()).getJSONArray("files").toList();
+                    for(Object objFile : objFiles){
+                        fileS3Urls.add(objFile.toString());
+                    }
                 }
                 // If user deleted files
-                if(request.getDeletedFilesNumber() != null){
+                if(request.getDeletedFilesNumber() != null && fileS3Urls.size() > 0){
                     for(Integer deletedFileNumber : request.getDeletedFilesNumber()){
-                        fileS3Urls.remove(deletedFileNumber.intValue());
+                        if(deletedFileNumber < fileS3Urls.size()){
+                            fileS3Urls.remove(deletedFileNumber.intValue());
+                        }else {
+                            throw new CustomHandleException(32);
+                        }
                     }
+                }else if(request.getDeletedFilesNumber() != null && fileS3Urls.size() == 0){
+                    throw new CustomHandleException(32);
                 }
 
                 status = requestAttendEntity.getStatus();
@@ -263,7 +277,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 .dateRequestAttend(request.getDateRequestAttend())
                 .status(status)
                 .reasonCancel(reasonCancel)
-                .files(fileS3Urls)
+                .files(fileS3Urls.size() > 0 ? fileS3Urls : null)
                 .createdBy(UserDto.toDto(SecurityUtils.getCurrentUser().getUser()))
                 .assignedTo(UserDto.toDto(userAssigned.get()))
                 .build();
@@ -278,12 +292,13 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         entity.setReasonCancel(model.getReasonCancel());
         List<String> s3Urls = model.getFiles();
         //new JSONObject(s3Urls).getJSONArray("files").toString();
-        JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
-        entity.setFiles(jsonObject.toString());
+        if(s3Urls != null){
+            JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
+            entity.setFiles(jsonObject.toString());
+        }
         entity.setCreateBy(userRepository.findById(model.getCreatedBy().getId()).get());
         entity.setAssignTo(userRepository.findById(model.getAssignedTo().getId()).get());
         HistoryRequestEntity historyRequest = new HistoryRequestEntity();
-
         historyRequest.setDateHistory(new Date());
         historyRequest.setTimeHistory(LocalTime.now().toString());
         historyRequest.setStatus(model.getStatus());

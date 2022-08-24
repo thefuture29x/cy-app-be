@@ -66,6 +66,8 @@ public class UserServiceImp implements IUserService {
     IRequestDeviceRepository iRequestDeviceRepository;
     @Autowired
     IRequestOTRepository iRequestOTRepository;
+    @Autowired
+    IRequestAttendRepository iRequestAttendRepository;
 
 
     public UserServiceImp(IUserRepository userRepository,
@@ -390,6 +392,8 @@ public class UserServiceImp implements IUserService {
                 return RequestDayOffDto.toDto(iRequestDayOffRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
             case "OT":
                 return RequestOTDto.toDto(iRequestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "Attend":
+                return RequestAttendDto.entityToDto(iRequestAttendRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
         }
         return null;
     }
@@ -481,6 +485,20 @@ public class UserServiceImp implements IUserService {
                     .type("OT")
                     .build());
         }
+
+        for (RequestAttendEntity entity: iRequestAttendRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(simpleDateFormat.format(entity.getUpdatedDate()))
+                    .status(entity.getStatus())
+                    .description(null)
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .type("Attend")
+                    .build());
+        }
+
 
 
         return requestSendMeDtoList;

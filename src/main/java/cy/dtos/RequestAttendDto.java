@@ -49,7 +49,10 @@ public class RequestAttendDto {
     }
 
     public static RequestAttendDto entityToDto(RequestAttendEntity entity, NotificationDto notificationDto){
-        List<Object> s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
+        List<Object> s3UrlsObj = new ArrayList<>();
+        if(entity.getFiles() != null){
+            s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
+        }
         List<String> s3Urls = new ArrayList<>();
         for(Object s3Url : s3UrlsObj){
             s3Urls.add(s3Url.toString());
@@ -69,7 +72,10 @@ public class RequestAttendDto {
                 .build();
     }
     public static RequestAttendDto entityToDto(RequestAttendEntity entity){
-        List<Object> s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
+        List<Object> s3UrlsObj = new ArrayList<>();
+        if(entity.getFiles() != null) {
+            s3UrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
+        }
         List<String> s3Urls = new ArrayList<>();
         for(Object s3Url : s3UrlsObj){
             s3Urls.add(s3Url.toString());
