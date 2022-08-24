@@ -31,7 +31,7 @@ public interface IRequestAttendRepository extends JpaRepository<RequestAttendEnt
     List<RequestAttendEntity> findByMonthAndYearAndUser(String monthAndYear, Long userId);
     @Query(value = "SELECT * FROM `tbl_request_attend` \n " +
             "WHERE assign_id = ?1 \n " +
-            "and updated_date between ?2 and ?3", nativeQuery = true)
+            "and updated_date between ?2 and ?3 ORDER BY updated_date DESC", nativeQuery = true)
     Page<RequestAttendEntity> getAllRequestSendMe(Long id, String startTime, String endTime, Pageable pageable);
 
 }
