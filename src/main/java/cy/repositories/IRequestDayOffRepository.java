@@ -20,11 +20,11 @@ public interface IRequestDayOffRepository extends JpaRepository<RequestDayOffEnt
 
     @Query(value = "SELECT * FROM `tbl_request_dayoff` \n " +
             "WHERE assign_id = ?1 \n " +
-            "and created_date between ?2 and ?3", nativeQuery = true)
+            "and created_date between ?2 and ?3 ORDER BY updated_date DESC", nativeQuery = true)
     Page<RequestDayOffEntity> getAllRequestSendMe(Long id, String startTime, String endTime,Pageable pageable);
 
     @Query(value = "SELECT * FROM `tbl_request_dayoff` \n " +
-            "WHERE user_id = ?1", nativeQuery = true)
+            "WHERE user_id = ?1 ORDER BY updated_date DESC", nativeQuery = true)
     Page<RequestDayOffEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
 
 }

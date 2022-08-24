@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public class RequestDeviceDto {
     private Date dateEnd;
     private Integer status;
     private String reasonCancel;
-    private String files;
+    private List<Object> files;
     private String description;
     private Long createBy;
     private Long assignTo;
@@ -57,7 +58,7 @@ public class RequestDeviceDto {
                 .dateEnd(obj.getDateEnd())
                 .status(obj.getStatus())
                 .reasonCancel(obj.getReasonCancel())
-                .files(obj.getFiles())
+                .files(obj.getFiles() != null ? new JSONObject(obj.getFiles()).getJSONArray("files").toList() : null)
                 .description(obj.getDescription())
                 .createBy(obj.getCreateBy() != null ? obj.getCreateBy().getUserId() : null)
                 .assignTo(obj.getAssignTo() != null ? obj.getAssignTo().getUserId() : null)
