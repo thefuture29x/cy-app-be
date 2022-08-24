@@ -30,8 +30,8 @@ public interface IRequestAttendRepository extends JpaRepository<RequestAttendEnt
     @Query(value = "SELECT * FROM tbl_request_attend WHERE date_request_attend LIKE ?1 AND user_id = ?2", nativeQuery = true)
     List<RequestAttendEntity> findByMonthAndYearAndUser(String monthAndYear, Long userId);
     @Query(value = "SELECT * FROM `tbl_request_attend` \n " +
-            "WHERE assign_id = ?1 \n " +
-            "and updated_date between ?2 and ?3 ORDER BY updated_date DESC", nativeQuery = true)
+            "WHERE assign_id = ?1 AND time_check_out is not NULL \n " +
+            "and updated_date between ?2 and ?3  ORDER BY updated_date DESC ", nativeQuery = true)
     Page<RequestAttendEntity> getAllRequestSendMe(Long id, String startTime, String endTime, Pageable pageable);
 
 }
