@@ -439,6 +439,7 @@ public class UserServiceImp implements IUserService {
     public List<UserDto> getAllUserByRoleName(String roleName) {
         List<String> roles = new ArrayList<>();
         if (roleName.equals("ROLE_ADMINISTRATOR")){
+            roles.add("ROLE_ADMINISTRATOR");
             roles.add("ROLE_ADMIN");
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
