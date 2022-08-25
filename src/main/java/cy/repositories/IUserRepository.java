@@ -31,6 +31,6 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
     @Query(value = "select * from tbl_user as u join tbl_user_role as ur on ur.user_id=u.user_id join tbl_role as r on r.role_id = ur.role_id  where r.role_name = ?1", nativeQuery = true)
     List<UserEntity> findAllByRoleName(String roleName);
 
-    @Query(value = "select DISTINCT u.* from tbl_user as u left join tbl_user_role as ur on ur.user_id=u.user_id join tbl_role as r on r.role_id = ur.role_id  where r.role_name not in ?1", nativeQuery = true)
+    @Query(value = "select DISTINCT u.* from tbl_user as u left join tbl_user_role as ur on ur.user_id=u.user_id join tbl_role as r on r.role_id = ur.role_id  where r.role_name not in ?1 and u.status = true", nativeQuery = true)
     List<UserEntity> findAllByRoleName(List<String> roles);
 }

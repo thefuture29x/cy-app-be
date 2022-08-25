@@ -419,6 +419,7 @@ public class UserServiceImp implements IUserService {
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
         }else {
+
             roles.add("ROLE_EMPLOYEE");
         }
         List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roles);
