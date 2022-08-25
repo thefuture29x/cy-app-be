@@ -273,6 +273,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
             switch (acceptRequestModifiModel.getCaseSwitch()){
                 case 1:
                     requestModifiEntity.setStatus(1);
+                    requestModifiEntity.setReasonCancel(null);
                     iRequestModifiRepository.saveAndFlush(requestModifiEntity);
                     createHistory(requestModifiEntity,1);
                     createNotification(requestModifiEntity,true,"Yêu cầu sửa đổi thông tin chấm công","Yêu cầu thay đổi thông tin chấm công đã được xét duyệt bởi "+userEntity.getFullName());

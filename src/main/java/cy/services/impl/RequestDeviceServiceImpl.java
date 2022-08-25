@@ -188,6 +188,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
             switch (model.getSwitchCase()){
                 case 1:
                     requestDeviceEntity.setStatus(1);
+                    requestDeviceEntity.setReasonCancel(null);
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,1);
                     createNotification(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
