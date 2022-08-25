@@ -27,6 +27,11 @@ public class RequestDayOffEntity {
     private Date dateDayOff;
     @Column(name = "status")
     private Integer status;
+    @Column(name = "type_off")
+    private Integer typeOff;
+    //0 Là nghỉ buổi sáng
+    //1 Là nghỉ buổi chiều
+    //2 Là nghỉ buổi cả ngày
     @Column(name = "reason_cancel")
     private String reasonCancel;
     @Column(name = "description")

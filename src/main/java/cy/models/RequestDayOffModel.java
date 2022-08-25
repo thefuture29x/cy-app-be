@@ -23,6 +23,7 @@ public class RequestDayOffModel {
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateDayOff;
     private Integer status;
+    private Integer typeOff;
     private String reasonCancel;
     private MultipartFile[] files;
     private Long assignId;

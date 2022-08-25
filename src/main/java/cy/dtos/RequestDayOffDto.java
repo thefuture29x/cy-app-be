@@ -21,6 +21,7 @@ public class RequestDayOffDto {
     private Long id;
     private Date dateDayOff;
     private Integer status;
+    private Integer typeOff;
     private String reasonCancel;
     private List<Object> files;
     private UserDto createBy;
@@ -37,6 +38,7 @@ public class RequestDayOffDto {
                 .files(requestDayOffEntity.getFiles() != null ? new JSONObject(requestDayOffEntity.getFiles()).getJSONArray("files").toList() : null)
                 .createBy(UserDto.toDto(requestDayOffEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
+                .typeOff(requestDayOffEntity.getTypeOff())
                 .historyRequest(requestDayOffEntity.getHistoryRequestEntities() != null ? requestDayOffEntity.getHistoryRequestEntities().stream().map(HistoryRequestDto::toDto).collect(Collectors.toList()) : null)
                 .build();
     }

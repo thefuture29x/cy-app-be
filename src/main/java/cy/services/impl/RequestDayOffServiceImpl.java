@@ -106,7 +106,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         requestDayOff.setDescription(requestDayOffModel.getDescription());
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
-
+        requestDayOff.setTypeOff(requestDayOffModel.getTypeOff());
         List<String> s3Urls = new ArrayList<>();
         if(requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().length > 0){
             for(MultipartFile fileMultipart : requestDayOffModel.getFiles()){
