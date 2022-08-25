@@ -273,11 +273,13 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
             switch (acceptRequestModifiModel.getCaseSwitch()){
                 case 1:
                     requestModifiEntity.setStatus(1);
+                    requestModifiEntity.setReasonCancel(null);
                     iRequestModifiRepository.saveAndFlush(requestModifiEntity);
                     createHistory(requestModifiEntity,1);
                     createNotification(requestModifiEntity,true,"Yêu cầu sửa đổi thông tin chấm công","Yêu cầu thay đổi thông tin chấm công đã được xét duyệt bởi "+userEntity.getFullName());
                     // update date-timeStart and timeEnd to request Attend
-                    RequestAttendEntity oldRequestAttend = this.iRequestAttendRepository.checkAttend(requestModifiEntity.getDateRequestModifi(),userEntity.getUserId() );
+                    Long userRequestId = requestModifiEntity.getCreateBy().getUserId();
+                    RequestAttendEntity oldRequestAttend = this.iRequestAttendRepository.checkAttend(requestModifiEntity.getDateRequestModifi(), userRequestId);
                     oldRequestAttend.setDateRequestAttend((java.sql.Date) requestModifiEntity.getDateRequestModifi());
                     oldRequestAttend.setTimeCheckIn(requestModifiEntity.getTimeStart());
                     oldRequestAttend.setTimeCheckOut(requestModifiEntity.getTimeEnd());
