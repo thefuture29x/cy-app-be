@@ -106,7 +106,8 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         requestDayOff.setDescription(requestDayOffModel.getDescription());
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
-
+        requestDayOff.setTypeOff(requestDayOffModel.getTypeOff());
+        requestDayOff.setIsLegit(requestDayOffModel.getIsLegit());
         List<String> s3Urls = new ArrayList<>();
         if(requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().length > 0){
             for(MultipartFile fileMultipart : requestDayOffModel.getFiles()){
@@ -210,11 +211,10 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Override
     public RequestDayOffDto changeRequestStatus(Long id, String reasonCancel, boolean status) {
         RequestDayOffEntity oldRequest = this.getById(id);
-        if(oldRequest.getStatus()!=0){
-            return RequestDayOffDto.builder().reasonCancel("1").build();
-        }
-        if(SecurityUtils.getCurrentUser().getUser() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
-            return RequestDayOffDto.builder().reasonCancel("2").build();
+        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
+            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
+                return RequestDayOffDto.builder().reasonCancel("2").build();
+            }
         }
         if(status){
             oldRequest.setStatus(1);

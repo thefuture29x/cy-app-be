@@ -71,9 +71,7 @@ public class RequestDayOffResource {
     public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
         RequestDayOffDto requestDayOffDto = this.iRequestDayOffService.changeRequestStatus(id,reasonCancel,status);
         if(requestDayOffDto.getReasonCancel()!=null){
-            if(requestDayOffDto.getReasonCancel().equals("1"))
-                throw new CustomHandleException(45);
-            else if (requestDayOffDto.getReasonCancel().equals("2")) {
+            if (requestDayOffDto.getReasonCancel().equals("2")) {
                 throw new CustomHandleException(46);
             }
                 return ResponseDto.of(requestDayOffDto);
