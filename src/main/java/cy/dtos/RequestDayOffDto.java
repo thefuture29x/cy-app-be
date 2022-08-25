@@ -22,6 +22,7 @@ public class RequestDayOffDto {
     private Date dateDayOff;
     private Integer status;
     private Integer typeOff;
+    private Boolean isLegit;
     private String reasonCancel;
     private List<Object> files;
     private UserDto createBy;
@@ -39,6 +40,7 @@ public class RequestDayOffDto {
                 .createBy(UserDto.toDto(requestDayOffEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
                 .typeOff(requestDayOffEntity.getTypeOff())
+                .isLegit(requestDayOffEntity.getIsLegit())
                 .historyRequest(requestDayOffEntity.getHistoryRequestEntities() != null ? requestDayOffEntity.getHistoryRequestEntities().stream().map(HistoryRequestDto::toDto).collect(Collectors.toList()) : null)
                 .build();
     }

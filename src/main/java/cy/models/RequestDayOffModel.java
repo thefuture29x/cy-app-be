@@ -24,6 +24,7 @@ public class RequestDayOffModel {
     private Date dateDayOff;
     private Integer status;
     private Integer typeOff;
+    private Boolean isLegit;
     private String reasonCancel;
     private MultipartFile[] files;
     private Long assignId;

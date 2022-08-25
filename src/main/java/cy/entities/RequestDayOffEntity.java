@@ -32,6 +32,10 @@ public class RequestDayOffEntity {
     //0 Là nghỉ buổi sáng
     //1 Là nghỉ buổi chiều
     //2 Là nghỉ buổi cả ngày
+    @Column(name = "is_legit")
+    private Boolean isLegit;
+    //true là có lương
+    //false là ko lương
     @Column(name = "reason_cancel")
     private String reasonCancel;
     @Column(name = "description")
