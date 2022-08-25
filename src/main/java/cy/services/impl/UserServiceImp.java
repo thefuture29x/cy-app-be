@@ -399,8 +399,16 @@ public class UserServiceImp implements IUserService {
     }
 
     @Override
-    public Page<UserDto> getUserByRoleName(String roleName, Pageable pageable) {
-        return this.userRepository.findAllByRoleName(roleName, pageable).map(UserDto::toDto);
+    public List<UserDto> getUserByRoleName(String roleName) {
+        List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roleName);
+        UserEntity userLogin = SecurityUtils.getCurrentUser().getUser();
+        for (UserEntity user: userEntities) {
+            if(user.getUserId().equals(userLogin.getUserId())){
+                userEntities.remove(user);
+                break;
+            }
+        }
+        return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
