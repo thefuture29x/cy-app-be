@@ -310,14 +310,14 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto changeRequestStatus(Long id,String reasonCancel, boolean status) {
         RequestAttendEntity oldRequest = this.getById(id);
-        if(oldRequest.getStatus()!=0){
-            return RequestAttendDto.builder().reasonCancel("1").build();
-        }
-        if(SecurityUtils.getCurrentUser().getUser() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
-            return RequestAttendDto.builder().reasonCancel("2").build();
+        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
+            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
+                return RequestAttendDto.builder().reasonCancel("2").build();
+            }
         }
         if(status){
             oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
             this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
             NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
             this.notificationRepository.saveAndFlush(notificationEntity);

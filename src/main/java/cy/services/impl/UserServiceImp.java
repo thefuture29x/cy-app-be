@@ -399,8 +399,38 @@ public class UserServiceImp implements IUserService {
     }
 
     @Override
-    public Page<UserDto> getUserByRoleName(String roleName, Pageable pageable) {
-        return this.userRepository.findAllByRoleName(roleName, pageable).map(UserDto::toDto);
+    public List<UserDto> getUserByRoleName(String roleName) {
+        List<String> roles = new ArrayList<>();
+        if (roleName.equals("ROLE_ADMINISTRATOR")){
+            roles.add("ROLE_ADMIN");
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else if (roleName.equals("ROLE_ADMIN")){
+            roles.add("ROLE_ADMIN");
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else if (roleName.equals("ROLE_MANAGER")){
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        } else if (roleName.equals("ROLE_LEADER")){
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else {
+
+            roles.add("ROLE_EMPLOYEE");
+        }
+        List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roles);
+        UserEntity userLogin = SecurityUtils.getCurrentUser().getUser();
+        for (UserEntity user: userEntities) {
+            if(user.getUserId().equals(userLogin.getUserId())){
+                userEntities.remove(user);
+                break;
+            }
+        }
+        return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
