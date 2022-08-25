@@ -217,6 +217,7 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         }
         if(status){
             oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
             this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(1).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
             NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu nghỉ phép đã được phê duyệt").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
             this.notificationRepository.saveAndFlush(notificationEntity);
