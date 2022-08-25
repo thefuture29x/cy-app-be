@@ -204,6 +204,7 @@ public class RequestOTServiceImpl implements IRequestOTService {
         }
         if (status){
             requestOTEntity.setStatus(1);
+            requestOTEntity.setReasonCancel(null);
             historyRequestRepository.save(HistoryRequestEntity.builder()
                     .requestOT(requestOTEntity)
                     .status(1)
