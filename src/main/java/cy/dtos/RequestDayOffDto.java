@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.json.JSONObject;
+
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +22,7 @@ public class RequestDayOffDto {
     private Date dateDayOff;
     private Integer status;
     private String reasonCancel;
-    private String files;
+    private List<Object> files;
     private UserDto createBy;
     private UserDto assignTo;
     private List<HistoryRequestDto> historyRequest;
@@ -32,7 +34,7 @@ public class RequestDayOffDto {
                 .dateDayOff(requestDayOffEntity.getDateDayOff())
                 .status(requestDayOffEntity.getStatus())
                 .reasonCancel(requestDayOffEntity.getReasonCancel())
-                .files(requestDayOffEntity.getFiles())
+                .files(requestDayOffEntity.getFiles() != null ? new JSONObject(requestDayOffEntity.getFiles()).getJSONArray("files").toList() : null)
                 .createBy(UserDto.toDto(requestDayOffEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
                 .historyRequest(requestDayOffEntity.getHistoryRequestEntities() != null ? requestDayOffEntity.getHistoryRequestEntities().stream().map(HistoryRequestDto::toDto).collect(Collectors.toList()) : null)

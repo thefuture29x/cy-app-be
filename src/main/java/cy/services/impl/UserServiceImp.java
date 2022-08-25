@@ -392,13 +392,23 @@ public class UserServiceImp implements IUserService {
                 return RequestDayOffDto.toDto(iRequestDayOffRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
             case "OT":
                 return RequestOTDto.toDto(iRequestOTRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
+            case "Attend":
+                return RequestAttendDto.entityToDto(iRequestAttendRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
         }
         return null;
     }
 
     @Override
-    public Page<UserDto> getUserByRoleName(String roleName, Pageable pageable) {
-        return this.userRepository.findAllByRoleName(roleName, pageable).map(UserDto::toDto);
+    public List<UserDto> getUserByRoleName(String roleName) {
+        List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roleName);
+        UserEntity userLogin = SecurityUtils.getCurrentUser().getUser();
+        for (UserEntity user: userEntities) {
+            if(user.getUserId().equals(userLogin.getUserId())){
+                userEntities.remove(user);
+                break;
+            }
+        }
+        return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
@@ -488,7 +498,7 @@ public class UserServiceImp implements IUserService {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
-                    .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
+                    .timeCreate(simpleDateFormat.format(entity.getUpdatedDate()))
                     .status(entity.getStatus())
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
