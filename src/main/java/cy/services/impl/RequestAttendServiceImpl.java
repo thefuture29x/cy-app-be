@@ -310,9 +310,6 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto changeRequestStatus(Long id,String reasonCancel, boolean status) {
         RequestAttendEntity oldRequest = this.getById(id);
-        if(oldRequest.getStatus()!=0){
-            return RequestAttendDto.builder().reasonCancel("1").build();
-        }
         if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
             if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
                 return RequestAttendDto.builder().reasonCancel("2").build();
