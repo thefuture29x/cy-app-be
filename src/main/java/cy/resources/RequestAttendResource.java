@@ -75,13 +75,15 @@ public class RequestAttendResource {
     @PostMapping(value = "/change-status")
     public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
         RequestAttendDto requestAttendDto = this.requestAttendService.changeRequestStatus(id,reasonCancel,status);
-        if(requestAttendDto.getReasonCancel().equals("1"))
-            throw new CustomHandleException(42);
-        else if (requestAttendDto.getReasonCancel().equals("2")) {
-            throw new CustomHandleException(43);
-        } else if (requestAttendDto.getId()!=null) {
+        if(requestAttendDto.getReasonCancel()!=null){
+            if (requestAttendDto.getReasonCancel().equals("2")) {
+                throw new CustomHandleException(43);
+            }
             return ResponseDto.of(requestAttendDto);
-        }else
+        }
+         else if (requestAttendDto.getId()!=null) {
+            return ResponseDto.of(requestAttendDto);
+        }
             throw new CustomHandleException(41);
     }
     @PostMapping(value = "/check_request_not_exist")
