@@ -400,7 +400,28 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public List<UserDto> getUserByRoleName(String roleName) {
-        List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roleName);
+        List<String> roles = new ArrayList<>();
+        if (roleName.equals("ROLE_ADMINISTRATOR")){
+            roles.add("ROLE_ADMIN");
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else if (roleName.equals("ROLE_ADMIN")){
+            roles.add("ROLE_ADMIN");
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else if (roleName.equals("ROLE_MANAGER")){
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        } else if (roleName.equals("ROLE_LEADER")){
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else {
+            roles.add("ROLE_EMPLOYEE");
+        }
+        List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roles);
         UserEntity userLogin = SecurityUtils.getCurrentUser().getUser();
         for (UserEntity user: userEntities) {
             if(user.getUserId().equals(userLogin.getUserId())){
