@@ -402,6 +402,7 @@ public class UserServiceImp implements IUserService {
     public List<UserDto> getUserByRoleName(String roleName) {
         List<String> roles = new ArrayList<>();
         if (roleName.equals("ROLE_ADMINISTRATOR")){
+            roles.add("ROLE_ADMINISTRATOR");
             roles.add("ROLE_ADMIN");
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
@@ -419,7 +420,6 @@ public class UserServiceImp implements IUserService {
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
         }else {
-
             roles.add("ROLE_EMPLOYEE");
         }
         List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roles);
@@ -430,7 +430,41 @@ public class UserServiceImp implements IUserService {
                 break;
             }
         }
-        return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
+        if (userEntities != null && userEntities.size() > 0){
+            return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
+        }
+        return null;
+    }
+
+    @Override
+    public List<UserDto> getAllUserByRoleName(String roleName) {
+        List<String> roles = new ArrayList<>();
+        if (roleName.equals("ROLE_ADMINISTRATOR")){
+            roles.add("ROLE_ADMINISTRATOR");
+            roles.add("ROLE_ADMIN");
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else if (roleName.equals("ROLE_ADMIN")){
+            roles.add("ROLE_ADMIN");
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else if (roleName.equals("ROLE_MANAGER")){
+            roles.add("ROLE_MANAGER");
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        } else if (roleName.equals("ROLE_LEADER")){
+            roles.add("ROLE_LEADER");
+            roles.add("ROLE_EMPLOYEE");
+        }else {
+            roles.add("ROLE_EMPLOYEE");
+        }
+        List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roles);
+        if (userEntities != null && userEntities.size() > 0){
+            return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
+        }
+        return null;
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
@@ -471,6 +505,7 @@ public class UserServiceImp implements IUserService {
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Modifi")
                     .build());
         }
@@ -481,9 +516,10 @@ public class UserServiceImp implements IUserService {
                     .idRequest(entity.getId())
                     .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
-                    .description(null)
+                    .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("DayOff")
                     .build());
         }
@@ -498,6 +534,7 @@ public class UserServiceImp implements IUserService {
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Device")
                     .build());
         }
@@ -512,6 +549,7 @@ public class UserServiceImp implements IUserService {
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("OT")
                     .build());
         }
@@ -525,13 +563,14 @@ public class UserServiceImp implements IUserService {
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Attend")
                     .build());
         }
 
 
 
-        return requestSendMeDtoList;
+        return requestSendMeDtoList.stream().sorted(((o1, o2) -> o2.getTimeCreateTypeDate().compareTo(o1.getTimeCreateTypeDate()))).collect(Collectors.toList());
     }
 
     @Override
@@ -551,6 +590,7 @@ public class UserServiceImp implements IUserService {
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Modifi")
                     .build());
         }
@@ -561,11 +601,12 @@ public class UserServiceImp implements IUserService {
                     .idRequest(entity.getId())
                     .timeCreate(simpleDateFormat.format(entity.getCreatedDate()))
                     .status(entity.getStatus())
-                    .description(null)
+                    .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("DayOff")
                     .build());
         }
@@ -582,6 +623,7 @@ public class UserServiceImp implements IUserService {
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Device")
                     .build());
         }
@@ -598,11 +640,12 @@ public class UserServiceImp implements IUserService {
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("OT")
                     .build());
         }
 
 
-        return requestSendMeDtoList;
+        return requestSendMeDtoList.stream().sorted(((o1, o2) -> o2.getTimeCreateTypeDate().compareTo(o1.getTimeCreateTypeDate()))).collect(Collectors.toList());
     }
 }

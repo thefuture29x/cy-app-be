@@ -136,6 +136,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
             }
             // there is no dto of the history request, so leave it null for now
             requestModifiEntity.setHistoryRequestEntities(null);
+            createHistory(requestModifiEntity,1);
+            createNotification(requestModifiEntity,true,"Yêu cầu sửa đổi thông tin chấm công","Yêu cầu thay đổi thông tin chấm công đã được tạo bởi " + requestModifiEntity.getCreateBy().getFullName() );
             requestModifiDtoList.add(RequestModifiDto.toDto(iRequestModifiRepository.save(requestModifiEntity)));
         }
         return requestModifiDtoList;
@@ -273,15 +275,24 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
             switch (acceptRequestModifiModel.getCaseSwitch()){
                 case 1:
                     requestModifiEntity.setStatus(1);
+                    requestModifiEntity.setReasonCancel(null);
                     iRequestModifiRepository.saveAndFlush(requestModifiEntity);
                     createHistory(requestModifiEntity,1);
                     createNotification(requestModifiEntity,true,"Yêu cầu sửa đổi thông tin chấm công","Yêu cầu thay đổi thông tin chấm công đã được xét duyệt bởi "+userEntity.getFullName());
                     // update date-timeStart and timeEnd to request Attend
                     Long userRequestId = requestModifiEntity.getCreateBy().getUserId();
                     RequestAttendEntity oldRequestAttend = this.iRequestAttendRepository.checkAttend(requestModifiEntity.getDateRequestModifi(), userRequestId);
-                    oldRequestAttend.setDateRequestAttend((java.sql.Date) requestModifiEntity.getDateRequestModifi());
-                    oldRequestAttend.setTimeCheckIn(requestModifiEntity.getTimeStart());
-                    oldRequestAttend.setTimeCheckOut(requestModifiEntity.getTimeEnd());
+                    if (oldRequestAttend == null){
+                        oldRequestAttend = new RequestAttendEntity();
+                        oldRequestAttend.setDateRequestAttend((java.sql.Date) requestModifiEntity.getDateRequestModifi());
+                        oldRequestAttend.setTimeCheckIn(requestModifiEntity.getTimeStart());
+                        oldRequestAttend.setTimeCheckOut(requestModifiEntity.getTimeEnd());
+                        oldRequestAttend.setStatus(1);
+                    }else {
+                        oldRequestAttend.setDateRequestAttend((java.sql.Date) requestModifiEntity.getDateRequestModifi());
+                        oldRequestAttend.setTimeCheckIn(requestModifiEntity.getTimeStart());
+                        oldRequestAttend.setTimeCheckOut(requestModifiEntity.getTimeEnd());
+                    }
                     this.iRequestAttendRepository.saveAndFlush(oldRequestAttend);
                     break;
                 case 2:
