@@ -211,8 +211,8 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Override
     public RequestDayOffDto changeRequestStatus(Long id, String reasonCancel, boolean status) {
         RequestDayOffEntity oldRequest = this.getById(id);
-        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)) {
-            if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
+        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
+            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
                 return RequestDayOffDto.builder().reasonCancel("2").build();
             }
         }

@@ -3,6 +3,7 @@ package cy.dtos;
 import cy.entities.RequestModifiEntity;
 import lombok.*;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ public class RequestSendMeDto {
     private Long idUserAssign;
     private String nameUserAssign;
     private String type;
+    private Date timeCreateTypeDate;
 
 
 
