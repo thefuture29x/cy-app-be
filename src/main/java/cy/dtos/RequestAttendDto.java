@@ -32,11 +32,14 @@ public class RequestAttendDto {
     private NotificationDto notification;
 
     public RequestAttendDto(RequestAttendEntity entity) {
-        List<Object> fileUrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
         List<String> fileUrls = new ArrayList<>();
-        for(Object obj : fileUrlsObj){
-            fileUrls.add(obj.toString());
+        if(entity.getFiles() != null){
+            List<Object> fileUrlsObj = new JSONObject(entity.getFiles()).getJSONArray("files").toList();
+            for(Object obj : fileUrlsObj){
+                fileUrls.add(obj.toString());
+            }
         }
+
         this.id = entity.getId();
         this.timeCheckIn = entity.getTimeCheckIn();
         this.timeCheckOut = entity.getTimeCheckOut();

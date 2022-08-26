@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.json.JSONObject;
+
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,8 +21,11 @@ public class RequestDayOffDto {
     private Long id;
     private Date dateDayOff;
     private Integer status;
+    private Integer typeOff;
+    private Boolean isLegit;
     private String reasonCancel;
-    private String files;
+    private String description;
+    private List<Object> files;
     private UserDto createBy;
     private UserDto assignTo;
     private List<HistoryRequestDto> historyRequest;
@@ -31,10 +36,13 @@ public class RequestDayOffDto {
                 .id(requestDayOffEntity.getId())
                 .dateDayOff(requestDayOffEntity.getDateDayOff())
                 .status(requestDayOffEntity.getStatus())
+                .description(requestDayOffEntity.getDescription())
                 .reasonCancel(requestDayOffEntity.getReasonCancel())
-                .files(requestDayOffEntity.getFiles())
+                .files(requestDayOffEntity.getFiles() != null ? new JSONObject(requestDayOffEntity.getFiles()).getJSONArray("files").toList() : null)
                 .createBy(UserDto.toDto(requestDayOffEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestDayOffEntity.getAssignTo()))
+                .typeOff(requestDayOffEntity.getTypeOff())
+                .isLegit(requestDayOffEntity.getIsLegit())
                 .historyRequest(requestDayOffEntity.getHistoryRequestEntities() != null ? requestDayOffEntity.getHistoryRequestEntities().stream().map(HistoryRequestDto::toDto).collect(Collectors.toList()) : null)
                 .build();
     }

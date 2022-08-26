@@ -39,5 +39,6 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     Object getRequestByIdAndType(Long id,String type);
 
-    Page<UserDto> getUserByRoleName(String roleName, Pageable pageable);
+    List<UserDto> getUserByRoleName(String roleName);
+    List<UserDto> getAllUserByRoleName(String roleName);
 }

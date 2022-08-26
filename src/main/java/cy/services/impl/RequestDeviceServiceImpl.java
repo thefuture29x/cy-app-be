@@ -122,7 +122,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
             JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
             requestDeviceEntity.setFiles(jsonObject.toString());
         }
-
+        requestDeviceEntity.setStatus(0);
         createHistory(requestDeviceEntity,0);
         createNotification(requestDeviceEntity,false,"Gửi yêu cầu mượn/thuê thiết bị thành công!","Bạn đã gửi yêu cầu mượn/thuê thiết bị thành công. Vui lòng chờ quản lí công ty phê duyệt!");
 
@@ -188,6 +188,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
             switch (model.getSwitchCase()){
                 case 1:
                     requestDeviceEntity.setStatus(1);
+                    requestDeviceEntity.setReasonCancel(null);
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,1);
                     createNotification(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");

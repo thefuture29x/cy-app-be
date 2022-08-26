@@ -189,8 +189,14 @@ public class UserResources {
 
     @PostMapping("get_user_by_role_name")
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    public ResponseDto getUserByRoleName(@RequestParam String roleName, Pageable pageable) {
-        return ResponseDto.of(this.userService.getUserByRoleName(roleName, pageable));
+    public ResponseDto getUserByRoleName(@RequestParam String roleName) {
+        return ResponseDto.of(this.userService.getUserByRoleName(roleName));
+    }
+
+    @PostMapping("getAll_user_by_role_name")
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    public ResponseDto getAllUserByRoleName(@RequestParam String roleName) {
+        return ResponseDto.of(this.userService.getAllUserByRoleName(roleName));
     }
 
 }

@@ -17,6 +17,7 @@ import cy.repositories.IUserRepository;
 import cy.services.IRequestDayOffService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -104,20 +106,25 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         requestDayOff.setDescription(requestDayOffModel.getDescription());
         requestDayOff.setReasonCancel(requestDayOffModel.getReasonCancel());
         requestDayOff.setStatus(requestDayOffModel.getStatus());
-        if (requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().length > 0) {
-            List<String> files = new ArrayList<>();
-            for (MultipartFile fileMultipart : requestDayOffModel.getFiles()) {
-                if (!fileMultipart.isEmpty()) {
+        requestDayOff.setTypeOff(requestDayOffModel.getTypeOff());
+        requestDayOff.setIsLegit(requestDayOffModel.getIsLegit());
+        List<String> s3Urls = new ArrayList<>();
+        if(requestDayOffModel.getFiles() != null && requestDayOffModel.getFiles().length > 0){
+            for(MultipartFile fileMultipart : requestDayOffModel.getFiles()){
+                if(!fileMultipart.isEmpty()){
+                    String result = null;
                     try {
-                        String result = fileUploadProvider.uploadFile("requestDayOff", fileMultipart);
-                        files.add(result);
-                    } catch (Exception e) {
-                        System.out.println("upload file failed");
+                        result = fileUploadProvider.uploadFile("requestDayOff",fileMultipart);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
+                    s3Urls.add(result);
                 }
             }
-            requestDayOff.setFiles(files.toString());
+            JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
+            requestDayOff.setFiles(jsonObject.toString());
         }
+
         requestDayOff.setDateDayOff(requestDayOffModel.getDateDayOff());
         requestDayOff = iRequestDayOffRepository.save(requestDayOff);
 
@@ -204,14 +211,14 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Override
     public RequestDayOffDto changeRequestStatus(Long id, String reasonCancel, boolean status) {
         RequestDayOffEntity oldRequest = this.getById(id);
-        if(oldRequest.getStatus()!=0){
-            return RequestDayOffDto.builder().reasonCancel("1").build();
-        }
-        if(SecurityUtils.getCurrentUser().getUser() != oldRequest.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
-            return RequestDayOffDto.builder().reasonCancel("2").build();
+        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
+            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
+                return RequestDayOffDto.builder().reasonCancel("2").build();
+            }
         }
         if(status){
             oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
             this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(1).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
             NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu nghỉ phép đã được phê duyệt").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
             this.notificationRepository.saveAndFlush(notificationEntity);

@@ -197,14 +197,14 @@ public class RequestOTServiceImpl implements IRequestOTService {
     @Override
     public RequestOTDto responseOtRequest(Long requestOtId, String reasonCancel, Boolean status) {
         RequestOTEntity requestOTEntity = this.getById(requestOtId);
-        if (requestOTEntity.getStatus() != 0){
-            return RequestOTDto.builder().reasonCancel("112").build();
-        }
-        if ( SecurityUtils.getCurrentUser().getUser() != requestOTEntity.getAssignTo() && !(SecurityUtils.hasRole(RoleEntity.ADMIN)||SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
-            return RequestOTDto.builder().reasonCancel("113").build();
+        if (!(SecurityUtils.hasRole(RoleEntity.ADMIN) || SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR))){
+            if (SecurityUtils.getCurrentUser().getUser().getUserId() != requestOTEntity.getAssignTo().getUserId()){
+                return RequestOTDto.builder().reasonCancel("113").build();
+            }
         }
         if (status){
             requestOTEntity.setStatus(1);
+            requestOTEntity.setReasonCancel(null);
             historyRequestRepository.save(HistoryRequestEntity.builder()
                     .requestOT(requestOTEntity)
                     .status(1)
