@@ -304,6 +304,8 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
                     break;
             }
 
+        }else {
+            throw new CustomHandleException(49);
         }
         return RequestModifiDto.toDto(iRequestModifiRepository.findById(acceptRequestModifiModel.getId()).orElseThrow(() -> new CustomHandleException(11)));
     }
