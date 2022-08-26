@@ -287,6 +287,7 @@ public class RequestModifiServiceImpl implements IRequestModifiService {
                         oldRequestAttend.setDateRequestAttend((java.sql.Date) requestModifiEntity.getDateRequestModifi());
                         oldRequestAttend.setTimeCheckIn(requestModifiEntity.getTimeStart());
                         oldRequestAttend.setTimeCheckOut(requestModifiEntity.getTimeEnd());
+                        oldRequestAttend.setCreateBy(userEntity);
                         oldRequestAttend.setStatus(1);
                     }else {
                         oldRequestAttend.setDateRequestAttend((java.sql.Date) requestModifiEntity.getDateRequestModifi());
