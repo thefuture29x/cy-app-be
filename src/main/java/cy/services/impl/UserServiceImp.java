@@ -505,6 +505,7 @@ public class UserServiceImp implements IUserService {
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Modifi")
                     .build());
         }
@@ -518,6 +519,7 @@ public class UserServiceImp implements IUserService {
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("DayOff")
                     .build());
         }
@@ -532,6 +534,7 @@ public class UserServiceImp implements IUserService {
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Device")
                     .build());
         }
@@ -546,6 +549,7 @@ public class UserServiceImp implements IUserService {
                     .description(entity.getDescription())
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("OT")
                     .build());
         }
@@ -559,13 +563,14 @@ public class UserServiceImp implements IUserService {
                     .description(null)
                     .idUserCreate(entity.getCreateBy().getUserId())
                     .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Attend")
                     .build());
         }
 
 
 
-        return requestSendMeDtoList;
+        return requestSendMeDtoList.stream().sorted(((o1, o2) -> o2.getTimeCreateTypeDate().compareTo(o1.getTimeCreateTypeDate()))).collect(Collectors.toList());
     }
 
     @Override
@@ -585,6 +590,7 @@ public class UserServiceImp implements IUserService {
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Modifi")
                     .build());
         }
@@ -600,6 +606,7 @@ public class UserServiceImp implements IUserService {
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("DayOff")
                     .build());
         }
@@ -616,6 +623,7 @@ public class UserServiceImp implements IUserService {
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("Device")
                     .build());
         }
@@ -632,11 +640,12 @@ public class UserServiceImp implements IUserService {
                     .nameUserCreate(entity.getCreateBy().getFullName())
                     .idUserAssign(entity.getAssignTo().getUserId())
                     .nameUserAssign(entity.getAssignTo().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
                     .type("OT")
                     .build());
         }
 
 
-        return requestSendMeDtoList;
+        return requestSendMeDtoList.stream().sorted(((o1, o2) -> o2.getTimeCreateTypeDate().compareTo(o1.getTimeCreateTypeDate()))).collect(Collectors.toList());
     }
 }
