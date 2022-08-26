@@ -433,7 +433,7 @@ public class UserServiceImp implements IUserService {
         if (userEntities != null && userEntities.size() > 0){
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -464,7 +464,7 @@ public class UserServiceImp implements IUserService {
         if (userEntities != null && userEntities.size() > 0){
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
-        return null;
+        return  new ArrayList<>();
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
