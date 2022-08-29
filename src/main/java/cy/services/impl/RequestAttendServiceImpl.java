@@ -97,7 +97,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         String monthYear = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "%";
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByUserNameAndDate(data.getName(), monthYear);
         if(requestAttendExist.isEmpty()){
-            return null; // Request attend not exist
+            return new ArrayList<>(); // Request attend not exist
         }
         return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
     }
