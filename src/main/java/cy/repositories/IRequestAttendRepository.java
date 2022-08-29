@@ -37,5 +37,9 @@ public interface IRequestAttendRepository extends JpaRepository<RequestAttendEnt
             "WHERE assign_id = ?1 AND time_check_out is not NULL \n " +
             "and updated_date between ?2 and ?3  ORDER BY updated_date DESC ", nativeQuery = true)
     Page<RequestAttendEntity> getAllRequestSendMe(Long id, String startTime, String endTime, Pageable pageable);
+    @Query(value = "SELECT * FROM `tbl_request_attend` \n " +
+            "WHERE user_id = ?1 ORDER BY updated_date DESC", nativeQuery = true)
+    Page<RequestAttendEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
+
 
 }

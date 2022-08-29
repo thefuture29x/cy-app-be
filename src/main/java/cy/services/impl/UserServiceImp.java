@@ -645,6 +645,20 @@ public class UserServiceImp implements IUserService {
                     .build());
         }
 
+        for (RequestAttendEntity entity: iRequestAttendRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(simpleDateFormat.format(entity.getUpdatedDate()))
+                    .status(entity.getStatus())
+                    .description(null)
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
+                    .type("Attend")
+                    .build());
+        }
+
 
         return requestSendMeDtoList.stream().sorted(((o1, o2) -> o2.getTimeCreateTypeDate().compareTo(o1.getTimeCreateTypeDate()))).collect(Collectors.toList());
     }
