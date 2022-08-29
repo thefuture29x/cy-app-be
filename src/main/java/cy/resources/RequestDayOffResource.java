@@ -66,7 +66,7 @@ public class RequestDayOffResource {
         return ResponseDto.of(iRequestDayOffService.deleteById(id));
     }
 
-    @Secured({"ROLE_ADMIN","ROLE_LEADER","ROLE_ADMINISTRATOR"})
+    @Secured({"ROLE_ADMIN","ROLE_LEADER","ROLE_ADMINISTRATOR","ROLE_MANAGER"})
     @PostMapping(value = "change-status")
     public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
         RequestDayOffDto requestDayOffDto = this.iRequestDayOffService.changeRequestStatus(id,reasonCancel,status);
