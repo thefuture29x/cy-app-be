@@ -90,6 +90,12 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         return new PageImpl<>(findByUserId.subList((int)start, (int)end), pageable, findByUserId.size());
     }
 
+
+    public Page<RequestAttendDto> findByUsername(String name, Pageable pageable){
+        Page<RequestAttendEntity> requestAttendEntities = this.requestAttendRepository.findByUserName(name, pageable);
+        return requestAttendEntities.map(RequestAttendDto::entityToDto);
+    }
+
     @Override
     public RequestAttendEntity getById(Long id) {
         return this.requestAttendRepository.findById(id).orElseThrow(()-> new CustomHandleException(44));
