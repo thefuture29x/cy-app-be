@@ -71,6 +71,14 @@ public class RequestAttendResource {
         Page<RequestAttendDto> result = this.requestAttendService.findByUserId(id, pageable);
         return ResponseDto.of(result);
     }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity
+            .MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @PostMapping(value = "/find-by-user-name")
+    public ResponseDto findByUserName(@RequestParam String name, Pageable pageable) {
+        Page<RequestAttendDto> result = this.requestAttendService.findByUsername(name, pageable);
+        return ResponseDto.of(result);
+    }
     @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
     @PostMapping(value = "/change-status")
     public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
