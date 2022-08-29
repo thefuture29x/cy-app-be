@@ -166,7 +166,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         RequestAttendEntity oldRequestAttend = this.getById(model.getId());
         requestAttendUpdateEntity.setDateRequestAttend(oldRequestAttend.getDateRequestAttend());
         requestAttendUpdateEntity.setTimeCheckIn(oldRequestAttend.getTimeCheckIn());
-        requestAttendUpdateEntity.setCreatedDate(requestAttendUpdateEntity.getCreatedDate());
+        requestAttendUpdateEntity.setCreatedDate(new Date());
         // Today can't timekeeping for next day
         if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
             throw new CustomHandleException(38);
