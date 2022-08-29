@@ -81,10 +81,13 @@ public class RequestAttendResource {
         return ResponseDto.of(result);
     }
 
-    @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+    @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR, RoleEntity.MANAGER})
     @PostMapping(value = "/change-status")
     public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
         RequestAttendDto requestAttendDto = this.requestAttendService.changeRequestStatus(id,reasonCancel,status);
+        if(requestAttendDto==null){
+            throw new CustomHandleException(50);
+        }
         if(requestAttendDto.getReasonCancel()!=null){
             if (requestAttendDto.getReasonCancel().equals("2")) {
                 throw new CustomHandleException(43);

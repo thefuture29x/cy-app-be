@@ -70,16 +70,19 @@ public class RequestDayOffResource {
     @PostMapping(value = "change-status")
     public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
         RequestDayOffDto requestDayOffDto = this.iRequestDayOffService.changeRequestStatus(id,reasonCancel,status);
+        if(requestDayOffDto==null){
+            throw new CustomHandleException(51);
+        }
         if(requestDayOffDto.getReasonCancel()!=null){
             if (requestDayOffDto.getReasonCancel().equals("2")) {
-                throw new CustomHandleException(46);
+                throw new CustomHandleException(52);
             }
                 return ResponseDto.of(requestDayOffDto);
         }
         else if(requestDayOffDto.getId()!=null){
             return ResponseDto.of(requestDayOffDto);
         }
-            throw new CustomHandleException(47);
+            throw new CustomHandleException(53);
     }
 
 
