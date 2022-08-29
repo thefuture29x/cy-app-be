@@ -325,11 +325,11 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.LEADER)){
             Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
             if(Set.of(RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER).stream().noneMatch(currentRoles::contains)){
+                if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
                     return RequestAttendDto.builder().reasonCancel("2").build();
+                }
             }
-            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
-                return RequestAttendDto.builder().reasonCancel("2").build();
-            }
+
             if(status){
                 oldRequest.setStatus(1);
                 oldRequest.setReasonCancel(null);
@@ -346,11 +346,11 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
         }
         if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.EMPLOYEE)){
-            if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
+            Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
+            if(Set.of(RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN).stream().noneMatch(currentRoles::contains)){
+                if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
                     return RequestAttendDto.builder().reasonCancel("2").build();
-            }
-            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
-                    return RequestAttendDto.builder().reasonCancel("2").build();
+                }
             }
             if(status){
                 oldRequest.setStatus(1);

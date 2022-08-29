@@ -212,10 +212,9 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.LEADER)) {
             Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
             if (Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().noneMatch(currentRoles::contains)) {
-                return RequestDayOffDto.builder().reasonCancel("2").build();
-            }
-            if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
-                return RequestDayOffDto.builder().reasonCancel("2").build();
+                if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
+                    return RequestDayOffDto.builder().reasonCancel("2").build();
+                }
             }
             if(status){
                 oldRequest.setStatus(1);
@@ -233,11 +232,11 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
             return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
         }
         if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.EMPLOYEE)){
-            if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
-                return RequestDayOffDto.builder().reasonCancel("2").build();
-            }
-            if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
-                return RequestDayOffDto.builder().reasonCancel("2").build();
+            Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
+            if (Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN).stream().noneMatch(currentRoles::contains)){
+                if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
+                    return RequestDayOffDto.builder().reasonCancel("2").build();
+                }
             }
             if(status){
                 oldRequest.setStatus(1);
