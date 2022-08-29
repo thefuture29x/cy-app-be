@@ -9,6 +9,7 @@ import cy.dtos.UserDto;
 
 import cy.entities.UserEntity;
 import cy.models.NotificationModel;
+import cy.models.RequestAttendByNameAndYearMonth;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.INotificationRepository;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -91,9 +93,13 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     }
 
 
-    public Page<RequestAttendDto> findByUsername(String name, Pageable pageable){
-        Page<RequestAttendEntity> requestAttendEntities = this.requestAttendRepository.findByUserName(name, pageable);
-        return requestAttendEntities.map(RequestAttendDto::entityToDto);
+    public List<RequestAttendDto> findByUsername(RequestAttendByNameAndYearMonth data){
+        String monthYear = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "%";
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByUserNameAndDate(data.getName(), monthYear);
+        if(requestAttendExist.isEmpty()){
+            return null; // Request attend not exist
+        }
+        return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
     }
 
     @Override
