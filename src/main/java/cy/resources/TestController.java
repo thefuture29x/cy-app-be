@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "test")
@@ -27,5 +28,11 @@ public class TestController {
     @GetMapping
     public ResponseDto getCurrentTime() {
         return ResponseDto.of(this.iRequestAttendService.totalDayOfAttendInMonth(49L, new Date(122, 6, 22), new Date(122, 7, 23)));
+    }
+
+    @GetMapping("testne")
+    public ResponseDto testHashmap(){
+
+        return ResponseDto.of(null);
     }
 }
