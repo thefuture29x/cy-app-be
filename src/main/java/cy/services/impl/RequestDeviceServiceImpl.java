@@ -282,11 +282,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         this.createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());
         this.createNotification(requestDeviceEntity,false,"Trả thiết bị thành công!","Bạn đã gửi yêu cầu trả " +
                 "thiết bị mượn từ ngày " + sdf.format(requestDeviceEntity.getDateRequestDevice()) + " thành công.");
-        this.sendNotioficationToManager(requestDeviceEntity);
+        this.sendNotificationToManager(requestDeviceEntity);
         return "Return device success!";
     }
 
-    private void sendNotioficationToManager(RequestDeviceEntity requestDeviceEntity){
+    private void sendNotificationToManager(RequestDeviceEntity requestDeviceEntity){
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         NotificationEntity notificationEntity = new NotificationEntity();
         notificationEntity.setTitle("Người dùng " + SecurityUtils.getCurrentUsername() + " đã trả thiết bị");
@@ -296,5 +296,19 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         notificationEntity.setUserId(requestDeviceEntity.getAssignTo());
         notificationEntity.setRequestDevice(requestDeviceEntity);
         this.notificationRepository.saveAndFlush(notificationEntity);
+    }
+
+    public Page<RequestDeviceDto> filterByType(String type, Pageable pageable){
+        Page<RequestDeviceEntity> requestDeviceEntities =
+                this.iRequestDeviceRepository.filterByType(SecurityUtils.getCurrentUserId(),
+                        type, pageable);
+        return requestDeviceEntities.map(RequestDeviceDto::entityToDto);
+    }
+
+    public Page<RequestDeviceDto> createdByMyself(Pageable pageable){
+        Page<RequestDeviceEntity> requestDeviceEntities =
+                this.iRequestDeviceRepository.getAllRequestCreateByMe(SecurityUtils.getCurrentUserId(),
+                        pageable);
+        return requestDeviceEntities.map(RequestDeviceDto::entityToDto);
     }
 }
