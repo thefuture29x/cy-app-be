@@ -127,4 +127,11 @@ public class RequestDeviceResource {
     public Object createdByMyself(Pageable page){
         return ResponseDto.of(requestDeviceService.createdByMyself(page));
     }
+
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
+    @PostMapping("/findAll/{pageIndex}/{pageSize}")
+    public Object acceptRequestDevice(@RequestBody RequestDeviceModel requestDeviceModel,@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize){
+        return ResponseDto.of(requestDeviceService.findAllByPage(pageIndex,pageSize,requestDeviceModel));
+
+    }
 }
