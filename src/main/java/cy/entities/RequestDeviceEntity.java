@@ -25,6 +25,7 @@ public class RequestDeviceEntity {
     private Integer typeRequestDevice;//mượn hay là mua?
     //0 là mượn
     //1 là mua
+    //2 là đã trả
     @Column(name = "title")
     private String title;
     @Column(name = "quantity")
@@ -40,6 +41,7 @@ public class RequestDeviceEntity {
 
     @Column(name = "status")
     private Integer status;
+    //Đã phê duyệt hay chưa
     @Column(name = "reason_cancel")
     private String reasonCancel;
     @Column(name = "files")

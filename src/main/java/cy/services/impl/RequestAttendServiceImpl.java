@@ -9,6 +9,7 @@ import cy.dtos.UserDto;
 
 import cy.entities.UserEntity;
 import cy.models.NotificationModel;
+import cy.models.RequestAttendByNameAndYearMonth;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.INotificationRepository;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -91,9 +93,13 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     }
 
 
-    public Page<RequestAttendDto> findByUsername(String name, Pageable pageable){
-        Page<RequestAttendEntity> requestAttendEntities = this.requestAttendRepository.findByUserName(name, pageable);
-        return requestAttendEntities.map(RequestAttendDto::entityToDto);
+    public List<RequestAttendDto> findByUsername(RequestAttendByNameAndYearMonth data){
+        String monthYear = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "%";
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByUserNameAndDate(data.getName(), monthYear);
+        if(requestAttendExist.isEmpty()){
+            return new ArrayList<>(); // Request attend not exist
+        }
+        return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
     }
 
     @Override
@@ -160,7 +166,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         RequestAttendEntity oldRequestAttend = this.getById(model.getId());
         requestAttendUpdateEntity.setDateRequestAttend(oldRequestAttend.getDateRequestAttend());
         requestAttendUpdateEntity.setTimeCheckIn(oldRequestAttend.getTimeCheckIn());
-
+        requestAttendUpdateEntity.setCreatedDate(new Date());
         // Today can't timekeeping for next day
         if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
             throw new CustomHandleException(38);
@@ -316,25 +322,18 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto changeRequestStatus(Long id,String reasonCancel, boolean status) {
         RequestAttendEntity oldRequest = this.getById(id);
-        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
-            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
-                return RequestAttendDto.builder().reasonCancel("2").build();
+        Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
+        if(Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().anyMatch(currentRoles::contains)){
+            return modifyingStatus(status,oldRequest,reasonCancel);
+        }
+        if(Set.of(RoleEntity.LEADER).stream().anyMatch(currentRoles::contains)){
+                if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
+                    return RequestAttendDto.builder().reasonCancel("2").build();
+                }else {
+                    return modifyingStatus(status,oldRequest,reasonCancel);
             }
         }
-        if(status){
-            oldRequest.setStatus(1);
-            oldRequest.setReasonCancel(null);
-            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-            this.notificationRepository.saveAndFlush(notificationEntity);
-            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
-        }
-        oldRequest.setStatus(2);
-        oldRequest.setReasonCancel(reasonCancel);
-        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-        NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-        this.notificationRepository.saveAndFlush(notificationEntity);
-        return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        return null;
     }
 
     @Override
@@ -377,6 +376,23 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             return null; // Request attend not exist
         }
         return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
+    }
+
+    private RequestAttendDto modifyingStatus(boolean status,RequestAttendEntity oldRequest, String reasonCancel){
+        if(status){
+            oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
+            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+            this.notificationRepository.saveAndFlush(notificationEntity);
+            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        }
+        oldRequest.setStatus(2);
+        oldRequest.setReasonCancel(reasonCancel);
+        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+        NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+        this.notificationRepository.saveAndFlush(notificationEntity);
+        return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
     }
 
 }

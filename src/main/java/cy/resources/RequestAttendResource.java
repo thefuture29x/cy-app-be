@@ -7,6 +7,7 @@ import cy.dtos.ResponseDto;
 import cy.entities.RequestAttendEntity;
 import cy.entities.RoleEntity;
 import cy.models.CreateUpdateRequestAttend;
+import cy.models.RequestAttendByNameAndYearMonth;
 import cy.models.RequestAttendModel;
 import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,15 +75,19 @@ public class RequestAttendResource {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity
             .MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
-    @PostMapping(value = "/find-by-user-name")
-    public ResponseDto findByUserName(@RequestParam String name, Pageable pageable) {
-        Page<RequestAttendDto> result = this.requestAttendService.findByUsername(name, pageable);
+    @PostMapping(value = "/find-by-user-name-and-day")
+    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) {
+        List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
         return ResponseDto.of(result);
     }
-    @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR})
+
+    @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR, RoleEntity.MANAGER})
     @PostMapping(value = "/change-status")
     public ResponseDto changeRequestStatus(@Valid Long id , String reasonCancel, @Valid boolean status){
         RequestAttendDto requestAttendDto = this.requestAttendService.changeRequestStatus(id,reasonCancel,status);
+        if(requestAttendDto==null){
+            throw new CustomHandleException(50);
+        }
         if(requestAttendDto.getReasonCancel()!=null){
             if (requestAttendDto.getReasonCancel().equals("2")) {
                 throw new CustomHandleException(43);

@@ -32,10 +32,8 @@ import java.time.ZoneId;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -211,11 +209,21 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Override
     public RequestDayOffDto changeRequestStatus(Long id, String reasonCancel, boolean status) {
         RequestDayOffEntity oldRequest = this.getById(id);
-        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
+        Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
+        if(Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().anyMatch(currentRoles::contains)){
+            return modifyingStatus(status,oldRequest,reasonCancel);
+        }
+        if(Set.of(RoleEntity.LEADER).stream().anyMatch(currentRoles::contains)){
             if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
                 return RequestDayOffDto.builder().reasonCancel("2").build();
+            }else {
+                return modifyingStatus(status,oldRequest,reasonCancel);
             }
         }
+        return null;
+    }
+
+    private RequestDayOffDto modifyingStatus(boolean status, RequestDayOffEntity oldRequest, String reasonCancel){
         if(status){
             oldRequest.setStatus(1);
             oldRequest.setReasonCancel(null);

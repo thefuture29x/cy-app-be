@@ -37,11 +37,11 @@ public class RequestAttendEntity {
     @Column(name = "files")
     private String files;
 
-    @CreationTimestamp
+    //@CreationTimestamp
     @Column(name = "created_date")
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date createdDate;
-    @UpdateTimestamp
+    //@UpdateTimestamp
     @Column(name = "updated_date")
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date updatedDate;
@@ -63,4 +63,13 @@ public class RequestAttendEntity {
 //    private Date updatedDate;
     @OneToMany(mappedBy = "requestAttend")
     private List<HistoryRequestEntity> historyRequestEntities;
+
+    @PrePersist
+    public void prePersist(){
+        this.createdDate = new java.util.Date();
+    }
+    @PreUpdate
+    public void preUpdate(){
+        this.updatedDate = new java.util.Date();
+    }
 }
