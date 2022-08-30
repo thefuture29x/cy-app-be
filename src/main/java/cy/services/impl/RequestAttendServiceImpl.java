@@ -322,50 +322,16 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto changeRequestStatus(Long id,String reasonCancel, boolean status) {
         RequestAttendEntity oldRequest = this.getById(id);
-        if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.LEADER)){
-            Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
-            if(Set.of(RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER).stream().noneMatch(currentRoles::contains)){
-                if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
-                    return RequestAttendDto.builder().reasonCancel("2").build();
-                }
-            }
-
-            if(status){
-                oldRequest.setStatus(1);
-                oldRequest.setReasonCancel(null);
-                this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-                NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-                this.notificationRepository.saveAndFlush(notificationEntity);
-                return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
-            }
-            oldRequest.setStatus(2);
-            oldRequest.setReasonCancel(reasonCancel);
-            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-            this.notificationRepository.saveAndFlush(notificationEntity);
-            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
+        if(Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().anyMatch(currentRoles::contains)){
+            modifyingStatus(status,oldRequest,reasonCancel);
         }
-        if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.EMPLOYEE)){
-            Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
-            if(Set.of(RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN).stream().noneMatch(currentRoles::contains)){
+        if(Set.of(RoleEntity.LEADER).stream().anyMatch(currentRoles::contains)){
                 if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
                     return RequestAttendDto.builder().reasonCancel("2").build();
-                }
+                }else {
+                    modifyingStatus(status,oldRequest,reasonCancel);
             }
-            if(status){
-                oldRequest.setStatus(1);
-                oldRequest.setReasonCancel(null);
-                this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-                NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-                this.notificationRepository.saveAndFlush(notificationEntity);
-                return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
-            }
-            oldRequest.setStatus(2);
-            oldRequest.setReasonCancel(reasonCancel);
-            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-            this.notificationRepository.saveAndFlush(notificationEntity);
-            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
         }
         return null;
     }
@@ -410,6 +376,23 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             return null; // Request attend not exist
         }
         return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
+    }
+
+    private RequestAttendDto modifyingStatus(boolean status,RequestAttendEntity oldRequest, String reasonCancel){
+        if(status){
+            oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
+            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+            this.notificationRepository.saveAndFlush(notificationEntity);
+            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        }
+        oldRequest.setStatus(2);
+        oldRequest.setReasonCancel(reasonCancel);
+        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+        NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+        this.notificationRepository.saveAndFlush(notificationEntity);
+        return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
     }
 
 }

@@ -209,50 +209,34 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
     @Override
     public RequestDayOffDto changeRequestStatus(Long id, String reasonCancel, boolean status) {
         RequestDayOffEntity oldRequest = this.getById(id);
-        if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.LEADER)) {
-            Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
-            if (Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().noneMatch(currentRoles::contains)) {
-                if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
-                    return RequestDayOffDto.builder().reasonCancel("2").build();
-                }
-            }
-            if(status){
-                oldRequest.setStatus(1);
-                oldRequest.setReasonCancel(null);
-                this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(1).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-                NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu nghỉ phép đã được phê duyệt").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
-                this.notificationRepository.saveAndFlush(notificationEntity);
-                return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
-            }
-            oldRequest.setStatus(2);
-            oldRequest.setReasonCancel(reasonCancel);
-            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(2).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-            NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu nghỉ phép đã bị hủy bỏ").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
-            this.notificationRepository.saveAndFlush(notificationEntity);
-            return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
+        Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
+        if(Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().anyMatch(currentRoles::contains)){
+            modifyingStatus(status,oldRequest,reasonCancel);
         }
-        if(oldRequest.getCreateBy().getRoleEntity().stream().map(x->x.getRoleName()).collect(Collectors.toSet()).contains(RoleEntity.EMPLOYEE)){
-            Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
-            if (Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN).stream().noneMatch(currentRoles::contains)){
-                if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
-                    return RequestDayOffDto.builder().reasonCancel("2").build();
-                }
+        if(Set.of(RoleEntity.LEADER).stream().anyMatch(currentRoles::contains)){
+            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
+                return RequestDayOffDto.builder().reasonCancel("2").build();
+            }else {
+                modifyingStatus(status,oldRequest,reasonCancel);
             }
-            if(status){
-                oldRequest.setStatus(1);
-                oldRequest.setReasonCancel(null);
-                this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(1).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-                NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu nghỉ phép đã được phê duyệt").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
-                this.notificationRepository.saveAndFlush(notificationEntity);
-                return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
-            }
-            oldRequest.setStatus(2);
-            oldRequest.setReasonCancel(reasonCancel);
-            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(2).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-            NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu nghỉ phép đã bị hủy bỏ").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
-            this.notificationRepository.saveAndFlush(notificationEntity);
-            return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
         }
         return null;
+    }
+
+    private RequestDayOffDto modifyingStatus(boolean status, RequestDayOffEntity oldRequest, String reasonCancel){
+        if(status){
+            oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
+            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(1).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+            NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu nghỉ phép đã được phê duyệt").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
+            this.notificationRepository.saveAndFlush(notificationEntity);
+            return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
+        }
+        oldRequest.setStatus(2);
+        oldRequest.setReasonCancel(reasonCancel);
+        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestDayOff(oldRequest).status(2).dateHistory(new Date()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+        NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu nghỉ phép đã bị hủy bỏ").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
+        this.notificationRepository.saveAndFlush(notificationEntity);
+        return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
     }
 }
