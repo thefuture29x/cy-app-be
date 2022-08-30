@@ -67,6 +67,7 @@ public class RequestAttendEntity {
     @PrePersist
     public void prePersist(){
         this.createdDate = new java.util.Date();
+        this.updatedDate = new java.util.Date();
     }
     @PreUpdate
     public void preUpdate(){
