@@ -309,6 +309,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         Page<RequestDeviceEntity> requestDeviceEntities =
                 this.iRequestDeviceRepository.getAllRequestCreateByMe(SecurityUtils.getCurrentUserId(),
                         pageable);
+        if(requestDeviceEntities != null
+                && requestDeviceEntities.getContent() != null
+                &&requestDeviceEntities.getContent().size() == 0){
+            return Page.empty();
+        }
         return requestDeviceEntities.map(RequestDeviceDto::entityToDto);
     }
 }
