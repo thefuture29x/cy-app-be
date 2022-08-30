@@ -111,4 +111,11 @@ public class RequestDeviceResource {
     public Object returnDevice(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.returnDevice(id));
     }
+
+
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @PostMapping("/findAll/{pageIndex}/{pageSize}")
+    public Object acceptRequestDevice(@RequestBody RequestDeviceModel requestDeviceModel,@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize){
+        return ResponseDto.of(requestDeviceService.findAllByPage(pageIndex,pageSize,requestDeviceModel));
+    }
 }
