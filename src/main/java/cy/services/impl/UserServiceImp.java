@@ -128,7 +128,8 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public List<UserDto> findAll() {
-        return null;
+        List<UserEntity> userEntities = this.userRepository.findAll();
+        return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
     @Override

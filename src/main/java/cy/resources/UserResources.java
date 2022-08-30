@@ -6,6 +6,7 @@ import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.RequestModifiDto;
 import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
+import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.RoleEntity_;
 import cy.entities.UserEntity;
@@ -13,6 +14,7 @@ import cy.entities.UserEntity_;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
+import cy.repositories.IUserRepository;
 import cy.services.IUserService;
 import cy.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -197,6 +200,12 @@ public class UserResources {
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     public ResponseDto getAllUserByRoleName(@RequestParam String roleName) {
         return ResponseDto.of(this.userService.getAllUserByRoleName(roleName));
+    }
+
+    @GetMapping("findAll")
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    public ResponseDto findAll() {
+        return ResponseDto.of(this.userService.findAll());
     }
 
 }
