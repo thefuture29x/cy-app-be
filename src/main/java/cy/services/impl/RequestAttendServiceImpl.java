@@ -9,11 +9,13 @@ import cy.dtos.UserDto;
 
 import cy.entities.UserEntity;
 import cy.models.NotificationModel;
+import cy.models.RequestAttendByNameAndYearMonth;
 import cy.models.RequestAttendModel;
 import cy.repositories.IHistoryRequestRepository;
 import cy.repositories.INotificationRepository;
 import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IUserRepository;
+import cy.repositories.specification.RequestAttendSpecification;
 import cy.services.INotificationService;
 import cy.services.IRequestAttendService;
 import cy.utils.FileUploadProvider;
@@ -77,22 +79,32 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public RequestAttendDto findById(Long id) {
         RequestAttendDto findByIdToDto = this.requestAttendRepository.findByIdToDto(id);
-        if(findByIdToDto == null){
+        if (findByIdToDto == null) {
             throw new CustomHandleException(40);
         }
         return findByIdToDto;
     }
 
-    public Page<RequestAttendDto> findByUserId(Long userId, Pageable pageable){
+    public Page<RequestAttendDto> findByUserId(Long userId, Pageable pageable) {
         List<RequestAttendDto> findByUserId = this.requestAttendRepository.findByUserId(userId);
         final long start = pageable.getOffset();
         final long end = Math.min(start + pageable.getPageSize(), findByUserId.size());
-        return new PageImpl<>(findByUserId.subList((int)start, (int)end), pageable, findByUserId.size());
+        return new PageImpl<>(findByUserId.subList((int) start, (int) end), pageable, findByUserId.size());
+    }
+
+
+    public List<RequestAttendDto> findByUsername(RequestAttendByNameAndYearMonth data) {
+        String monthYear = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "%";
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByUserNameAndDate(data.getName(), monthYear);
+        if (requestAttendExist.isEmpty()) {
+            return new ArrayList<>(); // Request attend not exist
+        }
+        return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
     }
 
     @Override
     public RequestAttendEntity getById(Long id) {
-        return this.requestAttendRepository.findById(id).orElseThrow(()-> new CustomHandleException(44));
+        return this.requestAttendRepository.findById(id).orElseThrow(() -> new CustomHandleException(44));
     }
 
     @Override
@@ -100,7 +112,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         RequestAttendEntity requestAttendEntity = this.modelToEntity(model);
 
         // Today can't timekeeping for next day
-        if(requestAttendEntity.getDateRequestAttend().after(new Date())){
+        if (requestAttendEntity.getDateRequestAttend().after(new Date())) {
             throw new CustomHandleException(38);
         }
 
@@ -110,7 +122,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
 
         // cho tao moi neu khong co request attend nao hoac co request nhung da bi reject
-        if(this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))){
+        if (this.checkRequestAttendNotExist(day) || requestAttendExist.stream().anyMatch(x -> x.getStatus().equals(2))) {
             RequestAttendEntity result = this.requestAttendRepository.save(requestAttendEntity);
 
             // save notification
@@ -137,7 +149,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             this.historyRequestRepository.save(historyRequestEntity);
 
             return RequestAttendDto.entityToDto(result);
-        }else {
+        } else {
             throw new CustomHandleException(37);
         }
     }
@@ -154,9 +166,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         RequestAttendEntity oldRequestAttend = this.getById(model.getId());
         requestAttendUpdateEntity.setDateRequestAttend(oldRequestAttend.getDateRequestAttend());
         requestAttendUpdateEntity.setTimeCheckIn(oldRequestAttend.getTimeCheckIn());
-
+        requestAttendUpdateEntity.setCreatedDate(new Date());
         // Today can't timekeeping for next day
-        if(requestAttendUpdateEntity.getDateRequestAttend().after(new Date())){
+        if (requestAttendUpdateEntity.getDateRequestAttend().after(new Date())) {
             throw new CustomHandleException(38);
         }
 
@@ -190,7 +202,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     @Override
     public boolean deleteById(Long id) {
         this.requestAttendRepository.deleteById(id);
-        if(this.requestAttendRepository.findById(id).isEmpty()){
+        if (this.requestAttendRepository.findById(id).isEmpty()) {
             return true;
         }
         return false;
@@ -201,46 +213,46 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         return false;
     }
 
-    public RequestAttendModel requestToModel(CreateUpdateRequestAttend request, int type){
+    public RequestAttendModel requestToModel(CreateUpdateRequestAttend request, int type) {
         int status = 0;
         String reasonCancel = "";
-        if(request.getAssignUserId() == null){
+        if (request.getAssignUserId() == null) {
             throw new CustomHandleException(48);
         }
         List<String> fileS3Urls = new ArrayList<>();
         RequestAttendEntity requestAttendEntity = new RequestAttendEntity();
-        if(type == 2){
+        if (type == 2) {
             // Update request, must have id
-            if(request.getId() == null){
+            if (request.getId() == null) {
                 throw new CustomHandleException(34);
             }
             Optional<RequestAttendEntity> findRequestAttend = this.requestAttendRepository.findById(request.getId());
             // if status is approved, can't update
-            if(findRequestAttend.get().getStatus() == 1){
+            if (findRequestAttend.get().getStatus() == 1) {
                 throw new CustomHandleException(39);
             }
             // Request attend must not exist
-            if(findRequestAttend.isEmpty()){
+            if (findRequestAttend.isEmpty()) {
                 throw new CustomHandleException(35);
-            }else {
+            } else {
                 List<Object> objFiles = new ArrayList<>();
                 requestAttendEntity = findRequestAttend.get();
-                if(requestAttendEntity.getFiles() != null){
+                if (requestAttendEntity.getFiles() != null) {
                     objFiles = new JSONObject(requestAttendEntity.getFiles()).getJSONArray("files").toList();
-                    for(Object objFile : objFiles){
+                    for (Object objFile : objFiles) {
                         fileS3Urls.add(objFile.toString());
                     }
                 }
                 // If user deleted files
-                if(request.getDeletedFilesNumber() != null && fileS3Urls.size() > 0){
-                    for(Integer deletedFileNumber : request.getDeletedFilesNumber()){
-                        if(deletedFileNumber < fileS3Urls.size()){
+                if (request.getDeletedFilesNumber() != null && fileS3Urls.size() > 0) {
+                    for (Integer deletedFileNumber : request.getDeletedFilesNumber()) {
+                        if (deletedFileNumber < fileS3Urls.size()) {
                             fileS3Urls.remove(deletedFileNumber.intValue());
-                        }else {
+                        } else {
                             throw new CustomHandleException(32);
                         }
                     }
-                }else if(request.getDeletedFilesNumber() != null && fileS3Urls.size() == 0){
+                } else if (request.getDeletedFilesNumber() != null && fileS3Urls.size() == 0) {
                     throw new CustomHandleException(32);
                 }
 
@@ -249,9 +261,9 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
             }
         }
         final String folderName = "user/" + SecurityUtils.getCurrentUsername() + "/request_attend/";
-        if(request.getAttachedFiles() != null && request.getAttachedFiles().length > 0){ // Check if user has attached files
-            for(MultipartFile file : request.getAttachedFiles()){
-                if(!file.getOriginalFilename().equals("")) {
+        if (request.getAttachedFiles() != null && request.getAttachedFiles().length > 0) { // Check if user has attached files
+            for (MultipartFile file : request.getAttachedFiles()) {
+                if (!file.getOriginalFilename().equals("")) {
                     try {
                         String s3Url = fileUploadProvider.uploadFile(folderName, file);
                         fileS3Urls.add(s3Url);
@@ -266,7 +278,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
         // Check if assigned user id exist
         Optional<UserEntity> userAssigned = userRepository.findById(request.getAssignUserId());
-        if(userAssigned.isEmpty()){
+        if (userAssigned.isEmpty()) {
             throw new CustomHandleException(33);
         }
 
@@ -283,7 +295,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 .build();
     }
 
-    private RequestAttendEntity modelToEntity(RequestAttendModel model){
+    private RequestAttendEntity modelToEntity(RequestAttendModel model) {
         RequestAttendEntity entity = new RequestAttendEntity();
         entity.setTimeCheckIn(model.getTimeCheckIn() == null ? null : model.getTimeCheckIn());
         entity.setTimeCheckOut(model.getTimeCheckOut() == null ? null : model.getTimeCheckOut());
@@ -292,7 +304,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         entity.setReasonCancel(model.getReasonCancel());
         List<String> s3Urls = model.getFiles();
         //new JSONObject(s3Urls).getJSONArray("files").toString();
-        if(s3Urls != null){
+        if (s3Urls != null) {
             JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
             entity.setFiles(jsonObject.toString());
         }
@@ -308,34 +320,27 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     @Transactional
     @Override
-    public RequestAttendDto changeRequestStatus(Long id,String reasonCancel, boolean status) {
+    public RequestAttendDto changeRequestStatus(Long id, String reasonCancel, boolean status) {
         RequestAttendEntity oldRequest = this.getById(id);
-        if(!SecurityUtils.hasRole(RoleEntity.ADMINISTRATOR)||!SecurityUtils.hasRole(RoleEntity.ADMIN)){
-            if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
+        Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
+        if (Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().anyMatch(currentRoles::contains)) {
+            return modifyingStatus(status, oldRequest, reasonCancel);
+        }
+        if (Set.of(RoleEntity.LEADER).stream().anyMatch(currentRoles::contains)) {
+            if (SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()) {
                 return RequestAttendDto.builder().reasonCancel("2").build();
+            } else {
+                return modifyingStatus(status, oldRequest, reasonCancel);
             }
         }
-        if(status){
-            oldRequest.setStatus(1);
-            oldRequest.setReasonCancel(null);
-            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-            this.notificationRepository.saveAndFlush(notificationEntity);
-            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
-        }
-        oldRequest.setStatus(2);
-        oldRequest.setReasonCancel(reasonCancel);
-        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
-        NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
-        this.notificationRepository.saveAndFlush(notificationEntity);
-        return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        return null;
     }
 
     @Override
     public Boolean checkRequestAttendNotExist(String dayRequestAttend) {
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(dayRequestAttend, userId);
-        if(requestAttendExist.isEmpty()){
+        if (requestAttendExist.isEmpty()) {
             return true; // Request attend not exist
         }
         return false; // Request attend exist
@@ -346,31 +351,61 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
-        if(requestAttendExist.isEmpty()){
+        if (requestAttendExist.isEmpty()) {
             return false; // Request attend not exist
         }
         return true; // Request attend exist
     }
 
-    public List<RequestAttendDto> findByDay(java.sql.Date dayRequestAttend){
+    @Override
+    public Long totalDayOfAttendInMonth(Long userId, Date beginDate, Date endDate) {
+        if (userId == null | beginDate == null | endDate == null)
+            throw new CustomHandleException(30);
+
+        return this.requestAttendRepository.count(
+                Specification.where(RequestAttendSpecification.byUserId(userId))
+                        .and(RequestAttendSpecification.betweenDateAttendRequest(beginDate, endDate))
+                        .and(RequestAttendSpecification.byStatus(1))
+        );
+    }
+
+
+    public List<RequestAttendDto> findByDay(java.sql.Date dayRequestAttend) {
         String day = new SimpleDateFormat("yyyy-MM-dd").format(dayRequestAttend);
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByDayAndUser(day, userId);
-        if(requestAttendExist.isEmpty()){
+        if (requestAttendExist.isEmpty()) {
             return null; // Request attend not exist
         }
         return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
     }
 
     @Transactional
-    public List<RequestAttendDto> findByMonthAndYear(java.sql.Date monthAndYear){
+    public List<RequestAttendDto> findByMonthAndYear(java.sql.Date monthAndYear) {
         String monthYear = new SimpleDateFormat("yyyy-MM").format(monthAndYear) + "%";
         Long userId = SecurityUtils.getCurrentUser().getUser().getUserId();
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByMonthAndYearAndUser(monthYear, userId);
-        if(requestAttendExist.isEmpty()){
+        if (requestAttendExist.isEmpty()) {
             return null; // Request attend not exist
         }
         return requestAttendExist.stream().map(RequestAttendDto::entityToDto).collect(Collectors.toList()); // Request attend exist
+    }
+
+    private RequestAttendDto modifyingStatus(boolean status, RequestAttendEntity oldRequest, String reasonCancel) {
+        if (status) {
+            oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
+            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi " + SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+            this.notificationRepository.saveAndFlush(notificationEntity);
+            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        }
+        oldRequest.setStatus(2);
+        oldRequest.setReasonCancel(reasonCancel);
+        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+        NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi " + SecurityUtils.getCurrentUser().getUser().getFullName() + "\n" + reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+        this.notificationRepository.saveAndFlush(notificationEntity);
+        return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
     }
 
 }

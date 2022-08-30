@@ -27,4 +27,7 @@ public interface IRequestDayOffRepository extends JpaRepository<RequestDayOffEnt
             "WHERE user_id = ?1 ORDER BY updated_date DESC", nativeQuery = true)
     Page<RequestDayOffEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
 
+    @Query(value = "SELECT * FROM `tbl_request_dayoff` where user_id = ?1 and date_request_dayoff between ?2 and ?3 and is_legit = ?4 and status = ?5", nativeQuery = true)
+    Page<RequestDayOffEntity> getAllDayOfByMonthOfUser(Long id, String DateStart, String DateEnd, boolean isLegit, int status, Pageable pageable);
+
 }

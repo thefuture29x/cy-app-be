@@ -433,7 +433,7 @@ public class UserServiceImp implements IUserService {
         if (userEntities != null && userEntities.size() > 0){
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
@@ -464,7 +464,7 @@ public class UserServiceImp implements IUserService {
         if (userEntities != null && userEntities.size() > 0){
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
-        return null;
+        return  new ArrayList<>();
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
@@ -494,7 +494,9 @@ public class UserServiceImp implements IUserService {
 
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-
+        Long userAuthent = SecurityUtils.getCurrentUserId();
+        if(userAuthent != id)
+            throw new CustomHandleException(21);
         // Get all request modifi send to leader on this day
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
@@ -579,6 +581,9 @@ public class UserServiceImp implements IUserService {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
         // Get all request modifi create by me
+        Long userAuthent = SecurityUtils.getCurrentUserId();
+        if(userAuthent != id)
+            throw new CustomHandleException(21);
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestCreateByMe(id,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
@@ -642,6 +647,20 @@ public class UserServiceImp implements IUserService {
                     .nameUserAssign(entity.getAssignTo().getFullName())
                     .timeCreateTypeDate(entity.getCreatedDate())
                     .type("OT")
+                    .build());
+        }
+
+        for (RequestAttendEntity entity: iRequestAttendRepository.getAllRequestCreateByMe(id,pageable)) {
+            requestSendMeDtoList.add(RequestSendMeDto
+                    .builder()
+                    .idRequest(entity.getId())
+                    .timeCreate(simpleDateFormat.format(entity.getUpdatedDate()))
+                    .status(entity.getStatus())
+                    .description(null)
+                    .idUserCreate(entity.getCreateBy().getUserId())
+                    .nameUserCreate(entity.getCreateBy().getFullName())
+                    .timeCreateTypeDate(entity.getCreatedDate())
+                    .type("Attend")
                     .build());
         }
 
