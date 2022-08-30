@@ -4,7 +4,9 @@ import cy.configs.FrontendConfiguration;
 import cy.dtos.RequestModifiDto;
 import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
+import cy.repositories.IRequestAttendRepository;
 import cy.repositories.IRequestModifiRepository;
+import cy.services.IRequestAttendService;
 import cy.services.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -14,16 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @RestController
-@RequestMapping(FrontendConfiguration.PREFIX_API+"test")
+@RequestMapping(FrontendConfiguration.PREFIX_API + "test")
 public class TestController {
     @Autowired
-    IRequestModifiRepository iRequestModifiRepository;
-    @Autowired
-    IUserService iUserService;
+    IRequestAttendService iRequestAttendService;
+
     @GetMapping
-    public ResponseDto getCurrentTime(Long id, Pageable pageable){
-        return ResponseDto.of(iUserService.getAllRequestSendMe(id,pageable));
+    public ResponseDto getCurrentTime() {
+        return ResponseDto.of(this.iRequestAttendService.totalDayOfAttendInMonth(49L, new Date(122, 6, 22), new Date(122, 7, 23)));
     }
 }
