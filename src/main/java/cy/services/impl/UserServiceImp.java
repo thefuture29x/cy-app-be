@@ -494,7 +494,9 @@ public class UserServiceImp implements IUserService {
 
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-
+        Long userAuthent = SecurityUtils.getCurrentUserId();
+        if(userAuthent != id)
+            throw new CustomHandleException(21);
         // Get all request modifi send to leader on this day
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
@@ -579,6 +581,9 @@ public class UserServiceImp implements IUserService {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
         // Get all request modifi create by me
+        Long userAuthent = SecurityUtils.getCurrentUserId();
+        if(userAuthent != id)
+            throw new CustomHandleException(21);
         for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestCreateByMe(id,pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
