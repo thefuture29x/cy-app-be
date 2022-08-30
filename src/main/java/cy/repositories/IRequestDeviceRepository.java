@@ -22,4 +22,9 @@ public interface IRequestDeviceRepository extends JpaRepository<RequestDeviceEnt
     @Query(value = "SELECT * FROM `tbl_request_device` \n " +
             "WHERE user_id = ?1 ORDER BY updated_date DESC", nativeQuery = true)
     Page<RequestDeviceEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
+
+    @Query(value = "SELECT * FROM `tbl_request_device` \n " +
+            "ORDER BY updated_date DESC", nativeQuery = true)
+    Page<RequestDeviceEntity> findAllByPage(Long id, Pageable pageable);
+
 }
