@@ -324,13 +324,13 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
         RequestAttendEntity oldRequest = this.getById(id);
         Set<String> currentRoles = SecurityUtils.getCurrentUser().getUser().getRoleEntity().stream().map(roleEntity -> roleEntity.getRoleName()).collect(Collectors.toSet());
         if(Set.of(RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER).stream().anyMatch(currentRoles::contains)){
-            modifyingStatus(status,oldRequest,reasonCancel);
+            return modifyingStatus(status,oldRequest,reasonCancel);
         }
         if(Set.of(RoleEntity.LEADER).stream().anyMatch(currentRoles::contains)){
                 if(SecurityUtils.getCurrentUserId() != oldRequest.getAssignTo().getUserId()){
                     return RequestAttendDto.builder().reasonCancel("2").build();
                 }else {
-                    modifyingStatus(status,oldRequest,reasonCancel);
+                    return modifyingStatus(status,oldRequest,reasonCancel);
             }
         }
         return null;
