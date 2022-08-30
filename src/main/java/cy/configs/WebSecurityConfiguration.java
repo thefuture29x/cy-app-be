@@ -37,6 +37,7 @@ public class WebSecurityConfiguration {
             new AntPathRequestMatcher("/api/v1/public/test/login"),
             new AntPathRequestMatcher("/api/v1/public/test/1"),
             new AntPathRequestMatcher("/users/login"),
+            new AntPathRequestMatcher("/api/v1/test"),
             new AntPathRequestMatcher("/api/v1/users/login"),
 
 

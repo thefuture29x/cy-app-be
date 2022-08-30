@@ -6,13 +6,14 @@ import cy.entities.RequestDayOffEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
 import java.util.Date;
 
-public interface IRequestAttendRepository extends JpaRepository<RequestAttendEntity, Long> {
+public interface IRequestAttendRepository extends JpaRepository<RequestAttendEntity, Long>, JpaSpecificationExecutor<RequestAttendEntity> {
     @Query(value = "SELECT r FROM RequestAttendEntity r WHERE r.createBy.userId = ?1 AND r.dateRequestAttend = ?2")
     RequestAttendEntity userAlreadyRequest(Long user_id, Date date);
 
