@@ -6,6 +6,7 @@ import cy.dtos.ResponseDto;
 import cy.models.RequestDeviceModel;
 import cy.models.RequestDeviceUpdateStatusModel;
 import cy.services.impl.RequestDeviceServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
@@ -106,9 +107,24 @@ public class RequestDeviceResource {
         return ResponseDto.of(requestDeviceService.updateStatusCancle(id,reason));
     }*/
 
+    @Operation(summary = "Tạo yêu cầu trả thiết bị đã mượn.")
     @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
     @PutMapping("/return-device/{id}")
     public Object returnDevice(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.returnDevice(id));
+    }
+
+    @Operation(summary = "Lọc yêu cầu theo loại thiết bị mượn cho người dùng hiện tại.")
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
+    @GetMapping("/filter-by-type")
+    public Object filterByType(@RequestParam(value = "type") String type, Pageable page){
+        return ResponseDto.of(requestDeviceService.filterByType(type,page));
+    }
+
+    @Operation(summary = "Lọc các yêu cầu mượn thiết bị được tạo bởi người dùng hiện tại.")
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
+    @GetMapping("/created-by-myself")
+    public Object createdByMyself(Pageable page){
+        return ResponseDto.of(requestDeviceService.createdByMyself(page));
     }
 }
