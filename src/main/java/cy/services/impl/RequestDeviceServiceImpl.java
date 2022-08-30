@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -222,4 +223,36 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());
         return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
     }*/
+
+    public String returnDevice(Long id) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        RequestDeviceEntity requestDeviceEntity = this.getById(id);
+        Integer typeRequestDevice = requestDeviceEntity.getTypeRequestDevice();
+        Integer status = requestDeviceEntity.getStatus();
+        if(typeRequestDevice == 2){ // Đã trả thiết bị rồi.
+            throw new CustomHandleException(71);
+        }
+        if(status != 1){ // Yêu cầu chưa được duyệt -> khỏi phải trả =)))
+            throw new CustomHandleException(73);
+        }
+        requestDeviceEntity.setTypeRequestDevice(2);
+        iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
+        this.createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());
+        this.createNotification(requestDeviceEntity,false,"Trả thiết bị thành công!","Bạn đã gửi yêu cầu trả " +
+                "thiết bị mượn từ ngày " + sdf.format(requestDeviceEntity.getDateRequestDevice()) + " thành công.");
+        this.sendNotioficationToManager(requestDeviceEntity);
+        return "Return device success!";
+    }
+
+    private void sendNotioficationToManager(RequestDeviceEntity requestDeviceEntity){
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        NotificationEntity notificationEntity = new NotificationEntity();
+        notificationEntity.setTitle("Người dùng " + SecurityUtils.getCurrentUsername() + " đã trả thiết bị");
+        notificationEntity.setContent(SecurityUtils.getCurrentUsername() + " vừa yêu cầu trả " + requestDeviceEntity.getType()
+        + " mượn từ ngày " + sdf.format(requestDeviceEntity.getDateRequestDevice()) + "!");
+        notificationEntity.setIsRead(false);
+        notificationEntity.setUserId(requestDeviceEntity.getAssignTo());
+        notificationEntity.setRequestDevice(requestDeviceEntity);
+        this.notificationRepository.saveAndFlush(notificationEntity);
+    }
 }

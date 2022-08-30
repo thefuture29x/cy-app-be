@@ -27,8 +27,8 @@ public class RequestDeviceResource {
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping("/create")
     public Object add(RequestDeviceModel requestDeviceModel) throws IOException {
-        RequestDeviceDto requestDeviceDto=requestDeviceService.add(requestDeviceModel);
-        if(requestDeviceDto==null){
+        RequestDeviceDto requestDeviceDto = requestDeviceService.add(requestDeviceModel);
+        if(requestDeviceDto == null){
             return ResponseDto.of(130, "CREATE");
         }else {
             return ResponseDto.of(requestDeviceDto);
@@ -105,4 +105,10 @@ public class RequestDeviceResource {
     public Object cancelRequestDevice(@RequestParam(value = "id") Long id,@RequestParam(value = "reason") String reason){
         return ResponseDto.of(requestDeviceService.updateStatusCancle(id,reason));
     }*/
+
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
+    @PutMapping("/return-device/{id}")
+    public Object returnDevice(@PathVariable(value = "id") Long id){
+        return ResponseDto.of(requestDeviceService.returnDevice(id));
+    }
 }
