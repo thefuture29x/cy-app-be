@@ -105,4 +105,11 @@ public class RequestDeviceResource {
     public Object cancelRequestDevice(@RequestParam(value = "id") Long id,@RequestParam(value = "reason") String reason){
         return ResponseDto.of(requestDeviceService.updateStatusCancle(id,reason));
     }*/
+
+
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @PostMapping("/findAll/{pageIndex}/{pageSize}")
+    public Object acceptRequestDevice(@RequestBody RequestDeviceModel requestDeviceModel,@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize){
+        return ResponseDto.of(requestDeviceService.findAllByPage(pageIndex,pageSize,requestDeviceModel));
+    }
 }

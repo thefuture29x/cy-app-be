@@ -18,10 +18,16 @@ import cy.utils.SecurityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalTime;
@@ -47,6 +53,8 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
     IHistoryRequestRepository historyRequestRepository;
     @Autowired
     INotificationRepository notificationRepository;
+    @Autowired
+    EntityManager manager;
 
     
     @Override
@@ -213,6 +221,40 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
         createHistory(requestDeviceEntity,requestDeviceEntity.getStatus());*/
         return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11)));
+    }
+    @Override
+    public Page<RequestDeviceDto> findAllByPage(Integer pageIndex, Integer pageSize,RequestDeviceModel requestDeviceModel) {
+        String sql="SELECT r FROM RequestDeviceEntity r WHERE 1=1 ";
+        String countSQL = "select count(*) from RequestDeviceEntity r where 1=1 ";
+
+        if(requestDeviceModel.getCreateBy() != null) {
+            sql+=" AND r.createBy = "+requestDeviceModel.getCreateBy();
+            countSQL+=" AND r.createBy = "+requestDeviceModel.getCreateBy();
+        }
+
+        if(requestDeviceModel.getStatus() != null) {
+            sql+=" AND r.status = "+requestDeviceModel.getStatus();
+            countSQL+=" AND r.status = "+requestDeviceModel.getStatus();
+        }
+
+        if(requestDeviceModel.getTypeRequestDevice() != null) {
+            sql+=" AND r.typeRequestDevice = "+requestDeviceModel.getTypeRequestDevice();
+            countSQL+=" AND r.typeRequestDevice = "+requestDeviceModel.getTypeRequestDevice();
+        }
+        sql+="order by r.updatedDate desc";
+        Query q = manager.createQuery(sql,RequestDeviceEntity.class);
+        Query qCount = manager.createQuery(countSQL);
+
+        q.setFirstResult(pageIndex * pageSize);
+        q.setMaxResults(pageSize);
+
+        Pageable pageable = PageRequest.of(pageIndex,pageSize);
+
+        Long numberResult = (Long) qCount.getSingleResult();
+        Page<RequestDeviceEntity> pageEntity = new PageImpl<>(q.getResultList(), pageable, numberResult);
+        Page<RequestDeviceDto> requestDeviceDtos = pageEntity.map(x -> RequestDeviceDto.entityToDto(x));
+
+        return requestDeviceDtos;
     }
     /*public RequestDeviceDto updateStatusCancle(Long id,String reason) {
         RequestDeviceEntity requestDeviceEntity = this.getById(id);
