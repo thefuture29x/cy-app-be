@@ -333,7 +333,21 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
                 return modifyingStatus(status, oldRequest, reasonCancel);
             }
         }
-        return null;
+
+        if(status){
+            oldRequest.setStatus(1);
+            oldRequest.setReasonCancel(null);
+            this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(1).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+            NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã được phê duyệt bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName()).title("Yêu cầu chấm công đã được phê duyệt").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+            this.notificationRepository.saveAndFlush(notificationEntity);
+            return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
+        }
+        oldRequest.setStatus(2);
+        oldRequest.setReasonCancel(reasonCancel);
+        this.historyRequestRepository.saveAndFlush(HistoryRequestEntity.builder().requestAttend(oldRequest).status(2).dateHistory(oldRequest.getDateRequestAttend()).timeHistory(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))).build());
+        NotificationEntity notificationEntity = NotificationEntity.builder().requestAttendEntityId(oldRequest).content("Yêu cầu chấm công đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu chấm công đã bị hủy bỏ").dateNoti(oldRequest.getDateRequestAttend()).userId(oldRequest.getCreateBy()).isRead(false).build();
+        this.notificationRepository.saveAndFlush(notificationEntity);
+        return RequestAttendDto.entityToDto(this.requestAttendRepository.saveAndFlush(oldRequest));
     }
 
     @Override
