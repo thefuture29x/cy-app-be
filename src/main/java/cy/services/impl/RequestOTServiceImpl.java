@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -31,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -238,5 +241,25 @@ public class RequestOTServiceImpl implements IRequestOTService {
                 .isRead(false)
                 .build());
         return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
+    }
+
+    @Override
+    public Float totalOTHours(Long userId, Integer status, String startDate, String endDate) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
+        List<RequestOTEntity> requestOTEntityList = requestOTRepository.getAllDateOTByMonth(userId, status, startDate, endDate);
+        float totalOtHours = 0f;
+        for (RequestOTEntity requestOTEntity : requestOTEntityList) {
+            try {
+                Date timeStartOt = simpleDateFormat.parse(requestOTEntity.getTimeStart());
+                Date timeEndOt = simpleDateFormat.parse(requestOTEntity.getTimeEnd());
+                long timeOt = timeEndOt.getTime() - timeStartOt.getTime();
+                long hours = TimeUnit.MILLISECONDS.toHours(timeOt);
+                float minutes = (TimeUnit.MILLISECONDS.toMinutes(timeOt) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeOt))) / 60f;
+                totalOtHours += hours + minutes;
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return totalOtHours;
     }
 }

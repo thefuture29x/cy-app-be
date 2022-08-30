@@ -1,6 +1,5 @@
 package cy.repositories;
 
-import cy.entities.RequestModifiEntity;
 import cy.entities.RequestOTEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +19,7 @@ public interface IRequestOTRepository extends JpaRepository<RequestOTEntity, Lon
     @Query(value = "SELECT * FROM `tbl_request_ot` \n " +
             "WHERE user_id = ?1 ORDER BY updated_date DESC", nativeQuery = true)
     Page<RequestOTEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
+
+    @Query(value = "SELECT * FROM tbl_request_ot WHERE user_id = ?1 AND status = ?2 AND date_ot BETWEEN ?3 AND ?4", nativeQuery = true)
+    List<RequestOTEntity> getAllDateOTByMonth(Long userId, Integer status, String startDate, String endDate);
 }

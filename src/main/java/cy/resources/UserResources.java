@@ -173,14 +173,14 @@ public class UserResources {
         return ResponseDto.of(this.userService.getAllRequestSendMe(id, pageable));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_EMPLOYEE','')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_EMPLOYEE','ROLE_LEADER')")
     @Operation(summary = "Get all request create by me")
     @GetMapping("get_request_create_by_me")
     public ResponseDto getAllRequestCreateByMe(@RequestParam(value = "id") Long id, Pageable pageable) {
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id, pageable));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER','ROLE_EMPLOYEE','')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER','ROLE_EMPLOYEE')")
     @Operation(summary = "Get request by id and type")
     @GetMapping("get_request_by_id_and_type")
     public ResponseDto findRequestByIdAndType(@RequestParam(value = "id") Long id, @RequestParam(value = "type") String type) {

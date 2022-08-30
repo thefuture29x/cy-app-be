@@ -6,4 +6,5 @@ import cy.models.RequestOTModel;
 
 public interface IRequestOTService extends IBaseService<RequestOTEntity, RequestOTDto, RequestOTModel, Long>{
     RequestOTDto responseOtRequest(Long requestOtId, String reasonCancel, Boolean status);
+    Float totalOTHours(Long userId, Integer status, String startDate, String endDate);
 }
