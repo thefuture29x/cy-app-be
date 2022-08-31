@@ -43,5 +43,5 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
     List<UserDto> getUserByRoleName(String roleName);
     List<UserDto> getAllUserByRoleName(String roleName);
 
-    List<PayRollDto> calculatePayRoll(String timeStart, String timeEnd);
+    List<PayRollDto> calculatePayRoll();
 }
