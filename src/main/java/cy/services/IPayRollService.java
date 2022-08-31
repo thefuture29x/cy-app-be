@@ -9,4 +9,6 @@ import org.springframework.data.domain.Pageable;
 public interface IPayRollService extends IBaseService<PayRollEntity, PayRollDto, PayRollModel,Long>{
 
     Page<PayRollDto> getPayRollByMonthAndYear(int month, int year, Pageable pageable);
+
+    Object calculateDate(Pageable pageable);
 }

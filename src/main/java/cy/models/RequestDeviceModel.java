@@ -30,7 +30,6 @@ public class RequestDeviceModel {
     @JsonSerialize(as = Date.class)
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateRequestDevice;
-
     @JsonSerialize(as = Date.class)
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateStart;
