@@ -211,7 +211,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
                     requestDeviceEntity.setReasonCancel(null);
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,1);
-                    createNotification(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    createNotification_new(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
                     // return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
                     break;
                 case 2:
@@ -219,7 +219,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
                     requestDeviceEntity.setReasonCancel(model.getReasonCancel());
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,2);
-                    createNotification_new(requestDeviceEntity,true,"Đã bị hủy bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    createNotification_new(requestDeviceEntity,true,"Đã bị hủy bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị từ chối: "+ model.getReasonCancel());
                     //   return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
                     break;
             }
