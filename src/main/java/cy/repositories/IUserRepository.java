@@ -38,7 +38,7 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
 
     @Query(value = "SELECT us.user_id FROM `tbl_user_role` usrl JOIN tbl_role rl ON usrl.role_id = rl.role_id JOIN tbl_user us ON usrl.user_id = us.user_id WHERE rl.role_id != 1 ", nativeQuery = true)
     List<Long> findAllUserWithoutRoleAdmin();
-
     @Query(name = "pay_roll", nativeQuery = true)
     List<PayRollDto> calculatePayRoll(@Param("timeStart")String timeStart, @Param("timeEnd")String timeEnd, @Param("totalWorkingDay") int totalWorkingDay);
+
 }

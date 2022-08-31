@@ -472,24 +472,20 @@ public class UserServiceImp implements IUserService {
 
 
     @Override
-    public List<PayRollDto> calculatePayRoll() {
-        Date date = new Date();
-        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        int endMonth = localDate.getMonthValue();
-        int endYear = localDate.getYear();
-        int startYear = 0;
+    public List<PayRollDto> calculatePayRoll(Pageable pageable, int endMonth,int endYear) {
         int startMonth = 0;
+        int startYear = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        if (endMonth == 1) {
+
+        if (endMonth ==1){
             startMonth = 12;
             startYear = endYear - 1;
-        } else {
-            endMonth = localDate.getMonthValue();
+        }else {
             startMonth = endMonth - 1;
-            startYear = localDate.getYear();
+            startYear = endYear;
         }
 
-        String startDate = timeKeepingDate + "/" + startMonth + "/" + startYear;
+        String startDate = (timeKeepingDate + 1) + "/" + startMonth + "/" + startYear;
 
         String endDate = timeKeepingDate + "/" + endMonth + "/" + endYear;
 
@@ -510,7 +506,7 @@ public class UserServiceImp implements IUserService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String timeStartWorking = startYear +"-"+ startMonth+"-"+timeKeepingDate;
+        String timeStartWorking = startYear +"-"+ startMonth+"-"+(timeKeepingDate + 1);
         String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
 
         return userRepository.calculatePayRoll(timeStartWorking, timeEndWorking, workingDays);

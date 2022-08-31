@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class ResponseDto {
     private int code = 0;
     private Object data;
+    private Object otherData;
 
     public static ResponseDto of(int code, Object data) {
         return ResponseDto.builder()
@@ -25,6 +26,14 @@ public class ResponseDto {
                 .data(data)
                 .build();
     }
+
+    public static ResponseDto otherData(Object data,Object otherData) {
+        return ResponseDto.builder()
+                .data(data)
+                .otherData(otherData)
+                .build();
+    }
+
 
     public static ResponseDto ofError(int code) {
         return ResponseDto.builder().code(code).build();

@@ -6,6 +6,7 @@ import cy.dtos.UserDto;
 import cy.entities.PayRollEntity;
 import cy.entities.UserEntity;
 import cy.models.PayRollModel;
+import cy.models.RequestAttendByNameAndYearMonth;
 import cy.repositories.IPayRollRepository;
 import cy.repositories.IRequestDayOffRepository;
 import cy.repositories.IUserRepository;
@@ -155,6 +156,69 @@ public class PayRollServiceImpl implements IPayRollService {
 
         return hashMap;
     }
+
+
+    @Override
+    public HashMap<String,Integer> totalWorkingDayEndWorked(RequestAttendByNameAndYearMonth requestAttendByNameAndYearMonth){
+        LocalDate currentDate = LocalDate.parse(requestAttendByNameAndYearMonth.getDate().toString());
+        int endMonth = currentDate.getMonthValue();
+        int endYear = currentDate.getYear();
+
+        int startMonth = 0;
+        int startYear = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        if (endMonth ==1){
+            startMonth = 12;
+            startYear = endYear - 1;
+        }else {
+            startMonth = endMonth - 1;
+            startYear = endYear;
+        }
+
+        String startDate = (timeKeepingDate + 1) + "/" + startMonth + "/" + startYear;
+
+        String endDate = timeKeepingDate + "/" + endMonth + "/" + endYear;
+
+        int workingDays = 0;
+
+        Calendar start = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+        try {
+            start.setTime(sdf.parse(startDate));
+            end.setTime(sdf.parse(endDate));
+            workingDays = 0;
+            while (!start.after(end)) {
+                int day = start.get(Calendar.DAY_OF_WEEK);
+                if ((day != Calendar.SATURDAY) && (day != Calendar.SUNDAY))
+                    workingDays++;
+                start.add(Calendar.DATE, 1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        int totalDaysWorked;
+        UserEntity userEntity = iUserRepository.findByUserName(requestAttendByNameAndYearMonth.getName());
+        try {
+            totalDaysWorked = Math.toIntExact(iRequestAttendService.totalDayOfAttendInMonth(userEntity.getUserId(),
+                    new SimpleDateFormat("dd/MM/yyyy").parse(startDate),
+                    new SimpleDateFormat("dd/MM/yyyy").parse(endDate)));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        System.out.println(workingDays);
+        System.out.println(totalDaysWorked);
+
+        HashMap<String,Integer> hashMap = new HashMap<>();
+        hashMap.put("workingDays", workingDays);
+        hashMap.put("totalDaysWorked", totalDaysWorked);
+
+        return hashMap;
+    }
+
     @Override
     public Object calculateDate(Pageable pageable) {
         int totalWorkingDay = this.totalWorkingDay().get("workingDays");
@@ -166,28 +230,24 @@ public class PayRollServiceImpl implements IPayRollService {
         String startDate = timeKeepingDate + "/" + startMonth + "/" + startYear;
         String endDate = timeKeepingDate + "/" + endMonth + "/" + endYear;
 
-        List<PayRollDto> payRollDtoList = new ArrayList<>();
-        for (Long user_id : iUserRepository.findAllUserWithoutRoleAdmin()) {
+//        int totalDaysWorked;
+//        try {
+//            totalDaysWorked = Math.toIntExact(iRequestAttendService.totalDayOfAttendInMonth(user_id,
+//                    new SimpleDateFormat("dd/MM/yyyy").parse(startDate),
+//                    new SimpleDateFormat("dd/MM/yyyy").parse(endDate)));
+//        } catch (ParseException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        String startDateRequestDayOff = startYear + "/" + startMonth + "/" + timeKeepingDate + " 00:00:00";
+//        String endDateRequestDayOff = endYear + "/" + endMonth + "/" + (timeKeepingDate + 1) + " 00:00:00";
+//
+//        int totalPaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,user_id,true,1,pageable).size();
+//        int totalUnpaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,user_id,false,2,pageable).size();
+//
+//        Float totalOvertimeHours = iRequestOTService.totalOTHours(user_id,1,startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
 
-            int totalDaysWorked;
-            try {
-                totalDaysWorked = Math.toIntExact(iRequestAttendService.totalDayOfAttendInMonth(user_id,
-                        new SimpleDateFormat("dd/MM/yyyy").parse(startDate),
-                        new SimpleDateFormat("dd/MM/yyyy").parse(endDate)));
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-
-            String startDateRequestDayOff = startYear + "/" + startMonth + "/" + timeKeepingDate + " 00:00:00";
-            String endDateRequestDayOff = endYear + "/" + endMonth + "/" + (timeKeepingDate + 1) + " 00:00:00";
-
-            int totalPaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,user_id,true,1,pageable).size();
-            int totalUnpaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,user_id,false,2,pageable).size();
-
-            Float totalOvertimeHours = iRequestOTService.totalOTHours(user_id,1,startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
-//            payRollDtoList.add(new PayRollDto(null, iUserRepository.getFullNameById(user_id) ,totalWorkingDay,totalDaysWorked,totalPaidLeaveDays,totalUnpaidLeaveDays,totalOvertimeHours,startMonth,startYear));
-        }
-        return payRollDtoList;
+        return null;
     }
 
 

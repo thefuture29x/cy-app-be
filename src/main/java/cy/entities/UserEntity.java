@@ -19,8 +19,8 @@ import java.util.Set;
 @NamedNativeQuery(
         name = "pay_roll",
         query = "SELECT us.user_id as id, us.full_name as nameStaff,\n" +
-                "CONCAT(month(:timeStart), \"/\",\n" +
-                "YEAR(:timeStart)) as monthWorking,:totalWorkingDay as totalWorkingDay, \n" +
+                "CONCAT(month(:timeEnd), \"/\",\n" +
+                "YEAR(:timeEnd)) as monthWorking,:totalWorkingDay as totalWorkingDay, \n" +
                 "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
                 "FROM tbl_request_ot\n" +
                 "where user_id = us.user_id and status = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHours,\n" +
