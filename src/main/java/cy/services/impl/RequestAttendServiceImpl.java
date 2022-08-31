@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -93,9 +94,12 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
     }
 
 
-    public List<RequestAttendDto> findByUsername(RequestAttendByNameAndYearMonth data) {
-        String monthYear = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "%";
-        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByUserNameAndDate(data.getName(), monthYear);
+    public List<RequestAttendDto> findByUsername(RequestAttendByNameAndYearMonth data) throws ParseException {
+//        String monthYear = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "%";
+        String monthYearCurrent = new SimpleDateFormat("yyyy-MM-dd").format(data.getDate());
+        String dateAgo = data.getDate().toLocalDate().minusMonths(1L).toString();
+        dateAgo =dateAgo.substring(0,7) + "-23";
+        List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByUserNameAndDate_new(data.getName(), monthYearCurrent,dateAgo);
         if (requestAttendExist.isEmpty()) {
             return new ArrayList<>(); // Request attend not exist
         }

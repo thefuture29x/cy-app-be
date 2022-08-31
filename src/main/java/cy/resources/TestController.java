@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.*;
 import java.util.Date;
 
@@ -50,7 +51,7 @@ public class TestController {
 
 
     @PostMapping("/testne")
-    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) {
+    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) throws ParseException {
         List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
         return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data));
     }

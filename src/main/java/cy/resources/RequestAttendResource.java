@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.sql.Date;
+import java.text.ParseException;
 import java.util.List;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "request_attend")
@@ -79,7 +80,7 @@ public class RequestAttendResource {
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity
             .MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping(value = "/find-by-user-name-and-day")
-    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) {
+    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) throws ParseException {
         List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
         return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data));
     }
