@@ -472,7 +472,7 @@ public class UserServiceImp implements IUserService {
 
 
     @Override
-    public List<PayRollDto> calculatePayRoll(String timeStart, String timeEnd) {
+    public List<PayRollDto> calculatePayRoll() {
         Date date = new Date();
         LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         int endMonth = localDate.getMonthValue();
@@ -510,8 +510,10 @@ public class UserServiceImp implements IUserService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        String timeStartWorking = startYear +"-"+ startMonth+"-"+timeKeepingDate;
+        String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
 
-        return userRepository.calculatePayRoll(timeStart, timeEnd, workingDays);
+        return userRepository.calculatePayRoll(timeStartWorking, timeEndWorking, workingDays);
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {

@@ -24,8 +24,8 @@ public class PayRollResource {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN})
     @GetMapping("/work-date-of-month")
-    public ResponseDto calculateDate(String timeStart, String timeEnd) {
-        return ResponseDto.of(iUserService.calculatePayRoll(timeStart, timeEnd));
+    public ResponseDto calculateDate() {
+        return ResponseDto.of(iUserService.calculatePayRoll());
     }
 
 

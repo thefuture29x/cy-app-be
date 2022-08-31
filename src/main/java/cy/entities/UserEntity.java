@@ -32,13 +32,13 @@ import java.util.Set;
                 "\n" +
                 "(SELECT COUNT(user_id) FROM tbl_request_dayoff \n" +
                 "WHERE user_id = us.user_id\n" +
-                "AND `status` != 0\n" +
+                "AND `status` = 1\n" +
                 "AND is_legit = TRUE\n" +
                 "AND date_request_dayoff BETWEEN :timeStart AND :timeEnd) as totalPaidLeaveDays,\n" +
                 "\n" +
                 "(SELECT COUNT(user_id) FROM tbl_request_dayoff \n" +
                 "WHERE user_id = us.user_id\n" +
-                "AND `status` != 0\n" +
+                "AND `status` = 1\n" +
                 "AND is_legit = FALSE\n" +
                 "AND date_request_dayoff BETWEEN :timeStart AND :timeEnd) as totalUnpaidLeaveDays\n" +
                 "\n" +
