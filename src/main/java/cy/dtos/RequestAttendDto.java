@@ -29,6 +29,7 @@ public class RequestAttendDto {
     private List<String> files;
     private UserDto createdBy;
     private UserDto assignedTo;
+
     private NotificationDto notification;
 
     public RequestAttendDto(RequestAttendEntity entity) {

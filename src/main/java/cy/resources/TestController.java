@@ -1,35 +1,23 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.RequestModifiDto;
-import cy.dtos.RequestSendMeDto;
+import cy.dtos.PayRollDto;
+import cy.dtos.RequestAttendDto;
 import cy.dtos.ResponseDto;
-import cy.repositories.IRequestAttendRepository;
-import cy.repositories.IRequestModifiRepository;
+import cy.models.RequestAttendByNameAndYearMonth;
 import cy.repositories.IUserRepository;
 import cy.services.IPayRollService;
 import cy.services.IRequestAttendService;
 import cy.services.IUserService;
+import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Scanner;
-import java.util.Date;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "test")
@@ -41,6 +29,10 @@ public class TestController {
     IPayRollService iPayRollService;
     @Autowired
     IUserRepository iUserRepository;
+    @Autowired
+    IUserService iUserService;
+    @Autowired
+    private RequestAttendServiceImpl requestAttendService;
 
     @GetMapping
     public ResponseDto getCurrentTime() {
@@ -48,16 +40,18 @@ public class TestController {
     }
 
     @GetMapping("/test")
-    public ResponseDto calculateDate(String timeStart, String timeEnd) {
-        return null;
+    public ResponseDto calculateDate(Pageable pageable, @RequestParam(value = "startMonth") String startMonth, @RequestParam(value = "startYear") String startYear) {
+        List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,Integer.parseInt(startMonth), Integer.parseInt(startYear));
+        Page<PayRollDto> pages = new PageImpl<PayRollDto>(payRollDtos, pageable, payRollDtos.size());
+        return ResponseDto.of(pages);
     }
 
 
 
 
-    @GetMapping("testne")
-    public ResponseDto testHashmap(){
-
-        return ResponseDto.of(null);
+    @PostMapping("/testne")
+    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) {
+        List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
+        return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data));
     }
 }
