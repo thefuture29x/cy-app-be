@@ -159,7 +159,7 @@ public class PayRollServiceImpl implements IPayRollService {
 
 
     @Override
-    public HashMap<String,Integer> totalWorkingDayEndWorked(RequestAttendByNameAndYearMonth requestAttendByNameAndYearMonth){
+    public HashMap<String,Object> totalWorkingDayEndWorked(RequestAttendByNameAndYearMonth requestAttendByNameAndYearMonth,Pageable pageable){
         LocalDate currentDate = LocalDate.parse(requestAttendByNameAndYearMonth.getDate().toString());
         int endMonth = currentDate.getMonthValue();
         int endYear = currentDate.getYear();
@@ -208,13 +208,20 @@ public class PayRollServiceImpl implements IPayRollService {
             throw new RuntimeException(e);
         }
 
+        String startDateRequestDayOff = startYear + "/" + startMonth + "/" + timeKeepingDate + " 00:00:00";
+        String endDateRequestDayOff = endYear + "/" + endMonth + "/" + (timeKeepingDate + 1) + " 00:00:00";
 
-        System.out.println(workingDays);
-        System.out.println(totalDaysWorked);
+        int totalPaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,userEntity.getUserId(),true,1,pageable).size();
+        int totalUnpaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,userEntity.getUserId(),false,1,pageable).size();
 
-        HashMap<String,Integer> hashMap = new HashMap<>();
+        Float totalOvertimeHours = iRequestOTService.totalOTHours(userEntity.getUserId(),1,startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
+
+        HashMap<String,Object> hashMap = new HashMap<>();
         hashMap.put("workingDays", workingDays);
         hashMap.put("totalDaysWorked", totalDaysWorked);
+        hashMap.put("totalPaidLeaveDays", totalPaidLeaveDays);
+        hashMap.put("totalUnpaidLeaveDays", totalUnpaidLeaveDays);
+        hashMap.put("totalOvertimeHours", totalOvertimeHours);
 
         return hashMap;
     }
