@@ -26,8 +26,11 @@ public class PayRollResource {
     @GetMapping("/work-date-of-month")
     public ResponseDto calculateDate(Pageable pageable, @RequestParam(value = "startMonth") String startMonth, @RequestParam(value = "startYear") String startYear) {
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,Integer.parseInt(startMonth), Integer.parseInt(startYear));
-        Page<PayRollDto> pages = new PageImpl<PayRollDto>(payRollDtos, pageable, payRollDtos.size());
-        return ResponseDto.of(pages);
+
+        int start = pageable.getPageNumber() * pageable.getPageSize();
+        int end = Math.min((start + pageable.getPageSize()), payRollDtos.size());
+        List<PayRollDto> productDTOSubList = payRollDtos.subList(start, end);
+        return ResponseDto.of(new PageImpl<>(productDTOSubList, pageable, payRollDtos.size()));
     }
 
 }
