@@ -1,11 +1,13 @@
 package cy.repositories;
 
+import cy.dtos.PayRollDto;
 import cy.entities.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -33,4 +35,10 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
 
     @Query(value = "select DISTINCT u.* from tbl_user as u left join tbl_user_role as ur on ur.user_id=u.user_id join tbl_role as r on r.role_id = ur.role_id  where r.role_name not in ?1 and u.status = true", nativeQuery = true)
     List<UserEntity> findAllByRoleName(List<String> roles);
+
+    @Query(value = "SELECT us.user_id FROM `tbl_user_role` usrl JOIN tbl_role rl ON usrl.role_id = rl.role_id JOIN tbl_user us ON usrl.user_id = us.user_id WHERE rl.role_id != 1 ", nativeQuery = true)
+    List<Long> findAllUserWithoutRoleAdmin();
+
+    @Query(name = "pay_roll", nativeQuery = true)
+    List<PayRollDto> calculatePayRoll(@Param("timeStart")String timeStart, @Param("timeEnd")String timeEnd, @Param("totalWorkingDay") int totalWorkingDay);
 }

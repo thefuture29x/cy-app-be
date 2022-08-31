@@ -19,6 +19,7 @@ import cy.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,10 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,6 +67,9 @@ public class UserServiceImp implements IUserService {
     IRequestOTRepository iRequestOTRepository;
     @Autowired
     IRequestAttendRepository iRequestAttendRepository;
+
+    @Value("${timeKeepingDate}")
+    int timeKeepingDate;
 
 
     public UserServiceImp(IUserRepository userRepository,
@@ -466,6 +468,52 @@ public class UserServiceImp implements IUserService {
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
         return  new ArrayList<>();
+    }
+
+
+    @Override
+    public List<PayRollDto> calculatePayRoll() {
+        Date date = new Date();
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        int endMonth = localDate.getMonthValue();
+        int endYear = localDate.getYear();
+        int startYear = 0;
+        int startMonth = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        if (endMonth == 1) {
+            startMonth = 12;
+            startYear = endYear - 1;
+        } else {
+            endMonth = localDate.getMonthValue();
+            startMonth = endMonth - 1;
+            startYear = localDate.getYear();
+        }
+
+        String startDate = timeKeepingDate + "/" + startMonth + "/" + startYear;
+
+        String endDate = timeKeepingDate + "/" + endMonth + "/" + endYear;
+
+        int workingDays = 0;
+
+        Calendar start = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+        try {
+            start.setTime(sdf.parse(startDate));
+            end.setTime(sdf.parse(endDate));
+            workingDays = 0;
+            while (!start.after(end)) {
+                int day = start.get(Calendar.DAY_OF_WEEK);
+                if ((day != Calendar.SATURDAY) && (day != Calendar.SUNDAY))
+                    workingDays++;
+                start.add(Calendar.DATE, 1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String timeStartWorking = startYear +"-"+ startMonth+"-"+timeKeepingDate;
+        String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
+
+        return userRepository.calculatePayRoll(timeStartWorking, timeEndWorking, workingDays);
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
