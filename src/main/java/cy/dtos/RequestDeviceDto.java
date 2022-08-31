@@ -1,5 +1,6 @@
 package cy.dtos;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestDeviceEntity;
 import cy.entities.UserEntity;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,8 +29,11 @@ public class RequestDeviceDto {
     private String title;
     private Integer typeRequestDevice;
     private Integer quantity;
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private Date dateRequestDevice;
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private Date dateStart;
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private Date dateEnd;
     private Integer status;
     private String reasonCancel;
