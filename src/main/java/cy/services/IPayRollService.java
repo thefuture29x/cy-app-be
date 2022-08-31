@@ -14,5 +14,5 @@ public interface IPayRollService extends IBaseService<PayRollEntity, PayRollDto,
     Page<PayRollDto> getPayRollByMonthAndYear(int month, int year, Pageable pageable);
 
     Object calculateDate(Pageable pageable);
-    HashMap<String,Integer> totalWorkingDayEndWorked(RequestAttendByNameAndYearMonth requestAttendByNameAndYearMonth);
+    HashMap<String,Object> totalWorkingDayEndWorked(RequestAttendByNameAndYearMonth requestAttendByNameAndYearMonth,Pageable pageable);
 }

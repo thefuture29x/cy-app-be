@@ -82,7 +82,7 @@ public class RequestAttendResource {
     @PostMapping(value = "/find-by-user-name-and-day")
     public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) throws ParseException {
         List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
-        return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data));
+        return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data,null));
     }
 
     @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR, RoleEntity.MANAGER})
