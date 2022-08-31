@@ -15,35 +15,16 @@ public class PayRollDto {
 
     private String nameStaff;
 
+    private String monthWorking;
+
     private int totalWorkingDay;
+
+    private Float totalOvertimeHours;
 
     private int totalDaysWorked;
 
     private int totalPaidLeaveDays;
 
     private int totalUnpaidLeaveDays;
-
-    private Float totalOvertimeHours;
-
-    private int month;
-
-    private int year;
-
-    public static PayRollDto entityToDto(PayRollEntity object){
-        return PayRollDto.builder()
-                .id(object.getId())
-                .nameStaff(object.getNameStaff())
-                .totalWorkingDay(object.getTotalWorkingDay())
-                .totalDaysWorked(object.getTotalDaysWorked())
-                .totalPaidLeaveDays(object.getTotalPaidLeaveDays())
-                .totalUnpaidLeaveDays(object.getTotalUnpaidLeaveDays())
-                .totalOvertimeHours(object.getTotalOvertimeHours())
-                .month(object.getMonth())
-                .year(object.getYear())
-                .build();
-    }
-
-
-
 
 }

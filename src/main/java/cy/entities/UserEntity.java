@@ -1,5 +1,6 @@
 package cy.entities;
 
+import cy.dtos.PayRollDto;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,6 +16,55 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "tbl_user")
+@NamedNativeQuery(
+        name = "pay_roll",
+        query = "SELECT us.user_id as id, us.full_name as nameStaff,\n" +
+                "CONCAT(month(:timeStart), \"/\",\n" +
+                "YEAR(:timeStart)) as monthWorking,:totalWorkingDay as totalWorkingDay, \n" +
+                "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
+                "FROM tbl_request_ot\n" +
+                "where user_id = us.user_id and status = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHours,\n" +
+                "\n" +
+                "(SELECT COUNT(user_id) FROM tbl_request_attend\n" +
+                "WHERE user_id = us.user_id\n" +
+                "AND `status` = 1\n" +
+                "AND date_request_attend BETWEEN :timeStart AND :timeEnd) as totalDaysWorked,\n" +
+                "\n" +
+                "(SELECT COUNT(user_id) FROM tbl_request_dayoff \n" +
+                "WHERE user_id = us.user_id\n" +
+                "AND `status` != 0\n" +
+                "AND is_legit = TRUE\n" +
+                "AND date_request_dayoff BETWEEN :timeStart AND :timeEnd) as totalPaidLeaveDays,\n" +
+                "\n" +
+                "(SELECT COUNT(user_id) FROM tbl_request_dayoff \n" +
+                "WHERE user_id = us.user_id\n" +
+                "AND `status` != 0\n" +
+                "AND is_legit = FALSE\n" +
+                "AND date_request_dayoff BETWEEN :timeStart AND :timeEnd) as totalUnpaidLeaveDays\n" +
+                "\n" +
+                "FROM tbl_user us \n" +
+                "LEFT JOIN tbl_user_role usrl ON usrl.user_id = us.user_id\n" +
+                "LEFT JOIN tbl_role rl ON usrl.role_id = rl.role_id\n" +
+                "WHERE rl.role_id != 1",
+        resultSetMapping = "pay_roll_dto"
+)
+@SqlResultSetMapping(
+        name = "pay_roll_dto",
+        classes = @ConstructorResult(
+                targetClass = PayRollDto.class,
+                columns = {
+                        @ColumnResult(name = "id", type = Long.class),
+                        @ColumnResult(name = "nameStaff", type = String.class),
+                        @ColumnResult(name = "monthWorking", type = String.class),
+                        @ColumnResult(name = "totalWorkingDay", type = Integer.class),
+                        @ColumnResult(name = "totalOvertimeHours", type = Float.class),
+                        @ColumnResult(name = "totalDaysWorked", type = Integer.class),
+                        @ColumnResult(name = "totalPaidLeaveDays", type = Integer.class),
+                        @ColumnResult(name = "totalUnpaidLeaveDays", type = Integer.class)
+                }
+        )
+)
+
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
