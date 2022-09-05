@@ -64,7 +64,7 @@ public class WebSecurityConfiguration {
         AuthenticationManager authenticationManager = httpSecurity
                 .getSharedObject(AuthenticationManagerBuilder.class)
                 .parentAuthenticationManager(authentication -> {
-                    throw new CustomHandleException(1);
+                    throw new CustomHandleException(9);
                 }).build();
         httpSecurity
                 .authenticationProvider(new JwtAuthenticationProvider())
