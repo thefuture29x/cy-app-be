@@ -3,66 +3,40 @@ package cy.resources;
 import cy.configs.FrontendConfiguration;
 import cy.configs.excel.PayRollExcelExporter;
 import cy.dtos.PayRollDto;
-import cy.dtos.RequestAttendDto;
 import cy.dtos.ResponseDto;
-import cy.models.RequestAttendByNameAndYearMonth;
-import cy.repositories.IUserRepository;
+import cy.entities.RoleEntity;
 import cy.services.IPayRollService;
-import cy.services.IRequestAttendService;
 import cy.services.IUserService;
-import cy.services.impl.RequestAttendServiceImpl;
+import org.hibernate.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
-import java.util.*;
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 
 @RestController
-@RequestMapping(FrontendConfiguration.PREFIX_API + "test")
-public class TestController {
-
-    @Autowired
-    IRequestAttendService iRequestAttendService;
-    @Autowired
-    IPayRollService iPayRollService;
-    @Autowired
-    IUserRepository iUserRepository;
+@RequestMapping(FrontendConfiguration.PREFIX_API + "payroll")
+public class PayRollResource {
     @Autowired
     IUserService iUserService;
-    @Autowired
-    private RequestAttendServiceImpl requestAttendService;
 
-    @GetMapping
-    public ResponseDto getCurrentTime() {
-        return ResponseDto.of(this.iRequestAttendService.totalDayOfAttendInMonth(49L, new Date(122, 6, 22), new Date(122, 7, 23)));
-    }
-
-    @GetMapping("/test")
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN})
+    @GetMapping("/work-date-of-month")
     public ResponseDto calculateDate(Pageable pageable, @RequestParam(value = "startMonth") String startMonth, @RequestParam(value = "startYear") String startYear) {
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,Integer.parseInt(startMonth), Integer.parseInt(startYear));
-        Page<PayRollDto> pages = new PageImpl<PayRollDto>(payRollDtos, pageable, payRollDtos.size());
-        return ResponseDto.of(pages);
-    }
 
-
-
-
-    @PostMapping("/testne")
-    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) throws ParseException {
-        List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
-        return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data,null));
+        int start = pageable.getPageNumber() * pageable.getPageSize();
+        int end = Math.min((start + pageable.getPageSize()), payRollDtos.size());
+        List<PayRollDto> productDTOSubList = payRollDtos.subList(start, end);
+        return ResponseDto.of(new PageImpl<>(productDTOSubList, pageable, payRollDtos.size()));
     }
 
     @GetMapping("/exportExcel")

@@ -41,6 +41,10 @@ public class RequestDeviceEntity {
 
     @Column(name = "status")
     private Integer status;
+    // 3 status:
+    // 0: waiting for approve
+    // 1: approved
+    // 2: rejected
     //Đã phê duyệt hay chưa
     @Column(name = "reason_cancel")
     private String reasonCancel;
@@ -48,6 +52,7 @@ public class RequestDeviceEntity {
     private String files;
     @Column(name = "description")
     private String description;
+
 
     @ManyToOne
     @JoinColumn(name = "user_id")

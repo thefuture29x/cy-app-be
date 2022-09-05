@@ -6,6 +6,7 @@ import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.RequestModifiDto;
 import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
+import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.RoleEntity_;
 import cy.entities.UserEntity;
@@ -13,6 +14,7 @@ import cy.entities.UserEntity_;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
+import cy.repositories.IUserRepository;
 import cy.services.IUserService;
 import cy.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -173,14 +176,14 @@ public class UserResources {
         return ResponseDto.of(this.userService.getAllRequestSendMe(id, pageable));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_EMPLOYEE','')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_EMPLOYEE','ROLE_LEADER')")
     @Operation(summary = "Get all request create by me")
     @GetMapping("get_request_create_by_me")
     public ResponseDto getAllRequestCreateByMe(@RequestParam(value = "id") Long id, Pageable pageable) {
         return ResponseDto.of(this.userService.getAllRequestCreateByMe(id, pageable));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER','ROLE_EMPLOYEE','')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN','ROLE_MANAGER','ROLE_LEADER','ROLE_EMPLOYEE')")
     @Operation(summary = "Get request by id and type")
     @GetMapping("get_request_by_id_and_type")
     public ResponseDto findRequestByIdAndType(@RequestParam(value = "id") Long id, @RequestParam(value = "type") String type) {
@@ -197,6 +200,12 @@ public class UserResources {
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     public ResponseDto getAllUserByRoleName(@RequestParam String roleName) {
         return ResponseDto.of(this.userService.getAllUserByRoleName(roleName));
+    }
+
+    @GetMapping("findAll")
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    public ResponseDto findAll() {
+        return ResponseDto.of(this.userService.findAll());
     }
 
 }

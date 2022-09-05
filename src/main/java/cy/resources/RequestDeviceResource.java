@@ -6,6 +6,7 @@ import cy.dtos.ResponseDto;
 import cy.models.RequestDeviceModel;
 import cy.models.RequestDeviceUpdateStatusModel;
 import cy.services.impl.RequestDeviceServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
@@ -89,7 +90,7 @@ public class RequestDeviceResource {
     *@description:Xác nhận yêu cầu
     *@update:
     **/
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
     @PutMapping("/acceptRequestDevice")
     public Object acceptRequestDevice(@RequestBody RequestDeviceUpdateStatusModel requestDeviceUpdateStatusModel){
         return ResponseDto.of(requestDeviceService.updateStatus(requestDeviceUpdateStatusModel));
@@ -106,16 +107,31 @@ public class RequestDeviceResource {
         return ResponseDto.of(requestDeviceService.updateStatusCancle(id,reason));
     }*/
 
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
+    @Operation(summary = "Tạo yêu cầu trả thiết bị đã mượn.")
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
     @PutMapping("/return-device/{id}")
     public Object returnDevice(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.returnDevice(id));
     }
 
+    @Operation(summary = "Lọc yêu cầu theo loại thiết bị mượn cho người dùng hiện tại.")
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
+    @GetMapping("/filter-by-type")
+    public Object filterByType(@RequestParam(value = "type") String type, Pageable page){
+        return ResponseDto.of(requestDeviceService.filterByType(type,page));
+    }
 
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @Operation(summary = "Lọc các yêu cầu mượn thiết bị được tạo bởi người dùng hiện tại.")
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
+    @GetMapping("/created-by-myself")
+    public Object createdByMyself(Pageable page){
+        return ResponseDto.of(requestDeviceService.createdByMyself(page));
+    }
+
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
     @PostMapping("/findAll/{pageIndex}/{pageSize}")
     public Object acceptRequestDevice(@RequestBody RequestDeviceModel requestDeviceModel,@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize){
         return ResponseDto.of(requestDeviceService.findAllByPage(pageIndex,pageSize,requestDeviceModel));
+
     }
 }
