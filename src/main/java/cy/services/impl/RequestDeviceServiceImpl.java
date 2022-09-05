@@ -240,8 +240,8 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         String countSQL = "select count(*) from RequestDeviceEntity r where 1=1 ";
 
         if(requestDeviceModel.getCreateBy() != null) {
-            sql+=" AND r.createBy = "+requestDeviceModel.getCreateBy();
-            countSQL+=" AND r.createBy = "+requestDeviceModel.getCreateBy();
+            sql+=" AND r.createBy.id = "+requestDeviceModel.getCreateBy();
+            countSQL+=" AND r.createBy.id = "+requestDeviceModel.getCreateBy();
         }
 
         if(requestDeviceModel.getStatus() != null) {
