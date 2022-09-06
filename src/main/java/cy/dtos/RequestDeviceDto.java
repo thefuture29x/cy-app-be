@@ -1,20 +1,14 @@
 package cy.dtos;
 
-import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestDeviceEntity;
-import cy.entities.UserEntity;
-import cy.repositories.IUserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -28,7 +22,6 @@ public class RequestDeviceDto {
     private Integer typeRequestDevice;
     private Integer quantity;
     private Date dateRequestDevice;
-    private Integer typeRequestDevice;//m
     private Date dateStart;
     private Date dateEnd;
     private Integer status;
