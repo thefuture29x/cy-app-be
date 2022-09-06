@@ -30,8 +30,24 @@ public class PayRollResource {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN})
     @GetMapping("/work-date-of-month")
-    public ResponseDto calculateDate(Pageable pageable, @RequestParam(value = "startMonth") String startMonth, @RequestParam(value = "startYear") String startYear) {
+    public ResponseDto calculateDate(Pageable pageable,
+                                     @RequestParam(value = "startMonth") String startMonth,
+                                     @RequestParam(value = "startYear") String startYear) {
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,Integer.parseInt(startMonth), Integer.parseInt(startYear));
+
+        int start = pageable.getPageNumber() * pageable.getPageSize();
+        int end = Math.min((start + pageable.getPageSize()), payRollDtos.size());
+        List<PayRollDto> productDTOSubList = payRollDtos.subList(start, end);
+        return ResponseDto.of(new PageImpl<>(productDTOSubList, pageable, payRollDtos.size()));
+    }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN})
+    @GetMapping("/searchUserPayRoll")
+    public ResponseDto searchUserPayRoll(Pageable pageable,
+                                         @RequestParam(value = "startMonth") String startMonth,
+                                         @RequestParam(value = "startYear") String startYear,
+                                         @RequestParam(value = "keyword") String keyword) {
+        List<PayRollDto> payRollDtos = iUserService.searchUserPayRoll(pageable,Integer.parseInt(startMonth), Integer.parseInt(startYear), keyword);
 
         int start = pageable.getPageNumber() * pageable.getPageSize();
         int end = Math.min((start + pageable.getPageSize()), payRollDtos.size());
