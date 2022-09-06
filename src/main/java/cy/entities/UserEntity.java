@@ -21,7 +21,7 @@ import java.util.Set;
         query = "SELECT us.user_id as id, us.full_name as nameStaff,\n" +
                 "CONCAT(month(:timeEnd), \"/\",\n" +
                 "YEAR(:timeEnd)) as monthWorking, \n" +
-                "(SELECT 5 * (DATEDIFF(:timeEnd, :timeStart) DIV 7) + MID('0123444401233334012222340111123400012345001234550', 7 * WEEKDAY(:timeStart) + WEEKDAY(:timeEnd) + 1, 1) )  as totalWorkingDay, \n" +
+                "(SELECT 5 * (DATEDIFF(:timeEnd, :timeStart) DIV 7) + MID('0123444401233334012222340111123400012345001234550', 7 * WEEKDAY(:timeStart) + WEEKDAY(:timeEnd) + 1, 1) + 1)  as totalWorkingDay, \n" +
                 "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
                 "FROM tbl_request_ot\n" +
                 "where user_id = us.user_id and status = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHours,\n" +
@@ -54,7 +54,7 @@ import java.util.Set;
         query = "SELECT us.user_id as id, us.full_name as nameStaff,\n" +
                 "CONCAT(month(:timeEnd), \"/\",\n" +
                 "YEAR(:timeEnd)) as monthWorking, \n" +
-                "(SELECT 5 * (DATEDIFF(:timeEnd, :timeStart) DIV 7) + MID('0123444401233334012222340111123400012345001234550', 7 * WEEKDAY(:timeStart) + WEEKDAY(:timeEnd) + 1, 1) )  as totalWorkingDay, \n" +
+                "(SELECT 5 * (DATEDIFF(:timeEnd, :timeStart) DIV 7) + MID('0123444401233334012222340111123400012345001234550', 7 * WEEKDAY(:timeStart) + WEEKDAY(:timeEnd) + 1, 1)  + 1)  as totalWorkingDay, \n" +
                 "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
                 "FROM tbl_request_ot\n" +
                 "where user_id = us.user_id and status = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHours,\n" +
