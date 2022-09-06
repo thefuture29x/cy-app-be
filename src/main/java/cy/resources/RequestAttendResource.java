@@ -9,6 +9,7 @@ import cy.entities.RoleEntity;
 import cy.models.CreateUpdateRequestAttend;
 import cy.models.RequestAttendByNameAndYearMonth;
 import cy.models.RequestAttendModel;
+import cy.services.IPayRollService;
 import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.sql.Date;
+import java.text.ParseException;
 import java.util.List;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "request_attend")
@@ -25,6 +27,8 @@ import java.util.List;
 public class RequestAttendResource {
     @Autowired
     private RequestAttendServiceImpl requestAttendService;
+    @Autowired
+    private IPayRollService iPayRollService;
 
     @GetMapping(value = "/{id}")
     public ResponseDto getById(@PathVariable("id") Long id) {
@@ -76,9 +80,9 @@ public class RequestAttendResource {
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity
             .MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping(value = "/find-by-user-name-and-day")
-    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) {
+    public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) throws ParseException {
         List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
-        return ResponseDto.of(result);
+        return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data,null));
     }
 
     @RolesAllowed({RoleEntity.LEADER, RoleEntity.ADMIN, RoleEntity.ADMINISTRATOR, RoleEntity.MANAGER})

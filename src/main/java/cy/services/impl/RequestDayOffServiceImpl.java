@@ -222,7 +222,6 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         }
         return null;
     }
-
     private RequestDayOffDto modifyingStatus(boolean status, RequestDayOffEntity oldRequest, String reasonCancel){
         if(status){
             oldRequest.setStatus(1);
@@ -238,5 +237,10 @@ public class RequestDayOffServiceImpl implements IRequestDayOffService {
         NotificationEntity notificationEntity = NotificationEntity.builder().requestDayOff(oldRequest).content("Yêu cầu nghỉ phép đã bị hủy bởi "+ SecurityUtils.getCurrentUser().getUser().getFullName() +"\n"+reasonCancel).title("Yêu cầu nghỉ phép đã bị hủy bỏ").dateNoti(new Date()).userId(oldRequest.getCreateBy()).isRead(false).build();
         this.notificationRepository.saveAndFlush(notificationEntity);
         return RequestDayOffDto.toDto(this.iRequestDayOffRepository.saveAndFlush(oldRequest));
+    }
+    @Override
+    public List<RequestDayOffDto> getTotalDayOffByMonthOfUser(String dateStart, String dateEnd, Long uid, boolean isLegit, int status, Pageable page) {
+        List<RequestDayOffDto> dayOffDtos = this.iRequestDayOffRepository.getAllDayOfByMonthOfUser(uid, dateStart, dateEnd, isLegit, status, page).stream().map(RequestDayOffDto::toDto).collect(Collectors.toList());
+        return dayOffDtos;
     }
 }

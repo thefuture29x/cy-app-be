@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -31,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -238,5 +241,10 @@ public class RequestOTServiceImpl implements IRequestOTService {
                 .isRead(false)
                 .build());
         return RequestOTDto.toDto(requestOTRepository.save(requestOTEntity));
+    }
+
+    @Override
+    public Float totalOTHours(Long userId, Integer status, String startDate, String endDate) {
+        return requestOTRepository.totalOTHours(userId, status, startDate, endDate);
     }
 }

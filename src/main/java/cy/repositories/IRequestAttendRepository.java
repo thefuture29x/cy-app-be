@@ -24,6 +24,9 @@ public interface IRequestAttendRepository extends JpaRepository<RequestAttendEnt
     @Query(value = "SELECT * FROM tbl_request_attend ra join tbl_user u on ra.user_id = u.user_id where user_name = ?1 and date_request_attend LIKE ?2 order by date_request_attend DESC", nativeQuery = true)
     List<RequestAttendEntity> findByUserNameAndDate(String name,String monthAndYear);
 
+    @Query(value = "SELECT * FROM tbl_request_attend ra join tbl_user u on ra.user_id = u.user_id where user_name = ?1 and (date_request_attend BETWEEN ?3 AND ?2) order by date_request_attend DESC", nativeQuery = true)
+    List<RequestAttendEntity> findByUserNameAndDate_new(String name,String monthCurrent, String monthAgo);
+
     // check if request is exist follow day and user
     @Query(value = "SELECT * FROM tbl_request_attend WHERE date_request_attend = ?1 AND user_id = ?2", nativeQuery = true)
     List<RequestAttendEntity> findByDayAndUser(String day, Long userId);

@@ -2,6 +2,7 @@ package cy.services;
 
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
+import cy.dtos.PayRollDto;
 import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
 import cy.dtos.UserDto;
@@ -41,4 +42,6 @@ public interface IUserService extends IBaseService<UserEntity, UserDto, UserMode
 
     List<UserDto> getUserByRoleName(String roleName);
     List<UserDto> getAllUserByRoleName(String roleName);
+    List<PayRollDto> calculatePayRoll(Pageable pageable, int endMonth,int endYear);
+    List<PayRollDto> searchUserPayRoll(Pageable pageable, int endMonth,int endYear, String keyword);
 }

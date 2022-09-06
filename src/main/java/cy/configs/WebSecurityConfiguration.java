@@ -37,7 +37,7 @@ public class WebSecurityConfiguration {
             new AntPathRequestMatcher("/api/v1/public/test/login"),
             new AntPathRequestMatcher("/api/v1/public/test/1"),
             new AntPathRequestMatcher("/users/login"),
-            new AntPathRequestMatcher("/api/v1/test"),
+            new AntPathRequestMatcher("/api/v1/test/**"),
             new AntPathRequestMatcher("/api/v1/users/login"),
 
 
@@ -45,8 +45,6 @@ public class WebSecurityConfiguration {
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/v2/api-docs"),
             new AntPathRequestMatcher("/webjars/**")
-
-//            new AntPathRequestMatcher("/api/v1/request_modifi/**")
     );
 
     private RequestMatcher PRIVATE_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
@@ -66,7 +64,7 @@ public class WebSecurityConfiguration {
         AuthenticationManager authenticationManager = httpSecurity
                 .getSharedObject(AuthenticationManagerBuilder.class)
                 .parentAuthenticationManager(authentication -> {
-                    throw new CustomHandleException(1);
+                    throw new CustomHandleException(9);
                 }).build();
         httpSecurity
                 .authenticationProvider(new JwtAuthenticationProvider())
