@@ -22,12 +22,10 @@ import java.util.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "test")

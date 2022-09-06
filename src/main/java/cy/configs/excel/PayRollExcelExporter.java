@@ -34,14 +34,15 @@ public class PayRollExcelExporter {
         style.setFont(font);
 
         createCell(row, 0, "Id", style);
-        createCell(row, 1, "nameStaff", style);
-        createCell(row, 2, "monthWorking", style);
-        createCell(row, 3, "totalWorkingDay", style);
-        createCell(row, 4, "totalOvertimeHours", style);
-        createCell(row, 5, "totalDaysWorked", style);
-        createCell(row, 6, "totalPaidLeaveDays", style);
-        createCell(row, 7, "totalUnpaidLeaveDays", style);
-
+        createCell(row, 1, "Tên nhân viên", style);
+        createCell(row, 2, "Tháng làm", style);
+        createCell(row, 3, "Tổng số ngày làm trong tháng", style);
+        createCell(row, 4, "Tổng số giờ làm thêm", style);
+        createCell(row, 5, "Tổng số ngày chấm công", style);
+        createCell(row, 6, "Tổng số ngày nghỉ có lương", style);
+        createCell(row, 7, "Tổng số ngày nghi không lương", style);
+        createCell(row, 8, "Tổng số ngày có lương", style);
+        createCell(row, 9, "Tổng số giờ làm có lương", style);
     }
 
     private void createCell(Row row, int columnCount, Object value, CellStyle style) {
@@ -76,15 +77,21 @@ public class PayRollExcelExporter {
       for (PayRollDto user : payRollDtoList) {
           Row row = sheet.createRow(rowCount++);
           int columnCount = 0;
-
+if(user.getTotalOvertimeHours() != null){
+    user.setTotalOvertimeHours(user.getTotalOvertimeHours());
+}else {
+    user.setTotalOvertimeHours(Float.valueOf(0));
+}
           createCell(row, columnCount++, user.getId(), style);
           createCell(row, columnCount++, user.getNameStaff(), style);
           createCell(row, columnCount++, user.getMonthWorking(), style);
           createCell(row, columnCount++, user.getTotalWorkingDay(), style);
-          createCell(row, columnCount++, user.getTotalOvertimeHours(), style);
+          createCell(row, columnCount++, user.getTotalOvertimeHours()!=null ? user.getTotalOvertimeHours().toString():0, style);
           createCell(row, columnCount++, user.getTotalDaysWorked(), style);
           createCell(row, columnCount++, user.getTotalPaidLeaveDays(), style);
           createCell(row, columnCount++, user.getTotalUnpaidLeaveDays(), style);
+          createCell(row, columnCount++, user.getTotalDaysWorked()+user.getTotalPaidLeaveDays(), style);
+          createCell(row, columnCount++, (user.getTotalDaysWorked()+user.getTotalPaidLeaveDays())*8+user.getTotalOvertimeHours(), style);
 
       }
     }
@@ -92,12 +99,9 @@ public class PayRollExcelExporter {
     public void export(HttpServletResponse response) throws IOException {
         writeHeaderLine();
         writeDataLines();
-
         ServletOutputStream outputStream = response.getOutputStream();
         workbook.write(outputStream);
         workbook.close();
-
         outputStream.close();
-
     }
 }
