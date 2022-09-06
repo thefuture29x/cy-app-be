@@ -484,32 +484,30 @@ public class UserServiceImp implements IUserService {
             startMonth = endMonth - 1;
             startYear = endYear;
         }
-
-        String startDate = (timeKeepingDate + 1) + "/" + startMonth + "/" + startYear;
-
-        String endDate = timeKeepingDate + "/" + endMonth + "/" + endYear;
-
-        int workingDays = 0;
-
-        Calendar start = Calendar.getInstance();
-        Calendar end = Calendar.getInstance();
-        try {
-            start.setTime(sdf.parse(startDate));
-            end.setTime(sdf.parse(endDate));
-            workingDays = 0;
-            while (!start.after(end)) {
-                int day = start.get(Calendar.DAY_OF_WEEK);
-                if ((day != Calendar.SATURDAY) && (day != Calendar.SUNDAY))
-                    workingDays++;
-                start.add(Calendar.DATE, 1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         String timeStartWorking = startYear +"-"+ startMonth+"-"+(timeKeepingDate + 1);
         String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
 
-        return userRepository.calculatePayRoll(timeStartWorking, timeEndWorking, workingDays);
+        return userRepository.calculatePayRoll(timeStartWorking, timeEndWorking);
+    }
+
+    @Override
+    public List<PayRollDto> searchUserPayRoll(Pageable pageable, int endMonth, int endYear, String keyword) {
+        int startMonth = 0;
+        int startYear = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        if (endMonth ==1){
+            startMonth = 12;
+            startYear = endYear - 1;
+        }else {
+            startMonth = endMonth - 1;
+            startYear = endYear;
+        }
+
+        String timeStartWorking = startYear +"-"+ startMonth+"-"+(timeKeepingDate + 1);
+        String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
+
+        return userRepository.searchUserPayRoll(timeStartWorking, timeEndWorking,keyword);
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
