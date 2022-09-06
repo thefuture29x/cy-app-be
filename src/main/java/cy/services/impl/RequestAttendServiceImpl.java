@@ -96,7 +96,7 @@ public class RequestAttendServiceImpl implements IRequestAttendService {
 
     public List<RequestAttendDto> findByUsername(RequestAttendByNameAndYearMonth data) throws ParseException {
 //        String monthYear = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "%";
-        String monthYearCurrent = new SimpleDateFormat("yyyy-MM-dd").format(data.getDate());
+        String monthYearCurrent = new SimpleDateFormat("yyyy-MM").format(data.getDate()) + "-23";
         String dateAgo = data.getDate().toLocalDate().minusMonths(1L).toString();
         dateAgo =dateAgo.substring(0,7) + "-23";
         List<RequestAttendEntity> requestAttendExist = this.requestAttendRepository.findByUserNameAndDate_new(data.getName(), monthYearCurrent,dateAgo);
