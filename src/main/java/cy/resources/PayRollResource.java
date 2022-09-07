@@ -1,18 +1,17 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.configs.excel.PayRollExcelExporter;
 import cy.dtos.PayRollDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
-import cy.services.IPayRollService;
 import cy.services.IUserService;
-import org.hibernate.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletResponse;
@@ -62,14 +61,14 @@ public class PayRollResource {
         String currentDateTime = dateFormatter.format(new Date());
 
         String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=Bang_cham_cong :" + currentDateTime + ".xlsx";
+        String headerValue = "attachment; filename=users_"  + currentDateTime + ".xlsx";
         response.setHeader(headerKey, headerValue);
 
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,startMonth, startYear);
 
-        PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos);
+      //  PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos);
 
-        excelExporter.export(response);
+      //  excelExporter.export(response);
     }
 
 }
