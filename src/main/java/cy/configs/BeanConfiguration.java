@@ -1,9 +1,12 @@
 package cy.configs;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,6 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import java.util.Date;
 import java.util.TimeZone;
 
 
@@ -43,10 +47,8 @@ public class BeanConfiguration {
                         .allowedOrigins(
                                 "http://localhost:3000",
                                 "http://localhost:8080",
-                                "http://localhost:8081",
-                                "http://localhost:8085",
                                 "http://localhost:19006",
-                                "http://localhost:19000")
+                                "http://localhost:19000" )
                         .allowedOriginPatterns("*.*.*.*:*")
                         .allowCredentials(true)
                         .allowedMethods("GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS");
@@ -56,8 +58,10 @@ public class BeanConfiguration {
 
     @Bean
     public Executor taskExecutor() {
-        return new ThreadPoolExecutor(500, 5000, 300l, TimeUnit.SECONDS, new LinkedBlockingQueue<  Runnable>());
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(500, 5000, 300l, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        return executor;
     }
+
 
     //Template resolver's resource bean configurer
     @Bean
