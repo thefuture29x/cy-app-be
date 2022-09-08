@@ -1,19 +1,22 @@
 package cy.dtos;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import cy.entities.HistoryRequestEntity;
-
 import cy.entities.RequestDeviceEntity;
+import cy.entities.UserEntity;
+import cy.repositories.IUserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
-
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data

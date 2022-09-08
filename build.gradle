@@ -24,11 +24,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
-	// https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
-	//implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.0'
-	implementation 'org.apache.poi:poi:4.0.0'
-	implementation 'org.apache.poi:poi-ooxml:4.0.0'
-	//done
+	// https://mvnrepository.com/artifact/org.apache.poi/poi
+	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'

@@ -17,6 +17,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.util.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -68,12 +70,12 @@ public class TestController {
         String currentDateTime = dateFormatter.format(new Date());
 
         String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=ChamCong_"+startMonth+"_"+startYear+".xlsx";
+        String headerValue = "attachment; filename=Bang_cham_cong :" + currentDateTime + ".xlsx";
         response.setHeader(headerKey, headerValue);
 
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,startMonth, startYear);
 
-        PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos, startMonth, startYear);
+        PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos);
 
         excelExporter.export(response);
     }
