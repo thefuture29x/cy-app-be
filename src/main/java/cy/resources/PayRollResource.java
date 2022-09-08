@@ -1,6 +1,7 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
+import cy.configs.excel.PayRollExcelExporter;
 import cy.dtos.PayRollDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
@@ -61,14 +62,13 @@ public class PayRollResource {
         String currentDateTime = dateFormatter.format(new Date());
 
         String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=users_"  + currentDateTime + ".xlsx";
+        String headerValue = "attachment; filename=ChamCong_"+startMonth+"_"+startYear+".xlsx";
         response.setHeader(headerKey, headerValue);
 
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,startMonth, startYear);
 
-      //  PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos);
+        PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos, startMonth, startYear);
 
-      //  excelExporter.export(response);
+        excelExporter.export(response);
     }
-
 }
