@@ -185,11 +185,9 @@ public class PayRollExcelExporter {
     public void export(HttpServletResponse response) throws IOException {
         writeHeaderLine();
         writeDataLines();
-
         ServletOutputStream outputStream = response.getOutputStream();
         workbook.write(outputStream);
         workbook.close();
-
         outputStream.close();
     }
 
