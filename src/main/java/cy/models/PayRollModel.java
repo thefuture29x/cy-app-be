@@ -21,7 +21,11 @@ public class PayRollModel {
 
     private int totalUnpaidLeaveDays;
 
-    private Float totalOvertimeHours;
+    private Float totalOvertimeHoursInWeek;
+
+    private Float totalOvertimeHoursInWeekend;
+
+    private Float totalOvertimeHoursInHoliday;
 
     private int month;
 

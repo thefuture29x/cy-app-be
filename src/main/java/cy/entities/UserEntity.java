@@ -24,7 +24,15 @@ import java.util.Set;
                 "(SELECT 5 * (DATEDIFF(:timeEnd, :timeStart) DIV 7) + MID('0123444401233334012222340111123400012345001234550', 7 * WEEKDAY(:timeStart) + WEEKDAY(:timeEnd) + 1, 1) + 1)  as totalWorkingDay, \n" +
                 "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
                 "FROM tbl_request_ot\n" +
-                "where user_id = us.user_id and status = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHours,\n" +
+                "where user_id = us.user_id and status = 1 and type_ot = 0 and date_ot between :timeStart and :timeEnd) as totalOvertimeHoursInWeek,\n" +
+                "\n" +
+                "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
+                "FROM tbl_request_ot\n" +
+                "where user_id = us.user_id and status = 1 and type_ot = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHoursInWeekend,\n" +
+                "\n" +
+                "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
+                "FROM tbl_request_ot\n" +
+                "where user_id = us.user_id and status = 1 and type_ot = 2 and date_ot between :timeStart and :timeEnd) as totalOvertimeHoursInHoliday,\n" +
                 "\n" +
                 "(SELECT COUNT(user_id) FROM tbl_request_attend\n" +
                 "WHERE user_id = us.user_id\n" +
@@ -57,7 +65,15 @@ import java.util.Set;
                 "(SELECT 5 * (DATEDIFF(:timeEnd, :timeStart) DIV 7) + MID('0123444401233334012222340111123400012345001234550', 7 * WEEKDAY(:timeStart) + WEEKDAY(:timeEnd) + 1, 1)  + 1)  as totalWorkingDay, \n" +
                 "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
                 "FROM tbl_request_ot\n" +
-                "where user_id = us.user_id and status = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHours,\n" +
+                "where user_id = us.user_id and status = 1 and type_ot = 0 and date_ot between :timeStart and :timeEnd) as totalOvertimeHoursInWeek,\n" +
+                "\n" +
+                "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
+                "FROM tbl_request_ot\n" +
+                "where user_id = us.user_id and status = 1 and type_ot = 1 and date_ot between :timeStart and :timeEnd) as totalOvertimeHoursInWeekend,\n" +
+                "\n" +
+                "(SELECT sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
+                "FROM tbl_request_ot\n" +
+                "where user_id = us.user_id and status = 1 and type_ot = 2 and date_ot between :timeStart and :timeEnd) as totalOvertimeHoursInHoliday,\n" +
                 "\n" +
                 "(SELECT COUNT(user_id) FROM tbl_request_attend\n" +
                 "WHERE user_id = us.user_id\n" +
@@ -89,7 +105,9 @@ import java.util.Set;
                         @ColumnResult(name = "nameStaff", type = String.class),
                         @ColumnResult(name = "monthWorking", type = String.class),
                         @ColumnResult(name = "totalWorkingDay", type = Integer.class),
-                        @ColumnResult(name = "totalOvertimeHours", type = Float.class),
+                        @ColumnResult(name = "totalOvertimeHoursInWeek", type = Float.class),
+                        @ColumnResult(name = "totalOvertimeHoursInWeekend", type = Float.class),
+                        @ColumnResult(name = "totalOvertimeHoursInHoliday", type = Float.class),
                         @ColumnResult(name = "totalDaysWorked", type = Integer.class),
                         @ColumnResult(name = "totalPaidLeaveDays", type = Integer.class),
                         @ColumnResult(name = "totalUnpaidLeaveDays", type = Integer.class)
