@@ -214,14 +214,18 @@ public class PayRollServiceImpl implements IPayRollService {
         int totalPaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,userEntity.getUserId(),true,1,pageable).size();
         int totalUnpaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,userEntity.getUserId(),false,1,pageable).size();
 
-        Float totalOvertimeHours = iRequestOTService.totalOTHours(userEntity.getUserId(),1,0, startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
+        Float totalOvertimeHoursInWeek = iRequestOTService.totalOTHours(userEntity.getUserId(),1,0, startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
+        Float totalOvertimeHoursInWeekend = iRequestOTService.totalOTHours(userEntity.getUserId(),1,1, startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
+        Float totalOvertimeHoursInHoliday = iRequestOTService.totalOTHours(userEntity.getUserId(),1,2, startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
 
         HashMap<String,Object> hashMap = new HashMap<>();
         hashMap.put("workingDays", workingDays);
         hashMap.put("totalDaysWorked", totalDaysWorked);
         hashMap.put("totalPaidLeaveDays", totalPaidLeaveDays);
         hashMap.put("totalUnpaidLeaveDays", totalUnpaidLeaveDays);
-        hashMap.put("totalOvertimeHours", totalOvertimeHours);
+        hashMap.put("totalOvertimeHoursInWeek", totalOvertimeHoursInWeek);
+        hashMap.put("totalOvertimeHoursInWeekend", totalOvertimeHoursInWeekend);
+        hashMap.put("totalOvertimeHoursInHoliday", totalOvertimeHoursInHoliday);
 
         return hashMap;
     }
