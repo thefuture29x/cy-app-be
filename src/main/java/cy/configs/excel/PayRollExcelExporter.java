@@ -18,7 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+
 public class PayRollExcelExporter {
+
     private final int month;
     private final int year;
     private XSSFWorkbook workbook;
@@ -49,7 +51,8 @@ public class PayRollExcelExporter {
         // Cell cell = rowHeader.createCell(1);
         createCell(rowHeader, 0, "Thống kê chấm công tháng " + month + " năm " + year, styleHeader);
         //Merging cells by providing cell index
-        sheet.addMergedRegion(new CellRangeAddress(0, 2, 0, 9));
+        sheet.addMergedRegion(new CellRangeAddress(0, 2, 0, 10));
+
 
         CellStyle style = workbook.createCellStyle();
         XSSFFont font = workbook.createFont();
@@ -58,7 +61,9 @@ public class PayRollExcelExporter {
         style.setFont(font);
         Row row = sheet.createRow(3);
 
-        createCell(row, 0, "Mã NV", style);
+
+        createCell(row, 0, "STT", style);
+
         createCell(row, 1, "Tên nhân viên", style);
         createCell(row, 2, "Tháng làm", style);
         createCell(row, 3, "Tổng số ngày làm trong tháng", style);
@@ -92,7 +97,8 @@ public class PayRollExcelExporter {
         style.setFont(font);
         style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        createCell(row, 8, "Tổng số giờ làm thêm", style);
+        createCell(row, 8, "Tổng số giờ làm thêm trong tuần", style);
+
         style = workbook.createCellStyle();
         font.setBold(true);
         font.setFontHeight(14);
@@ -100,7 +106,16 @@ public class PayRollExcelExporter {
         style.setFillForegroundColor(IndexedColors.SEA_GREEN.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-        createCell(row, 9, "Tổng số giờ làm có lương", style);
+        createCell(row, 9, "Tổng số giờ làm thêm cuối tuần", style);
+        style = workbook.createCellStyle();
+        font.setBold(true);
+        font.setFontHeight(14);
+        style.setFont(font);
+        style.setFillForegroundColor(IndexedColors.ORANGE.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        createCell(row, 10, "Tổng số giờ làm thêm ngày lễ", style);
+
+
     }
 
     private void createCell(Row row, int columnCount, Object value, CellStyle style) {
@@ -152,15 +167,13 @@ public class PayRollExcelExporter {
         styleYellow.setFont(font);
         styleYellow.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
         styleYellow.setFillPattern(FillPatternType.THICK_BACKWARD_DIAG);
+        int count = 0;
+
         for (PayRollDto user : payRollDtoList) {
             Row row = sheet.createRow(rowCount++);
             int columnCount = 0;
-            if (user.getTotalOvertimeHours() != null) {
-                user.setTotalOvertimeHours(user.getTotalOvertimeHours());
-            } else {
-                user.setTotalOvertimeHours(Float.valueOf(0));
-            }
-            createCell(row, columnCount++, user.getId().toString(), style);
+            count++;
+            createCell(row, columnCount++, count, style);
             createCell(row, columnCount++, user.getNameStaff(), style);
             createCell(row, columnCount++, user.getMonthWorking(), style);
             createCell(row, columnCount++, user.getTotalWorkingDay(), style);
@@ -169,8 +182,10 @@ public class PayRollExcelExporter {
             createCell(row, columnCount++, user.getTotalPaidLeaveDays(), style);
             createCell(row, columnCount++, user.getTotalUnpaidLeaveDays(), styleRed);
             createCell(row, columnCount++, user.getTotalDaysWorked() + user.getTotalPaidLeaveDays(), styleBlue);
-            createCell(row, columnCount++, user.getTotalOvertimeHours() != null ? user.getTotalOvertimeHours().toString() : 0, styleYellow);
-            createCell(row, columnCount++, (user.getTotalDaysWorked() + user.getTotalPaidLeaveDays()) * 8 + user.getTotalOvertimeHours(), styleGreen);
+            createCell(row, columnCount++, user.getTotalOvertimeHoursInWeek() != null ? user.getTotalOvertimeHoursInWeek().toString() : 0, styleYellow);
+            createCell(row, columnCount++, user.getTotalOvertimeHoursInWeekend() != null ? user.getTotalOvertimeHoursInWeekend().toString() : 0, styleYellow);
+            createCell(row, columnCount++, user.getTotalOvertimeHoursInHoliday() != null ? user.getTotalOvertimeHoursInHoliday().toString() : 0, styleYellow);
+
 
         }
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
@@ -179,6 +194,8 @@ public class PayRollExcelExporter {
         Row rowHeader = sheet.createRow(rowCount);
         createCell(rowHeader, 0, "Nhân viên xuất file : "+userEntity.getFullName()+" ngày xuất: "+currentDateTime, style);
         sheet.addMergedRegion(new CellRangeAddress(rowCount,rowCount+3 , 0, 3));
+
+
 
     }
 
