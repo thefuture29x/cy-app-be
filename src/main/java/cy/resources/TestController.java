@@ -12,9 +12,7 @@ import cy.services.IRequestAttendService;
 import cy.services.IUserService;
 import cy.services.impl.RequestAttendServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -51,18 +49,16 @@ public class TestController {
 
     @GetMapping("/test")
     public ResponseDto calculateDate(Pageable pageable, @RequestParam(value = "startMonth") String startMonth, @RequestParam(value = "startYear") String startYear) {
-        List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,Integer.parseInt(startMonth), Integer.parseInt(startYear));
+        List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable, Integer.parseInt(startMonth), Integer.parseInt(startYear));
         Page<PayRollDto> pages = new PageImpl<PayRollDto>(payRollDtos, pageable, payRollDtos.size());
         return ResponseDto.of(pages);
     }
 
 
-
-
     @PostMapping("/testne")
     public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) throws ParseException {
         List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
-        return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data,null));
+        return ResponseDto.otherData(result, iPayRollService.totalWorkingDayEndWorked(data, null));
     }
 
     @GetMapping("/exportExcel")
@@ -72,9 +68,13 @@ public class TestController {
         String currentDateTime = dateFormatter.format(new Date());
 
         String headerKey = "Content-Disposition";
+<<<<<<< Updated upstream
         String headerValue = "attachment; filename=Bang_cham_cong :" + currentDateTime + ".xlsx";
+=======
+        String headerValue = "attachment; filename=ChamCong_" + startMonth + "_" + startYear + ".xlsx";
+>>>>>>> Stashed changes
         response.setHeader(headerKey, headerValue);
-
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("us.full_name").ascending());
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,startMonth, startYear);
 
         PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos);

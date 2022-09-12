@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-
 public interface IRequestOTRepository extends JpaRepository<RequestOTEntity, Long>, JpaSpecificationExecutor<RequestOTEntity> {
     @Query(value = "SELECT * FROM `tbl_request_ot` \n " +
             "WHERE assign_id = ?1 \n " +
@@ -23,4 +21,15 @@ public interface IRequestOTRepository extends JpaRepository<RequestOTEntity, Lon
                     "from tbl_request_ot\n" +
                     "where user_id = :userId and status = :status and date_ot between :startDate and :endDate", nativeQuery = true)
     Float totalOTHours(@Param("userId")Long userId, @Param("status")Integer status, @Param("startDate")String startDate, @Param("endDate")String endDate);
+
+    /*
+    *@author:HieuMM_Cy
+    *@since:9/9/2022-11:17 AM
+    *@description:Show all request OT of user every month
+
+    **/
+    @Query(value = "SELECT * FROM `tbl_request_ot` \n " +
+            "WHERE assign_id = ?1 \n " +
+            "and created_date between ?2 and ?3 ORDER BY updated_date DESC", nativeQuery = true)
+    Page<RequestOTEntity> showOTofUserEverymonth(Long id, String startTime, String endTime,Pageable pageable);
 }

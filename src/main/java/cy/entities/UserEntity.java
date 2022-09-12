@@ -46,7 +46,8 @@ import java.util.Set;
                 "FROM tbl_user us \n" +
                 "LEFT JOIN tbl_user_role usrl ON usrl.user_id = us.user_id\n" +
                 "LEFT JOIN tbl_role rl ON usrl.role_id = rl.role_id\n" +
-                "WHERE rl.role_id != 1",
+                "WHERE rl.role_id != 1\n"+
+                "ORDER BY us.full_name asc",
         resultSetMapping = "pay_roll_dto"
 )
 @NamedNativeQuery(

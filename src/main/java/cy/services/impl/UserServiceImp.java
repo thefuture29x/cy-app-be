@@ -8,8 +8,6 @@ import cy.entities.*;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
-import cy.repositories.IRoleRepository;
-import cy.repositories.IUserRepository;
 import cy.repositories.*;
 import cy.services.CustomUserDetail;
 import cy.services.IUserService;
@@ -23,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,8 +39,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -252,7 +253,7 @@ public class UserServiceImp implements IUserService {
         original.setSex(model.getSex());
         original.setPhone(model.getPhone());
         original.setAddress(model.getAddress());
-        this.setRoles(original,model.getRoles());
+        this.setRoles(original, model.getRoles());
         return UserDto.toDto(this.userRepository.saveAndFlush(original));
     }
 
@@ -386,7 +387,7 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public Object getRequestByIdAndType(Long id, String type) {
-        switch (type){
+        switch (type) {
             case "Modifi":
                 return RequestModifiDto.toDto(iRequestModifiRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
             case "Device":
@@ -404,36 +405,36 @@ public class UserServiceImp implements IUserService {
     @Override
     public List<UserDto> getUserByRoleName(String roleName) {
         List<String> roles = new ArrayList<>();
-        if (roleName.equals("ROLE_ADMINISTRATOR")){
+        if (roleName.equals("ROLE_ADMINISTRATOR")) {
             roles.add("ROLE_ADMINISTRATOR");
             roles.add("ROLE_ADMIN");
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        }else if (roleName.equals("ROLE_ADMIN")){
+        } else if (roleName.equals("ROLE_ADMIN")) {
             roles.add("ROLE_ADMIN");
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        }else if (roleName.equals("ROLE_MANAGER")){
+        } else if (roleName.equals("ROLE_MANAGER")) {
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        } else if (roleName.equals("ROLE_LEADER")){
+        } else if (roleName.equals("ROLE_LEADER")) {
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        }else {
+        } else {
             roles.add("ROLE_EMPLOYEE");
         }
         List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roles);
         UserEntity userLogin = SecurityUtils.getCurrentUser().getUser();
-        for (UserEntity user: userEntities) {
-            if(user.getUserId().equals(userLogin.getUserId())){
+        for (UserEntity user : userEntities) {
+            if (user.getUserId().equals(userLogin.getUserId())) {
                 userEntities.remove(user);
                 break;
             }
         }
-        if (userEntities != null && userEntities.size() > 0){
+        if (userEntities != null && userEntities.size() > 0) {
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
         return new ArrayList<>();
@@ -442,50 +443,60 @@ public class UserServiceImp implements IUserService {
     @Override
     public List<UserDto> getAllUserByRoleName(String roleName) {
         List<String> roles = new ArrayList<>();
-        if (roleName.equals("ROLE_ADMINISTRATOR")){
+        if (roleName.equals("ROLE_ADMINISTRATOR")) {
             roles.add("ROLE_ADMINISTRATOR");
             roles.add("ROLE_ADMIN");
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        }else if (roleName.equals("ROLE_ADMIN")){
+        } else if (roleName.equals("ROLE_ADMIN")) {
             roles.add("ROLE_ADMIN");
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        }else if (roleName.equals("ROLE_MANAGER")){
+        } else if (roleName.equals("ROLE_MANAGER")) {
             roles.add("ROLE_MANAGER");
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        } else if (roleName.equals("ROLE_LEADER")){
+        } else if (roleName.equals("ROLE_LEADER")) {
             roles.add("ROLE_LEADER");
             roles.add("ROLE_EMPLOYEE");
-        }else {
+        } else {
             roles.add("ROLE_EMPLOYEE");
         }
         List<UserEntity> userEntities = this.userRepository.findAllByRoleName(roles);
-        if (userEntities != null && userEntities.size() > 0){
+        if (userEntities != null && userEntities.size() > 0) {
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
-        return  new ArrayList<>();
+        return new ArrayList<>();
     }
 
 
     @Override
-    public List<PayRollDto> calculatePayRoll(Pageable pageable, int endMonth,int endYear) {
+    public List<PayRollDto> calculatePayRoll(Pageable pageable, int endMonth, int endYear) {
         int startMonth = 0;
         int startYear = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-        if (endMonth ==1){
+        if (endMonth == 1) {
             startMonth = 12;
             startYear = endYear - 1;
-        }else {
+        } else {
             startMonth = endMonth - 1;
             startYear = endYear;
         }
-        String timeStartWorking = startYear +"-"+ startMonth+"-"+(timeKeepingDate + 1);
-        String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
+        String timeStartWorking = startYear + "-" + startMonth + "-" + (timeKeepingDate + 1);
+        String timeEndWorking = endYear + "-" + endMonth + "-" + timeKeepingDate;
+
+
+        String sortPage = "id";
+        String sortDirection = "desc";
+        Sort sort = pageable.getSort();
+        Sort.Order sortOrder = sort.getOrderFor("nameStaff");
+        if (sortOrder != null) {
+            sortPage = sortOrder.getProperty();
+            sortDirection = sortOrder.getDirection().toString();
+        }
 
         return userRepository.calculatePayRoll(timeStartWorking, timeEndWorking);
     }
@@ -496,18 +507,18 @@ public class UserServiceImp implements IUserService {
         int startYear = 0;
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-        if (endMonth ==1){
+        if (endMonth == 1) {
             startMonth = 12;
             startYear = endYear - 1;
-        }else {
+        } else {
             startMonth = endMonth - 1;
             startYear = endYear;
         }
 
-        String timeStartWorking = startYear +"-"+ startMonth+"-"+(timeKeepingDate + 1);
-        String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
+        String timeStartWorking = startYear + "-" + startMonth + "-" + (timeKeepingDate + 1);
+        String timeEndWorking = endYear + "-" + endMonth + "-" + timeKeepingDate;
 
-        return userRepository.searchUserPayRoll(timeStartWorking, timeEndWorking,keyword);
+        return userRepository.searchUserPayRoll(timeStartWorking, timeEndWorking, keyword);
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {
@@ -528,8 +539,9 @@ public class UserServiceImp implements IUserService {
             }
 
     }
+
     @Override
-    public List<RequestSendMeDto> getAllRequestSendMe(Long id,Pageable pageable) {
+    public List<RequestSendMeDto> getAllRequestSendMe(Long id, Pageable pageable) {
         LocalDate date = LocalDate.now();
         String startTime = date.toString().concat(" 00:00:00");
         String endTime = date.toString().concat(" 23:59:59");
@@ -538,10 +550,10 @@ public class UserServiceImp implements IUserService {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
         Long userAuthent = SecurityUtils.getCurrentUserId();
-        if(userAuthent != id)
+        if (userAuthent != id)
             throw new CustomHandleException(21);
         // Get all request modifi send to leader on this day
-        for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+        for (RequestModifiEntity entity : iRequestModifiRepository.getAllRequestSendMe(id, startTime, endTime, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -555,7 +567,7 @@ public class UserServiceImp implements IUserService {
                     .build());
         }
         // Get all request day off send to leader on this day
-        for (RequestDayOffEntity entity: iRequestDayOffRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+        for (RequestDayOffEntity entity : iRequestDayOffRepository.getAllRequestSendMe(id, startTime, endTime, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -570,7 +582,7 @@ public class UserServiceImp implements IUserService {
         }
 
         // Get all request device send to leader on this day
-        for (RequestDeviceEntity entity: iRequestDeviceRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+        for (RequestDeviceEntity entity : iRequestDeviceRepository.getAllRequestSendMe(id, startTime, endTime, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -585,7 +597,7 @@ public class UserServiceImp implements IUserService {
         }
 
         // Get all request OT send to leader on this day
-        for (RequestOTEntity entity: iRequestOTRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+        for (RequestOTEntity entity : iRequestOTRepository.getAllRequestSendMe(id, startTime, endTime, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -599,7 +611,7 @@ public class UserServiceImp implements IUserService {
                     .build());
         }
 
-        for (RequestAttendEntity entity: iRequestAttendRepository.getAllRequestSendMe(id,startTime,endTime,pageable)) {
+        for (RequestAttendEntity entity : iRequestAttendRepository.getAllRequestSendMe(id, startTime, endTime, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -614,7 +626,6 @@ public class UserServiceImp implements IUserService {
         }
 
 
-
         return requestSendMeDtoList.stream().sorted(((o1, o2) -> o2.getTimeCreateTypeDate().compareTo(o1.getTimeCreateTypeDate()))).collect(Collectors.toList());
     }
 
@@ -625,9 +636,9 @@ public class UserServiceImp implements IUserService {
 
         // Get all request modifi create by me
         Long userAuthent = SecurityUtils.getCurrentUserId();
-        if(userAuthent != id)
+        if (userAuthent != id)
             throw new CustomHandleException(21);
-        for (RequestModifiEntity entity:iRequestModifiRepository.getAllRequestCreateByMe(id,pageable)) {
+        for (RequestModifiEntity entity : iRequestModifiRepository.getAllRequestCreateByMe(id, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -643,7 +654,7 @@ public class UserServiceImp implements IUserService {
                     .build());
         }
         // Get all request day off create by me
-        for (RequestDayOffEntity entity: iRequestDayOffRepository.getAllRequestCreateByMe(id,pageable)) {
+        for (RequestDayOffEntity entity : iRequestDayOffRepository.getAllRequestCreateByMe(id, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -660,7 +671,7 @@ public class UserServiceImp implements IUserService {
         }
 
         // Get all request device create by me
-        for (RequestDeviceEntity entity: iRequestDeviceRepository.getAllRequestCreateByMe(id,pageable)) {
+        for (RequestDeviceEntity entity : iRequestDeviceRepository.getAllRequestCreateByMe(id, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -677,7 +688,7 @@ public class UserServiceImp implements IUserService {
         }
 
         // Get all request OT create by me
-        for (RequestOTEntity entity: iRequestOTRepository.getAllRequestCreateByMe(id,pageable)) {
+        for (RequestOTEntity entity : iRequestOTRepository.getAllRequestCreateByMe(id, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -693,7 +704,7 @@ public class UserServiceImp implements IUserService {
                     .build());
         }
         // Get all request attend create by me
-        for (RequestAttendEntity entity: iRequestAttendRepository.getAllRequestCreateByMe(id,pageable)) {
+        for (RequestAttendEntity entity : iRequestAttendRepository.getAllRequestCreateByMe(id, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
@@ -707,7 +718,7 @@ public class UserServiceImp implements IUserService {
                     .build());
         }
 
-        for (RequestAttendEntity entity: iRequestAttendRepository.getAllRequestCreateByMe(id,pageable)) {
+        for (RequestAttendEntity entity : iRequestAttendRepository.getAllRequestCreateByMe(id, pageable)) {
             requestSendMeDtoList.add(RequestSendMeDto
                     .builder()
                     .idRequest(entity.getId())
