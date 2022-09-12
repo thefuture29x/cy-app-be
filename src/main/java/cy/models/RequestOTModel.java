@@ -36,6 +36,8 @@ public class RequestOTModel {
     private String description;
     @ApiModelProperty(notes = "Attached files")
     private MultipartFile files;
+    @ApiModelProperty(notes = "OT Type", dataType = "Integer", example = "1")
+    private Integer typeOt;
     @ApiModelProperty(notes = "Id user created", dataType = "Long", example = "1")
     @NotNull
     private Long createBy;
@@ -54,6 +56,7 @@ public class RequestOTModel {
                 .status(requestOTModel.getStatus())
                 .reasonCancel(requestOTModel.getReasonCancel())
                 .description(requestOTModel.getDescription())
+                .typeOt(requestOTModel.getTypeOt())
                 .id(requestOTModel.getId())
                 .historyRequestEntities(requestOTModel.getHistoryRequestModelList() != null ? requestOTModel.getHistoryRequestModelList().stream().map(data -> HistoryRequestModel.toEntity(data)).collect(Collectors.toList()) : null)
                 .build();

@@ -214,7 +214,7 @@ public class PayRollServiceImpl implements IPayRollService {
         int totalPaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,userEntity.getUserId(),true,1,pageable).size();
         int totalUnpaidLeaveDays = iRequestDayOffService.getTotalDayOffByMonthOfUser(startDateRequestDayOff,endDateRequestDayOff,userEntity.getUserId(),false,1,pageable).size();
 
-        Float totalOvertimeHours = iRequestOTService.totalOTHours(userEntity.getUserId(),1,startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
+        Float totalOvertimeHours = iRequestOTService.totalOTHours(userEntity.getUserId(),1,0, startYear + "-" + startMonth + "-" + timeKeepingDate,endYear + "-" + endMonth + "-" + (timeKeepingDate + 1));
 
         HashMap<String,Object> hashMap = new HashMap<>();
         hashMap.put("workingDays", workingDays);
