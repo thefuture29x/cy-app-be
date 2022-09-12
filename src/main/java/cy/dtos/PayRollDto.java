@@ -19,7 +19,11 @@ public class PayRollDto {
 
     private int totalWorkingDay;
 
-    private Float totalOvertimeHours;
+    private Float totalOvertimeHoursInWeek;
+
+    private Float totalOvertimeHoursInWeekend;
+
+    private Float totalOvertimeHoursInHoliday;
 
     private int totalDaysWorked;
 

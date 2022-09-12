@@ -244,7 +244,7 @@ public class RequestOTServiceImpl implements IRequestOTService {
     }
 
     @Override
-    public Float totalOTHours(Long userId, Integer status, String startDate, String endDate) {
-        return requestOTRepository.totalOTHours(userId, status, startDate, endDate);
+    public Float totalOTHours(Long userId, Integer status, Integer typeOt, String startDate, String endDate) {
+        return requestOTRepository.totalOTHours(userId, status, typeOt, startDate, endDate);
     }
 }

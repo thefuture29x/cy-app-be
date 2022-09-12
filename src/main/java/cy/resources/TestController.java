@@ -15,17 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
-import java.util.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping(FrontendConfiguration.PREFIX_API + "test")
@@ -49,16 +45,18 @@ public class TestController {
 
     @GetMapping("/test")
     public ResponseDto calculateDate(Pageable pageable, @RequestParam(value = "startMonth") String startMonth, @RequestParam(value = "startYear") String startYear) {
-        List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable, Integer.parseInt(startMonth), Integer.parseInt(startYear));
+        List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,Integer.parseInt(startMonth), Integer.parseInt(startYear));
         Page<PayRollDto> pages = new PageImpl<PayRollDto>(payRollDtos, pageable, payRollDtos.size());
         return ResponseDto.of(pages);
     }
 
 
+
+
     @PostMapping("/testne")
     public ResponseDto findByUserName(RequestAttendByNameAndYearMonth data) throws ParseException {
         List<RequestAttendDto> result = this.requestAttendService.findByUsername(data);
-        return ResponseDto.otherData(result, iPayRollService.totalWorkingDayEndWorked(data, null));
+        return ResponseDto.otherData(result,iPayRollService.totalWorkingDayEndWorked(data,null));
     }
 
     @GetMapping("/exportExcel")
@@ -68,16 +66,12 @@ public class TestController {
         String currentDateTime = dateFormatter.format(new Date());
 
         String headerKey = "Content-Disposition";
-<<<<<<< Updated upstream
-        String headerValue = "attachment; filename=Bang_cham_cong :" + currentDateTime + ".xlsx";
-=======
-        String headerValue = "attachment; filename=ChamCong_" + startMonth + "_" + startYear + ".xlsx";
->>>>>>> Stashed changes
+        String headerValue = "attachment; filename=ChamCong_"+startMonth+"_"+startYear+".xlsx";
         response.setHeader(headerKey, headerValue);
-        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("us.full_name").ascending());
+
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,startMonth, startYear);
 
-        PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos);
+        PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos, startMonth, startYear);
 
         excelExporter.export(response);
     }
