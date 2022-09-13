@@ -71,7 +71,7 @@ public class RequestOTResource {
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
     @Operation(summary = "Get total OT hours")
     @GetMapping("total-ot-hours")
-    public ResponseDto getTotalOtHours(Long userId, Integer status, String startDate, String endDate){
-        return ResponseDto.of(requestOTService.totalOTHours(userId, status, startDate, endDate));
+    public ResponseDto getTotalOtHours(Long userId, Integer status, Integer typeOt, String startDate, String endDate){
+        return ResponseDto.of(requestOTService.totalOTHours(userId, status, typeOt, startDate, endDate));
     }
 }

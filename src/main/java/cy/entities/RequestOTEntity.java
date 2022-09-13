@@ -42,7 +42,11 @@ public class RequestOTEntity {
     private String description;
     @Column(name = "files")
     private String files;
-
+    //0 là ngày thường (Thứ 2 đến thứ 6)
+    //1 là cuối tuần (Thứ 7, CN)
+    //2 là ngày lễ
+    @Column(name = "type_ot")
+    private Integer typeOt;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity createBy;

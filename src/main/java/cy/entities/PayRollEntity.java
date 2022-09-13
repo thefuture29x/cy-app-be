@@ -30,8 +30,12 @@ public class PayRollEntity {
     @Column(name = "total_unpaid_leave_days")
     private int totalUnpaidLeaveDays;
 
-    @Column(name = "total_overtime_hours")
-    private Float totalOvertimeHours;
+    @Column(name = "total_overtime_hours_in_week")
+    private Float totalOvertimeHoursInWeek;
+    @Column(name = "total_overtime_hours_in_weekend")
+    private Float totalOvertimeHoursInWeekend;
+    @Column(name = "total_overtime_hours_in_holiday")
+    private Float totalOvertimeHoursInHoliday;
 
     private int month;
 
