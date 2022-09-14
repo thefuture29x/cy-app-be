@@ -19,6 +19,7 @@ import cy.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,10 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,6 +67,9 @@ public class UserServiceImp implements IUserService {
     IRequestOTRepository iRequestOTRepository;
     @Autowired
     IRequestAttendRepository iRequestAttendRepository;
+
+    @Value("${timeKeepingDate}")
+    int timeKeepingDate;
 
 
     public UserServiceImp(IUserRepository userRepository,
@@ -128,7 +130,8 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public List<UserDto> findAll() {
-        return null;
+        List<UserEntity> userEntities = this.userRepository.findAll();
+        return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
     }
 
     @Override
@@ -465,6 +468,46 @@ public class UserServiceImp implements IUserService {
             return userEntities.stream().map(UserDto::toDto).collect(Collectors.toList());
         }
         return  new ArrayList<>();
+    }
+
+
+    @Override
+    public List<PayRollDto> calculatePayRoll(Pageable pageable, int endMonth,int endYear) {
+        int startMonth = 0;
+        int startYear = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        if (endMonth ==1){
+            startMonth = 12;
+            startYear = endYear - 1;
+        }else {
+            startMonth = endMonth - 1;
+            startYear = endYear;
+        }
+        String timeStartWorking = startYear +"-"+ startMonth+"-"+(timeKeepingDate + 1);
+        String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
+
+        return userRepository.calculatePayRoll(timeStartWorking, timeEndWorking);
+    }
+
+    @Override
+    public List<PayRollDto> searchUserPayRoll(Pageable pageable, int endMonth, int endYear, String keyword) {
+        int startMonth = 0;
+        int startYear = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        if (endMonth ==1){
+            startMonth = 12;
+            startYear = endYear - 1;
+        }else {
+            startMonth = endMonth - 1;
+            startYear = endYear;
+        }
+
+        String timeStartWorking = startYear +"-"+ startMonth+"-"+(timeKeepingDate + 1);
+        String timeEndWorking = endYear +"-"+ endMonth+"-"+timeKeepingDate;
+
+        return userRepository.searchUserPayRoll(timeStartWorking, timeEndWorking,keyword);
     }
 
     private void checkUserInfoDuplicate(UserEntity userEntity, String email, String phone) {

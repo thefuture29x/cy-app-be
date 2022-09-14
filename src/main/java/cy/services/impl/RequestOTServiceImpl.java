@@ -244,22 +244,7 @@ public class RequestOTServiceImpl implements IRequestOTService {
     }
 
     @Override
-    public Float totalOTHours(Long userId, Integer status, String startDate, String endDate) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
-        List<RequestOTEntity> requestOTEntityList = requestOTRepository.getAllDateOTByMonth(userId, status, startDate, endDate);
-        float totalOtHours = 0f;
-        for (RequestOTEntity requestOTEntity : requestOTEntityList) {
-            try {
-                Date timeStartOt = simpleDateFormat.parse(requestOTEntity.getTimeStart());
-                Date timeEndOt = simpleDateFormat.parse(requestOTEntity.getTimeEnd());
-                long timeOt = timeEndOt.getTime() - timeStartOt.getTime();
-                long hours = TimeUnit.MILLISECONDS.toHours(timeOt);
-                float minutes = (TimeUnit.MILLISECONDS.toMinutes(timeOt) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeOt))) / 60f;
-                totalOtHours += hours + minutes;
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return totalOtHours;
+    public Float totalOTHours(Long userId, Integer status, Integer typeOt, String startDate, String endDate) {
+        return requestOTRepository.totalOTHours(userId, status, typeOt, startDate, endDate);
     }
 }

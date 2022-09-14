@@ -11,12 +11,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.intercept.AbstractSecurityInterceptor;
+import org.springframework.security.access.intercept.aopalliance.MethodSecurityInterceptor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.EnableGlobalAuthentication;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
@@ -37,16 +42,14 @@ public class WebSecurityConfiguration {
             new AntPathRequestMatcher("/api/v1/public/test/login"),
             new AntPathRequestMatcher("/api/v1/public/test/1"),
             new AntPathRequestMatcher("/users/login"),
-            new AntPathRequestMatcher("/api/v1/test"),
+            new AntPathRequestMatcher("/api/v1/test/**"),
             new AntPathRequestMatcher("/api/v1/users/login"),
 
 
             new AntPathRequestMatcher("/swagger-resources/**"),
             new AntPathRequestMatcher("/swagger-ui/**"),
             new AntPathRequestMatcher("/v2/api-docs"),
-            new AntPathRequestMatcher("/webjars/**"),
-
-            new AntPathRequestMatcher("/api/v1/payroll/**")
+            new AntPathRequestMatcher("/webjars/**")
     );
 
     private RequestMatcher PRIVATE_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
@@ -66,7 +69,7 @@ public class WebSecurityConfiguration {
         AuthenticationManager authenticationManager = httpSecurity
                 .getSharedObject(AuthenticationManagerBuilder.class)
                 .parentAuthenticationManager(authentication -> {
-                    throw new CustomHandleException(1);
+                    throw new CustomHandleException(9);
                 }).build();
         httpSecurity
                 .authenticationProvider(new JwtAuthenticationProvider())

@@ -19,7 +19,8 @@ public interface IRequestOTRepository extends JpaRepository<RequestOTEntity, Lon
     @Query(value = "SELECT * FROM `tbl_request_ot` \n " +
             "WHERE user_id = ?1 ORDER BY updated_date DESC", nativeQuery = true)
     Page<RequestOTEntity> getAllRequestCreateByMe(Long id, Pageable pageable);
-
-    @Query(value = "SELECT * FROM tbl_request_ot WHERE user_id = ?1 AND status = ?2 AND date_ot BETWEEN ?3 AND ?4", nativeQuery = true)
-    List<RequestOTEntity> getAllDateOTByMonth(Long userId, Integer status, String startDate, String endDate);
+    @Query(value = "select sum(((TIME_TO_SEC(time_end) - TIME_TO_SEC(time_start)) / 60) / 60)\n" +
+                    "from tbl_request_ot\n" +
+                    "where user_id = :userId and status = :status and type_ot = :typeOt and date_ot between :startDate and :endDate", nativeQuery = true)
+    Float totalOTHours(@Param("userId")Long userId, @Param("status")Integer status, @Param("typeOt")Integer typeOt, @Param("startDate")String startDate, @Param("endDate")String endDate);
 }

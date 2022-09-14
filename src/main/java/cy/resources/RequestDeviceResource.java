@@ -90,7 +90,7 @@ public class RequestDeviceResource {
     *@description:Xác nhận yêu cầu
     *@update:
     **/
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
     @PutMapping("/acceptRequestDevice")
     public Object acceptRequestDevice(@RequestBody RequestDeviceUpdateStatusModel requestDeviceUpdateStatusModel){
         return ResponseDto.of(requestDeviceService.updateStatus(requestDeviceUpdateStatusModel));
@@ -108,21 +108,21 @@ public class RequestDeviceResource {
     }*/
 
     @Operation(summary = "Tạo yêu cầu trả thiết bị đã mượn.")
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
     @PutMapping("/return-device/{id}")
     public Object returnDevice(@PathVariable(value = "id") Long id){
         return ResponseDto.of(requestDeviceService.returnDevice(id));
     }
 
     @Operation(summary = "Lọc yêu cầu theo loại thiết bị mượn cho người dùng hiện tại.")
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
     @GetMapping("/filter-by-type")
     public Object filterByType(@RequestParam(value = "type") String type, Pageable page){
         return ResponseDto.of(requestDeviceService.filterByType(type,page));
     }
 
     @Operation(summary = "Lọc các yêu cầu mượn thiết bị được tạo bởi người dùng hiện tại.")
-    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_EMPLOYEE"})
+    @Secured({"ROLE_ADMIN","ROLE_MANAGER","ROLE_ADMINISTRATOR","ROLE_EMPLOYEE","ROLE_LEADER"})
     @GetMapping("/created-by-myself")
     public Object createdByMyself(Pageable page){
         return ResponseDto.of(requestDeviceService.createdByMyself(page));

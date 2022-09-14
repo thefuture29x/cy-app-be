@@ -23,6 +23,7 @@ public class RequestOTDto {
     private String reasonCancel;
     private String description;
     private String files;
+    private Integer typeOt;
     private UserDto createBy;
     private UserDto assignTo;
     private List<HistoryRequestDto> historyRequestDtoList;
@@ -39,6 +40,7 @@ public class RequestOTDto {
                 .reasonCancel(requestOTEntity.getReasonCancel())
                 .description(requestOTEntity.getDescription())
                 .files(requestOTEntity.getFiles())
+                .typeOt(requestOTEntity.getTypeOt())
                 .createBy(UserDto.toDto(requestOTEntity.getCreateBy()))
                 .assignTo(UserDto.toDto(requestOTEntity.getAssignTo()))
                 .historyRequestDtoList(requestOTEntity.getHistoryRequestEntities() != null ? requestOTEntity.getHistoryRequestEntities().stream().map(historyRequestEntity -> HistoryRequestDto.toDto(historyRequestEntity)).collect(Collectors.toList()) : null)

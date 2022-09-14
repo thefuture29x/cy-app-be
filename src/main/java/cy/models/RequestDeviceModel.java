@@ -3,19 +3,14 @@ package cy.models;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cy.dtos.CustomHandleException;
-import cy.entities.HistoryRequestEntity;
 import cy.entities.RequestDeviceEntity;
-import cy.repositories.IHistoryRequestRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 
 @Data
 @Builder
@@ -30,7 +25,6 @@ public class RequestDeviceModel {
     @JsonSerialize(as = Date.class)
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateRequestDevice;
-
     @JsonSerialize(as = Date.class)
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date dateStart;

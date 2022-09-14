@@ -1,5 +1,6 @@
 package cy;
 
+import cy.resources.TestController;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

@@ -106,6 +106,17 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         notificationRepository.save(notificationEntity);
     }
 
+    public void createNotification_new(RequestDeviceEntity requestDeviceEntity,Boolean isRead,String title,String content){
+        NotificationEntity notificationEntity=new NotificationEntity();
+        notificationEntity.setDateNoti(new java.util.Date());
+        notificationEntity.setUserId(requestDeviceEntity.getCreateBy());
+        notificationEntity.setIsRead(isRead);
+        notificationEntity.setTitle(title);
+        notificationEntity.setContent(content);
+        notificationEntity.setRequestDevice(requestDeviceEntity);
+        notificationRepository.save(notificationEntity);
+    }
+
     @Override
     public RequestDeviceDto add(RequestDeviceModel model)  {
         RequestDeviceEntity requestDeviceEntity = model.modelToEntity(model);
@@ -200,7 +211,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
                     requestDeviceEntity.setReasonCancel(null);
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,1);
-                    createNotification(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    createNotification_new(requestDeviceEntity,true,"Xét duyệt bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
                     // return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
                     break;
                 case 2:
@@ -208,7 +219,7 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
                     requestDeviceEntity.setReasonCancel(model.getReasonCancel());
                     iRequestDeviceRepository.saveAndFlush(requestDeviceEntity);
                     createHistory(requestDeviceEntity,2);
-                    createNotification(requestDeviceEntity,true,"Đã bị hủy bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị");
+                    createNotification_new(requestDeviceEntity,true,"Đã bị hủy bởi "+userEntity.getFullName(),"Yêu cầu cấp thiết bị từ chối: "+ model.getReasonCancel());
                     //   return RequestDeviceDto.entityToDto(iRequestDeviceRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
                     break;
             }
@@ -229,8 +240,8 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         String countSQL = "select count(*) from RequestDeviceEntity r where 1=1 ";
 
         if(requestDeviceModel.getCreateBy() != null) {
-            sql+=" AND r.createBy = "+requestDeviceModel.getCreateBy();
-            countSQL+=" AND r.createBy = "+requestDeviceModel.getCreateBy();
+            sql+=" AND r.createBy.id = "+requestDeviceModel.getCreateBy();
+            countSQL+=" AND r.createBy.id = "+requestDeviceModel.getCreateBy();
         }
 
         if(requestDeviceModel.getStatus() != null) {
@@ -309,6 +320,11 @@ public class RequestDeviceServiceImpl implements IRequestDeviceService {
         Page<RequestDeviceEntity> requestDeviceEntities =
                 this.iRequestDeviceRepository.getAllRequestCreateByMe(SecurityUtils.getCurrentUserId(),
                         pageable);
+        if(requestDeviceEntities != null
+                && requestDeviceEntities.getContent() != null
+                &&requestDeviceEntities.getContent().size() == 0){
+            return Page.empty();
+        }
         return requestDeviceEntities.map(RequestDeviceDto::entityToDto);
     }
 }
