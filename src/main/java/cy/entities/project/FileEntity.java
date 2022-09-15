@@ -17,12 +17,14 @@ import javax.persistence.*;
 public class FileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     private String link;
 
     @Column(name = "file_type")
     private String fileType;
+    @Column(name = "file_name")
+    private String fileName;
 
     @Column(name = "object_id")
     private Long objectId;

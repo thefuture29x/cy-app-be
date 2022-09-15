@@ -1,10 +1,10 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.HistoryRequestDto;
+import cy.dtos.attendance.HistoryRequestDto;
 import cy.dtos.ResponseDto;
-import cy.models.HistoryRequestModel;
-import cy.services.IHistoryRequestService;
+import cy.models.attendance.HistoryRequestModel;
+import cy.services.attendance.IHistoryRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

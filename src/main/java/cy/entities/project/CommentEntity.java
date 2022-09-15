@@ -21,7 +21,7 @@ import java.util.List;
 public class CommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_id")
     private UserEntity userId;

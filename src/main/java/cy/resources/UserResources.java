@@ -3,10 +3,7 @@ package cy.resources;
 import cy.configs.FrontendConfiguration;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
-import cy.dtos.RequestModifiDto;
-import cy.dtos.RequestSendMeDto;
 import cy.dtos.ResponseDto;
-import cy.dtos.UserDto;
 import cy.entities.RoleEntity;
 import cy.entities.RoleEntity_;
 import cy.entities.UserEntity;
@@ -14,7 +11,6 @@ import cy.entities.UserEntity_;
 import cy.models.PasswordModel;
 import cy.models.UserModel;
 import cy.models.UserProfileModel;
-import cy.repositories.IUserRepository;
 import cy.services.IUserService;
 import cy.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,9 +21,7 @@ import javax.persistence.criteria.Join;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,9 +29,6 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @RestController
