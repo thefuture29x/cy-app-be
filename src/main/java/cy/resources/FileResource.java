@@ -8,10 +8,7 @@ import cy.models.project.FileModel;
 import cy.services.project.IFileService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -34,5 +31,19 @@ public class FileResource {
     @PostMapping("updateFile")
     public ResponseDto updateFile(@Valid @ModelAttribute FileModel fileModel) {
         return ResponseDto.of(fileService.update(fileModel));
+    }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @Operation(summary = "Delete File")
+    @DeleteMapping("delete")
+    public ResponseDto deleteFile(Long id) {
+        return ResponseDto.of(fileService.deleteById(id));
+    }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER})
+    @Operation(summary = "Find file by id")
+    @GetMapping("find-by-id/{id}")
+    public ResponseDto findFileById(@PathVariable("id") Long id){
+        return ResponseDto.of(fileService.findById(id));
     }
 }
