@@ -17,7 +17,7 @@ import javax.persistence.*;
 public class FileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     private String link;
 

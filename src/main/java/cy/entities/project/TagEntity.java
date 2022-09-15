@@ -16,7 +16,7 @@ import javax.persistence.*;
 public class TagEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @Column(unique = true)
     private String name;
 
