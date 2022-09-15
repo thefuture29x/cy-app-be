@@ -1,10 +1,10 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.NotificationDto;
+import cy.dtos.attendance.NotificationDto;
 import cy.dtos.ResponseDto;
-import cy.models.NotificationModel;
-import cy.services.INotificationService;
+import cy.models.attendance.NotificationModel;
+import cy.services.attendance.INotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;

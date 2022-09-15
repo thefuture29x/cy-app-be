@@ -2,7 +2,7 @@ package cy.resources;
 
 import cy.configs.FrontendConfiguration;
 import cy.configs.excel.PayRollExcelExporter;
-import cy.dtos.PayRollDto;
+import cy.dtos.attendance.PayRollDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
 import cy.services.IUserService;

@@ -1,21 +1,19 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.AcceptRequestModifiDto;
-import cy.dtos.RequestAttendDto;
-import cy.dtos.RequestModifiDto;
+import cy.dtos.attendance.RequestAttendDto;
+import cy.dtos.attendance.RequestModifiDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
-import cy.models.AcceptRequestModifiModel;
-import cy.models.NotificationModel;
-import cy.models.RequestAll;
-import cy.models.RequestModifiModel;
-import cy.services.INotificationService;
-import cy.services.IRequestModifiService;
+import cy.models.attendance.AcceptRequestModifiModel;
+import cy.models.attendance.NotificationModel;
+import cy.models.attendance.RequestAll;
+import cy.models.attendance.RequestModifiModel;
+import cy.services.attendance.INotificationService;
+import cy.services.attendance.IRequestModifiService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;

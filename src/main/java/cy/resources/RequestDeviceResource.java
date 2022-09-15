@@ -1,11 +1,11 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.RequestDeviceDto;
+import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.ResponseDto;
-import cy.models.RequestDeviceModel;
-import cy.models.RequestDeviceUpdateStatusModel;
-import cy.services.impl.RequestDeviceServiceImpl;
+import cy.models.attendance.RequestDeviceModel;
+import cy.models.attendance.RequestDeviceUpdateStatusModel;
+import cy.services.attendance.impl.RequestDeviceServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

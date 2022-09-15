@@ -2,18 +2,13 @@ package cy.resources;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.CustomHandleException;
-import cy.dtos.RequestAttendDto;
-import cy.dtos.RequestDayOffDto;
+import cy.dtos.attendance.RequestDayOffDto;
 import cy.dtos.ResponseDto;
-import cy.entities.RequestDayOffEntity;
-import cy.entities.RoleEntity;
-import cy.models.GetRequestDayOffModel;
-import cy.models.RequestDayOffModel;
-import cy.repositories.IRequestDayOffRepository;
-import cy.services.IRequestDayOffService;
-import io.swagger.models.auth.In;
+import cy.models.attendance.GetRequestDayOffModel;
+import cy.models.attendance.RequestDayOffModel;
+import cy.repositories.attendance.IRequestDayOffRepository;
+import cy.services.attendance.IRequestDayOffService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Role;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
@@ -22,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
 @RestController
