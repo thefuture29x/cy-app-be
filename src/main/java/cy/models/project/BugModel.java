@@ -28,7 +28,7 @@ public class BugModel {
 
 
     public BugEntity modelToEntity(BugModel model) {
-       return BugEntity.builder()
+       /*return BugEntity.builder()
                .id(model.getId())
                .nameBug(model.getNameBug())
                .subTask(model.getSubTask())
@@ -40,7 +40,8 @@ public class BugModel {
                .keyWord(model.getKeyWord())
                .isDefault(model.getIsDefault())
                .attachFiles(model.getAttachFiles())
-               .build();
+               .build();*/
+        return BugEntity.builder().id.build();
 
     }
 
