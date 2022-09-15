@@ -28,5 +28,4 @@ public class ProjectEntity extends ProjectBaseEntity{
     @JoinColumn(name ="avatar_file_id")
     private FileEntity avatar;
 
-
 }
