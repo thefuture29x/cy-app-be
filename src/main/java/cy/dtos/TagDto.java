@@ -1,7 +1,6 @@
 package cy.dtos;
 
 import cy.entities.project.TagEntity;
-import cy.models.TagModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

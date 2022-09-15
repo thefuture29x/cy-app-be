@@ -1,25 +1,29 @@
-package cy.services.impl;
+package cy.services.project.impl;
 
 import cy.dtos.TagDto;
 import cy.entities.project.TagEntity;
-import cy.models.TagModel;
-import cy.repositories.ITagRepository;
-import cy.services.ITagService;
+import cy.models.project.TagModel;
+import cy.repositories.project.ITagRepository;
+import cy.services.project.ITagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Service
 public class TagServiceImpl implements ITagService {
 
     @Autowired
     ITagRepository iTagRepository;
     @Override
     public List<TagDto> findAll() {
-        return null;
+        List<TagDto> tagDtos = iTagRepository.findAll().stream().map(x->TagDto.toDto(x)).collect(Collectors.toList());
+        return tagDtos;
     }
 
     @Override
@@ -41,7 +45,6 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public TagDto findById(Long id) {
-
         TagEntity entity = iTagRepository.findById(id).orElse(null);
         if (entity == null){
             return null;
@@ -56,13 +59,14 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public TagDto add(TagModel model) {
-        if (model.getName().isEmpty() || model.getName().contains("#")){
+        if (model.getName().isEmpty() || !model.getName().contains("#")){
             return null;
         }
         TagEntity entity = iTagRepository.findByName(model.getName());
         if (entity != null ){
             return null;
         }
+        entity = new TagEntity();
         entity.setName(model.getName());
         return TagDto.toDto(iTagRepository.save(entity));
     }
@@ -84,18 +88,33 @@ public class TagServiceImpl implements ITagService {
         if (model.getId() == null){
             return null;
         }
-        TagEntity entity = iTagRepository.findById(model.getId()).orElse(null);
+
+        if (model.getName().isEmpty() || !model.getName().contains("#")){
+            return null;
+        }
+        TagEntity entity = iTagRepository.findByName(model.getName());
+        if (entity != null && !entity.getName().contains(model.getName())){
+            return null;
+        }
+        entity = iTagRepository.findById(model.getId()).orElse(null);
         if (entity == null){
             return null;
         }
+
+
         entity.setName(model.getName());
         return TagDto.toDto(iTagRepository.save(entity));
     }
 
     @Override
     public boolean deleteById(Long id) {
-        iTagRepository.deleteById(id);
+
         TagEntity entity = iTagRepository.findById(id).orElse(null);
+        if (entity == null){
+            return false;
+        }
+        iTagRepository.deleteById(id);
+        entity = iTagRepository.findById(id).orElse(null);
         if (entity == null){
             return true;
         }
