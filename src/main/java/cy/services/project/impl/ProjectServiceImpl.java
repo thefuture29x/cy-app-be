@@ -73,7 +73,7 @@ public class ProjectServiceImpl implements IProjectService {
           }
           projectEntity.setUpdatedDate(currentDate);
           projectEntity = iProjectRepository.save(projectEntity);
-          if(!projectModel.getAvatar().isEmpty()){
+          if(projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()){
               String urlAvatar =  fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
               FileEntity fileEntity =  new FileEntity();
               fileEntity.setCategory(Const.tableName.PROJECT.name());
@@ -81,11 +81,12 @@ public class ProjectServiceImpl implements IProjectService {
               fileEntity.setLink(urlAvatar);
               fileEntity.setObjectId(projectEntity.getId());
               fileEntity.setFileType(projectModel.getAvatar().getOriginalFilename());
+//              iFileRepository.save(fileEntity);
               projectEntity.setAvatar(fileEntity);
               projectEntity = iProjectRepository.save(projectEntity);
+//              iFileRepository.save(fileEntity);
           }
-          if(projectModel.getFiles().length > 0){
-              List<FileEntity> fileEntityList = new ArrayList<>();
+          if(projectModel.getFiles() != null && projectModel.getFiles().length > 0){
               for (MultipartFile m : projectModel.getFiles()){
                   if(!m.isEmpty()){
                       String urlFile =  fileUploadProvider.uploadFile("project", m);
@@ -95,12 +96,8 @@ public class ProjectServiceImpl implements IProjectService {
                       fileEntity.setCategory(Const.tableName.PROJECT.name());
                       fileEntity.setUploadedBy(userEntity);
                       fileEntity.setObjectId(projectEntity.getId());
-                      fileEntityList.add(fileEntity);
+                      iFileRepository.save(fileEntity);
                   }
-              }
-              if(fileEntityList.size() > 0){
-                  projectEntity.setAttachFiles(fileEntityList);
-                  projectEntity = iProjectRepository.save(projectEntity);
               }
           }
           return ProjectDto.toDto(projectEntity);

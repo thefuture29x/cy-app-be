@@ -30,8 +30,8 @@ public class TaskEntity extends ProjectBaseEntity{
     @JoinColumn(name ="feature_id")
     private FeatureEntity feature;
 
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='TASK")
-    private List<FileEntity> attachFiles;
+//    @OneToMany
+//    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+//    @Where(clause = "category='TASK")
+//    private List<FileEntity> attachFiles;
 }
