@@ -15,6 +15,7 @@ public class FileDto {
     private Long id;
     private String link;
     private String fileType;
+    private String fileName;
     private Long objectId;
     private String category;
     private UserDto uploadedBy;
@@ -26,6 +27,7 @@ public class FileDto {
                 .id(fileEntity.getId())
                 .link(fileEntity.getLink())
                 .fileType(fileEntity.getFileType())
+                .fileName(fileEntity.getFileName())
                 .objectId(fileEntity.getObjectId())
                 .category(fileEntity.getCategory())
                 .uploadedBy(UserDto.toDto(fileEntity.getUploadedBy()))

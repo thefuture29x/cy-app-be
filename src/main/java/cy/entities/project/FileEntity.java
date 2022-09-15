@@ -19,15 +19,17 @@ public class FileEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String link;//link trên s3
+    private String link;
 
     @Column(name = "file_type")
-    private String fileType;//định dạng file
+    private String fileType;
+    @Column(name = "file_name")
+    private String fileName;
 
     @Column(name = "object_id")
-    private Long objectId;//id của đối tượng
+    private Long objectId;
 
-    private String category;//file thuộc đối project hay bug hay task hay subtask
+    private String category;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
