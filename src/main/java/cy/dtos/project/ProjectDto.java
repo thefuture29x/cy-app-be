@@ -33,9 +33,9 @@ public class ProjectDto {
         if(entity == null)
             return null;
         List<String> lstFile = new ArrayList<>();
-        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
-            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
-        }
+//        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
+//            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+//        }
         return ProjectDto.builder()
                 .id(entity.getId())
                 .createdDate(entity.getCreatedDate())
@@ -54,9 +54,9 @@ public class ProjectDto {
     public ProjectDto(ProjectEntity entity){
         if(entity != null){
             List<String> lstFile = new ArrayList<>();
-            if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
-                entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
-            }
+//            if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
+//                entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+//            }
             ProjectDto.builder()
                     .id(entity.getId())
                     .createdDate(entity.getCreatedDate())

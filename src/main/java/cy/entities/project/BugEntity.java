@@ -27,10 +27,10 @@ public class BugEntity extends ProjectBaseEntity{
     @JoinColumn(name ="sub_task_id")
     private SubTaskEntity subTask;
 
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='BUG'")
-    private List<FileEntity> attachFiles;
+//    @OneToMany
+//    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+//    @Where(clause = "category='BUG'")
+//    private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")

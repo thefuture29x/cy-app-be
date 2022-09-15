@@ -33,10 +33,10 @@ public class CommentEntity {
     @Column(name = "created_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='COMMENT'")
-    private List<FileEntity> attachFiles;
+//    @OneToMany
+//    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+//    @Where(clause = "category='COMMENT'")
+//    private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_parent")
