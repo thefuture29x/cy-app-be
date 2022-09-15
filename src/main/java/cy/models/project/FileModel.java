@@ -22,15 +22,13 @@ public class FileModel {
     private Long id;
     @ApiModelProperty(notes = "File to send", dataType = "MultipartFile")
     private MultipartFile file;
-    @ApiModelProperty(notes = "Id user upload file", dataType = "Long", example = "1")
-    @NotNull
-    private Long uploadedBy;
 
     private String link;
     private String fileType;
     private String fileName;
     private Long objectId;
     private String category;
+    private Long uploadedBy;
 
     public static FileEntity toEntity(FileModel fileModel){
         if (fileModel == null) throw new RuntimeException("FileModel is null");
