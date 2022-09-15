@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -30,5 +31,6 @@ public class ProjectModel {
     private MultipartFile avatar;
     private Boolean isDefault;
     private String textSearch;
+    private List<TagModel> tags;
 
 }
