@@ -1,10 +1,10 @@
 package cy.resources;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.OptionDto;
+import cy.dtos.attendance.OptionDto;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
-import cy.services.IOptionService;
+import cy.services.attendance.IOptionService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;

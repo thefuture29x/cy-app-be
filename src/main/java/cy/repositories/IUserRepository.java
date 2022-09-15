@@ -1,6 +1,6 @@
 package cy.repositories;
 
-import cy.dtos.PayRollDto;
+import cy.dtos.attendance.PayRollDto;
 import cy.entities.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

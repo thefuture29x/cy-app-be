@@ -2,8 +2,8 @@ package cy.services;
 
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
-import cy.dtos.PayRollDto;
-import cy.dtos.RequestSendMeDto;
+import cy.dtos.attendance.PayRollDto;
+import cy.dtos.attendance.RequestSendMeDto;
 import cy.dtos.UserDto;
 import cy.entities.UserEntity;
 import cy.models.PasswordModel;

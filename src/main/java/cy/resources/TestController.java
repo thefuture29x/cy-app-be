@@ -2,15 +2,16 @@ package cy.resources;
 
 import cy.configs.FrontendConfiguration;
 import cy.configs.excel.PayRollExcelExporter;
-import cy.dtos.PayRollDto;
-import cy.dtos.RequestAttendDto;
+import cy.dtos.attendance.PayRollDto;
+import cy.dtos.attendance.RequestAttendDto;
 import cy.dtos.ResponseDto;
-import cy.models.RequestAttendByNameAndYearMonth;
+import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.repositories.IUserRepository;
-import cy.services.IPayRollService;
-import cy.services.IRequestAttendService;
+import cy.services.attendance.IPayRollService;
+import cy.services.attendance.IRequestAttendService;
 import cy.services.IUserService;
-import cy.services.impl.RequestAttendServiceImpl;
+import cy.services.attendance.impl.RequestAttendServiceImpl;
+import cy.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
@@ -72,8 +73,15 @@ public class TestController {
         List<PayRollDto> payRollDtos = iUserService.calculatePayRoll(pageable,startMonth, startYear);
 
         PayRollExcelExporter excelExporter = new PayRollExcelExporter(payRollDtos, startMonth, startYear);
-
         excelExporter.export(response);
     }
 
+    @GetMapping("test-enum")
+    public String testenum(@RequestParam Const.status status){
+             return Const.type.TYPE_DEV.name();
+    }
+    @GetMapping("test-no-enum")
+    public void testenumo(@RequestParam String status){
+
+    }
 }

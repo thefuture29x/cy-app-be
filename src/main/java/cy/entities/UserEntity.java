@@ -1,6 +1,6 @@
 package cy.entities;
 
-import cy.dtos.PayRollDto;
+import cy.dtos.attendance.PayRollDto;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
