@@ -27,6 +27,7 @@ public class ProjectEntity extends ProjectBaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="avatar_file_id")
+    @Where(clause = "category='tbl_projects'")
     private FileEntity avatar;
 
 }

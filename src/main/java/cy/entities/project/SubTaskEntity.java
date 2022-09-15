@@ -28,7 +28,7 @@ public class SubTaskEntity extends ProjectBaseEntity{
     private TaskEntity task;
 
     @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+    @JoinColumn(name = "object_id")
     @Where(clause = "category='tbl_sub_tasks'")
     private List<FileEntity> attachFiles;
 
