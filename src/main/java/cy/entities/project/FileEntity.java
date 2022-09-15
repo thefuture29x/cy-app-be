@@ -23,6 +23,8 @@ public class FileEntity {
 
     @Column(name = "file_type")
     private String fileType;
+    @Column(name = "file_name")
+    private String fileName;
 
     @Column(name = "object_id")
     private Long objectId;
