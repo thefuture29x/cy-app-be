@@ -20,13 +20,13 @@ import java.util.Set;
 @Table(name = "tbl_projects")
 public class ProjectEntity extends ProjectBaseEntity{
 
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='PROJECT'")
-    private List<FileEntity> attachFiles;
+//    @OneToMany
+////    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+////    @Where(clause = "category='PROJECT'")
+//    private List<FileEntity> attachFiles;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @Where(clause = "category='PROJECT'")
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+//    @Where(clause = "category='PROJECT'")
     private FileEntity avatar;
 
 }
