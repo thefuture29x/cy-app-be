@@ -5,6 +5,6 @@ import cy.entities.project.FileEntity;
 import cy.models.project.FileModel;
 import cy.services.IBaseService;
 
-public interface IFileService extends IBaseService<FileEntity, FileModel, FileDto, Long> {
+public interface IFileService extends IBaseService<FileEntity, FileDto, FileModel, Long> {
 
 }

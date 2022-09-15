@@ -35,7 +35,7 @@ public class CommentEntity {
     private Date createdDate;
     @OneToMany
     @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_comments'")
+    @Where(clause = "category='COMMENT'")
     private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)

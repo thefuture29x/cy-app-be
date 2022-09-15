@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
 import org.hibernate.annotations.WhereJoinTable;
 
@@ -15,6 +16,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder(toBuilder = true)
 @Entity
 @Table(name = "tbl_sub_tasks")
 public class SubTaskEntity extends ProjectBaseEntity{
@@ -27,7 +29,7 @@ public class SubTaskEntity extends ProjectBaseEntity{
 
     @OneToMany
     @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_sub_tasks'")
+    @Where(clause = "category='SUBTASK'")
     private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
