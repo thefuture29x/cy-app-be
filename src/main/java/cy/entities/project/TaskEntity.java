@@ -20,6 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @SuperBuilder(toBuilder = true)
+@Data
 @Table(name = "tbl_tasks")
 public class TaskEntity extends ProjectBaseEntity{
     private String priority;
