@@ -29,7 +29,7 @@ public class BugEntity extends ProjectBaseEntity{
 
     @OneToMany
     @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_bugs'")
+    @Where(clause = "category='BUG'")
     private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,6 +1,7 @@
 package cy.entities.project;
 
 import cy.entities.UserEntity;
+import cy.utils.Const;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +31,6 @@ public class TaskEntity extends ProjectBaseEntity{
 
     @OneToMany
     @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_tasks'")
+    @Where(clause = "category='TASK")
     private List<FileEntity> attachFiles;
 }
