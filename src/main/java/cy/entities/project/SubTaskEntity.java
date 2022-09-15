@@ -29,7 +29,7 @@ public class SubTaskEntity extends ProjectBaseEntity{
 
     @OneToMany
     @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_sub_tasks'")
+    @Where(clause = "category='SUBTASK'")
     private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)

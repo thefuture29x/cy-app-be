@@ -22,11 +22,11 @@ public class ProjectEntity extends ProjectBaseEntity{
 
     @OneToMany
     @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_projects'")
+    @Where(clause = "category='PROJECT'")
     private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="avatar_file_id")
+    @Where(clause = "category='PROJECT'")
     private FileEntity avatar;
 
 }
