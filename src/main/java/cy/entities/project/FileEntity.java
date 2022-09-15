@@ -31,7 +31,6 @@ public class FileEntity {
 
     private String category;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_upload_id")
     private UserEntity uploadedBy;
