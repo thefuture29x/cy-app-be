@@ -1,22 +1,28 @@
 package cy.entities.project;
 
 import cy.entities.UserEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Data
-public abstract class ProjectBaseEntity {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ProjectBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @CreationTimestamp
     @Column(name = "created_date")
     @Temporal(TemporalType.TIMESTAMP)
@@ -42,6 +48,8 @@ public abstract class ProjectBaseEntity {
     private String name;
 
     private String description;
+
+    private Boolean isDefault = false;
 
 
 

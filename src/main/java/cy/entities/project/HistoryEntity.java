@@ -19,7 +19,7 @@ import java.util.Date;
 public class HistoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_id")

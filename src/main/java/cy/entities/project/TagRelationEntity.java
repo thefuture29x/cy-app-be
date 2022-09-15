@@ -18,7 +18,7 @@ import javax.persistence.*;
 public class TagRelationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @Column(name = "object_id",nullable = false)
     private Long objectId;
     @Column(name = "tag_id",nullable = false)

@@ -18,7 +18,7 @@ import javax.persistence.*;
 public class UserProjectEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @Column(name = "object_id")
     private Long objectId;
     @Column(name = "user_id")
