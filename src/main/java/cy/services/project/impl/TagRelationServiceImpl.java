@@ -6,8 +6,7 @@ import cy.entities.attendance.RequestDeviceEntity;
 import cy.entities.project.*;
 import cy.models.project.TagModel;
 import cy.models.project.TagRelationModel;
-import cy.repositories.project.ITagRelationRepository;
-import cy.repositories.project.ITagRepository;
+import cy.repositories.project.*;
 import cy.services.project.ITagRelationService;
 import cy.services.project.ITagService;
 import cy.utils.Const;
@@ -30,7 +29,11 @@ public class TagRelationServiceImpl implements ITagRelationService {
     @Autowired
     ITagRelationRepository iTagRelationRepository;
     @Autowired
-    EntityManager manager;
+    IProjectRepository iProjectRepository;
+    @Autowired
+    ITaskRepository iTaskRepository;
+    @Autowired
+    ISubTaskRepository iSubTaskRepository;
 
 
     @Override
@@ -85,24 +88,23 @@ public class TagRelationServiceImpl implements ITagRelationService {
         }
 
         if (model.getCategory().contains(Const.tableName.PROJECT.toString())){
-            ProjectEntity projectEntity;
+            ProjectEntity projectEntity = iProjectRepository.findById(model.getObjectId()).orElse(null);
             if (projectEntity == null){
                 return null;
             }
             tagRelationEntity.setObjectId(projectEntity.getId());
         }else if (model.getCategory().contains(Const.tableName.TASK.toString())){
-            TaskEntity taskEntity;
+            TaskEntity taskEntity = iTaskRepository.findById(model.getObjectId()).orElse(null);
             if (taskEntity == null){
                 return null;
             }
             tagRelationEntity.setObjectId(taskEntity.getId());
         }else if (model.getCategory().contains(Const.tableName.SUBTASK.toString())){
-            SubTaskEntity subTaskEntity;
+            SubTaskEntity subTaskEntity = iSubTaskRepository.findById(model.getObjectId()).orElse(null);
             if (subTaskEntity == null){
                 return null;
             }
             tagRelationEntity.setObjectId(subTaskEntity.getId());
-
         }else {
             return null;
         }
