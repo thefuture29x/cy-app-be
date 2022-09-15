@@ -43,6 +43,8 @@ public abstract class ProjectBaseEntity {
 
     private String description;
 
+    private Boolean isDefault = false;
+
 
 
 }
