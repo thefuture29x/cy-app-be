@@ -31,14 +31,6 @@ public class SubTaskEntity extends ProjectBaseEntity{
     @Where(clause = "category='tbl_sub_tasks'")
     private List<FileEntity> attachFiles;
 
-    @ManyToMany
-    @WhereJoinTable(clause = "category='tbl_sub_tasks'")
-    @JoinTable(name = "tbl_tag_relations",
-            joinColumns = @JoinColumn(name = "object_id", insertable = false, updatable = false),
-            inverseJoinColumns = {@JoinColumn(name = "tag_id", insertable = false, updatable = false)})
-    Set<TagEntity> tagEntities;
-
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;

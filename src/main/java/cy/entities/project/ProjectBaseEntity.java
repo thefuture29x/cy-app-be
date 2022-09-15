@@ -37,7 +37,7 @@ public abstract class ProjectBaseEntity {
 
     private String status;
 
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
     private String name;
 

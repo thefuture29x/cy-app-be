@@ -28,11 +28,5 @@ public class ProjectEntity extends ProjectBaseEntity{
     @JoinColumn(name ="avatar_file_id")
     private FileEntity avatar;
 
-    @ManyToMany
-    @WhereJoinTable(clause = "category='tbl_projects'")
-    @JoinTable(name = "tbl_tag_relations",
-            joinColumns = @JoinColumn(name = "object_id", insertable = false, updatable = false),
-            inverseJoinColumns = {@JoinColumn(name = "tag_id", insertable = false, updatable = false)})
-    Set<TagEntity> tagEntities;
 
 }

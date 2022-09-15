@@ -30,11 +30,5 @@ public class BugHistoryEntity extends ProjectBaseEntity{
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
-    @ManyToMany
-    @WhereJoinTable(clause = "category='tbl_bug_historys'")
-    @JoinTable(name = "tbl_tag_relations",
-            joinColumns = @JoinColumn(name = "object_id", insertable = false, updatable = false),
-            inverseJoinColumns = {@JoinColumn(name = "tag_id", insertable = false, updatable = false)})
-    Set<TagEntity> tagEntities;
 
 }

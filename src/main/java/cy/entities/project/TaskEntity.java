@@ -30,10 +30,5 @@ public class TaskEntity extends ProjectBaseEntity{
     @Where(clause = "category='tbl_tasks'")
     private List<FileEntity> attachFiles;
 
-    @ManyToMany
-    @WhereJoinTable(clause = "category='tbl_tasks'")
-    @JoinTable(name = "tbl_tag_relations",
-            joinColumns = @JoinColumn(name = "object_id", insertable = false, updatable = false),
-            inverseJoinColumns = {@JoinColumn(name = "tag_id", insertable = false, updatable = false)})
-    Set<TagEntity> tagEntities;
+
 }

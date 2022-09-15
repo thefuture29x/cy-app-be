@@ -19,10 +19,11 @@ public class TagRelationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-    @Column(name = "object_id")
+    @Column(name = "object_id",nullable = false)
     private Long objectId;
-    @Column(name = "tag_id")
+    @Column(name = "tag_id",nullable = false)
     private Long idTag;
+    @Column(nullable = false)
     private String category;
 
 }

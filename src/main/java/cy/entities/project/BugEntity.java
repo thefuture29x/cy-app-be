@@ -35,11 +35,5 @@ public class BugEntity extends ProjectBaseEntity{
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;
 
-    @ManyToMany
-    @WhereJoinTable(clause = "category='tbl_bugs'")
-            @JoinTable(name = "tbl_tag_relations",
-            joinColumns = @JoinColumn(name = "object_id", insertable = false, updatable = false),
-            inverseJoinColumns = {@JoinColumn(name = "tag_id", insertable = false, updatable = false)})
-    Set<TagEntity> tagEntities;
 
 }
