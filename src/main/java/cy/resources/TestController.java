@@ -81,7 +81,6 @@ public class TestController {
 
     @GetMapping("test-enum")
     public String testenum(@RequestParam Const.status status){
-        TaskEntity
         return Const.type.TYPE_DEV.name();
     }
     @GetMapping("test-no-enum")
