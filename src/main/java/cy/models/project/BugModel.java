@@ -28,20 +28,8 @@ public class BugModel {
 
 
     public BugEntity modelToEntity(BugModel model) {
-       /*return BugEntity.builder()
-               .id(model.getId())
-               .nameBug(model.getNameBug())
-               .subTask(model.getSubTask())
-               .description(model.getDescription())
-               .startDate(model.getStartDate())
-               .endDate(model.getEndDate())
-               .responsibleUserList(model.getResponsibleUserList())
-               .assignTo(model.getAssignTo())
-               .keyWord(model.getKeyWord())
-               .isDefault(model.getIsDefault())
-               .attachFiles(model.getAttachFiles())
-               .build();*/
-        return BugEntity.builder().id.build();
+      return null;
+      //  return BugEntity.builder().id.build();
 
     }
 
