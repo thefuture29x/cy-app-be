@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
 import org.hibernate.annotations.WhereJoinTable;
 
@@ -14,12 +15,14 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "tbl_bug_historys")
-public class BugHistoryEntity extends ProjectBaseEntity{
+public class BugHistoryEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bug_id")

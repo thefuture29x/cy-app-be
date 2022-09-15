@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.Where;
+import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
 
@@ -22,8 +25,10 @@ public class BugEntity extends ProjectBaseEntity{
     @JoinColumn(name ="sub_task_id")
     private SubTaskEntity subTask;
 
-    @Column(name = "files")
-    private String attachFiles;
+    @OneToMany
+    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+    @Where(clause = "category='tbl_bugs'")
+    private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")
