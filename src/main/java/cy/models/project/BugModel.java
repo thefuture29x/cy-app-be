@@ -2,15 +2,11 @@ package cy.models.project;
 
 import cy.entities.UserEntity;
 import cy.entities.project.BugEntity;
-import cy.entities.project.FileEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.util.Date;
 import java.util.List;
 @Data
@@ -18,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BugModel {
-
     private Long id;
     private String nameBug;
     private Long subTask;

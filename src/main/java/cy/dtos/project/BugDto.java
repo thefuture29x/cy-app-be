@@ -1,6 +1,5 @@
 package cy.dtos.project;
 
-import cy.dtos.UserDto;
 import cy.entities.UserEntity;
 import cy.entities.project.BugEntity;
 import cy.entities.project.FileEntity;
@@ -8,10 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.json.JSONObject;
 
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.util.Date;
 import java.util.List;
 @Data
@@ -35,15 +31,15 @@ public class BugDto {
         return BugDto.builder()
                 .id(obj.getId())
                 .nameBug(obj.getName())
-                .subTask((obj.getCreateBy() != null ? obj.getCreateBy().getUserId() : null)
+                .subTask((obj.getCreateBy() != null ? obj.getCreateBy().getUserId() : null))
                 .description(obj.getDescription())
                 .startDate(obj.getStartDate())
                 .endDate(obj.getEndDate())
-                .responsibleUserList(obj.getAssignTo() != null ? UserDto.toDto(obj.getAssignTo()) : null)
-                .assignTo(obj.getAssignTo())
-                .keyWord(obj.getK())
+              //  .responsibleUserList(obj.getAssignTo() != null ? UserDto.toDto(obj.getAssignTo()) : null)
+             //   .assignTo(obj.getAssignTo())
+                .keyWord(obj.getKeyWord())
                 .isDefault(obj.getIsDefault())
-                .attachFiles(obj.getAttachFiles() != null ? new JSONObject(obj.getAttachFiles()).getJSONArray("files").toList() : null)
+              //  .attachFiles(obj.getAttachFiles() != null ? new JSONObject(obj.getAttachFiles()).getJSONArray("files").toList() : null)
                 .build();
     }
 }

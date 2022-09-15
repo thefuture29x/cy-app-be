@@ -1,7 +1,6 @@
 package cy.dtos.project;
 
 import cy.dtos.UserDto;
-import cy.entities.UserEntity;
 import cy.entities.project.FileEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

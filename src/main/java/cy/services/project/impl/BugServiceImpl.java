@@ -2,9 +2,11 @@ package cy.services.project.impl;
 
 import cy.dtos.project.BugDto;
 import cy.entities.project.BugEntity;
+import cy.entities.project.FileEntity;
 import cy.models.project.BugModel;
 import cy.repositories.project.BugRepository;
 import cy.services.project.IRequestBugService;
+import cy.utils.Const;
 import cy.utils.FileUploadProvider;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +54,11 @@ public class BugServiceImpl implements IRequestBugService {
     public BugEntity getById(Long id) {
         return null;
     }
-
+Const aConst;
     @Override
     public BugDto add(BugModel model) {
         BugEntity bugEntity= model.modelToEntity(model);
+        FileEntity fileEntity = new FileEntity();
         List<String> s3Urls = new ArrayList<>();
         if(model.getAttachFiles() != null && model.getAttachFiles().length > 0){
             for(MultipartFile fileMultipart : model.getAttachFiles()){
@@ -70,7 +73,12 @@ public class BugServiceImpl implements IRequestBugService {
                 }
             }
             JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
-            bugEntity.setAttachFiles(jsonObject.toString());
+            fileEntity.setCategory(Const.tableName.BUG.toString());
+            fileEntity.getFileType();
+            fileEntity.setLink(jsonObject.toString());
+            fileEntity.setObjectId(bugEntity.getId());
+
+          /*  bugEntity.setAttachFiles(jsonObject.toString());*/
         }
         bugRepository.saveAndFlush(bugEntity);
         BugDto bugDto=BugDto.entityToDto(bugEntity);

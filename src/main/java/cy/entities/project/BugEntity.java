@@ -5,11 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
-import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Builder
@@ -33,6 +32,6 @@ public class BugEntity extends ProjectBaseEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;
-
+    private String keyWord;
 
 }
