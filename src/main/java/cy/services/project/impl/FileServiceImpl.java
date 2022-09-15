@@ -8,6 +8,7 @@ import cy.repositories.IUserRepository;
 import cy.repositories.project.IFileRepository;
 import cy.services.project.IFileService;
 import cy.utils.FileUploadProvider;
+import cy.utils.SecurityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -66,9 +67,7 @@ public class FileServiceImpl implements IFileService {
     @Override
     public FileDto add(FileModel model) {
         FileEntity fileEntity = FileModel.toEntity(model);
-        if (model.getUploadedBy() != null){
-            fileEntity.setUploadedBy(userRepository.findById(model.getUploadedBy()).orElseThrow(() -> new CustomHandleException(11)));
-        }
+        fileEntity.setUploadedBy(userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11)));
         if (model.getFile() != null && !model.getFile().isEmpty()) {
             try {
                 String result = fileUploadProvider.uploadFile(model.getCategory(), model.getFile());
@@ -89,9 +88,7 @@ public class FileServiceImpl implements IFileService {
         if (model != null && !model.isEmpty()){
             for (FileModel fileModel: model){
                 FileEntity fileEntity = FileModel.toEntity(fileModel);
-                if (fileModel.getUploadedBy() != null){
-                    fileEntity.setUploadedBy(userRepository.findById(fileModel.getUploadedBy()).orElseThrow(() -> new CustomHandleException(11)));
-                }
+                fileEntity.setUploadedBy(userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11)));
                 if (fileModel.getFile() != null && !fileModel.getFile().isEmpty()) {
                     try {
                         String result = fileUploadProvider.uploadFile(fileModel.getCategory(), fileModel.getFile());
@@ -112,10 +109,7 @@ public class FileServiceImpl implements IFileService {
     @Override
     public FileDto update(FileModel model) {
         FileEntity fileEntity = this.getById(model.getId());
-
-        if (model.getUploadedBy() != null){
-            fileEntity.setUploadedBy(userRepository.findById(model.getUploadedBy()).orElseThrow(() -> new CustomHandleException(11)));
-        }
+        fileEntity.setUploadedBy(userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11)));
         if (model.getFile() != null && !model.getFile().isEmpty() && model.getFile().getSize() > 0) {
             try {
                 String result = fileUploadProvider.uploadFile(model.getCategory(), model.getFile());
