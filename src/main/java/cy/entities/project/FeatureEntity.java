@@ -1,5 +1,6 @@
 package cy.entities.project;
 
+import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 
+@EntityListeners(ProjectListener.class)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,8 +27,11 @@ public class FeatureEntity extends ProjectBaseEntity{
     @JoinColumn(name ="project_id")
     private ProjectEntity project;
 
-//    @OneToMany
-////    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-////    @Where(clause = "category='FEATURE'")
-//    private List<FileEntity> attachFiles;
+    @OneToMany(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Where(clause = "category='FEATURE'")
+    private List<FileEntity> attachFiles;
+
+    @Transient
+    private List<TagEntity> tagList;
 }
