@@ -1,6 +1,7 @@
 package cy.entities.project;
 
 import cy.entities.UserEntity;
+import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 
+@EntityListeners(ProjectListener.class)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,10 +29,10 @@ public class SubTaskEntity extends ProjectBaseEntity{
     @JoinColumn(name ="task_id")
     private TaskEntity task;
 
-//    @OneToMany
-//    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-//    @Where(clause = "category='SUBTASK'")
-//    private List<FileEntity> attachFiles;
+    @OneToMany(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Where(clause = "category='SUBTASK'")
+    private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")
@@ -39,4 +41,7 @@ public class SubTaskEntity extends ProjectBaseEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_tester_assign")
     private UserEntity assignToTester;
+
+    @Transient
+    private List<TagEntity> tagList;
 }

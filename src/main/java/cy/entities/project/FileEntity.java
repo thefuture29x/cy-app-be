@@ -13,7 +13,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tbl_files")
+@Table(name = "tbl_files", uniqueConstraints = { @UniqueConstraint(columnNames =
+        { "object_id", "category" }) })
 public class FileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
