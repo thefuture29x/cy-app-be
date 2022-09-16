@@ -265,7 +265,9 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public boolean deleteById(Long id) {
         try {
-            iBugRepository.deleteById(id);
+            BugEntity bugEntity = iBugRepository.findById(id).get();
+            bugEntity.setIsDeleted(true);
+            iBugRepository.save(bugEntity);
             return true;
         } catch (Exception e) {
             return false;
