@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -29,6 +30,9 @@ public class ProjectDto {
     private List<String> attachFiles;
     private String avatar;
     private Boolean isDefault;
+    private List<UserDto> userDevs;
+    private List<UserDto> userFollows;
+    private List<UserDto> userView;
 
     public static ProjectDto toDto(ProjectEntity entity){
         if(entity == null)
@@ -50,6 +54,9 @@ public class ProjectDto {
                 .description(entity.getDescription())
                 .avatar(entity.getAvatar() == null ? null : entity.getAvatar().getLink())
                 .attachFiles(lstFile)
+                .userDevs(entity.getDevTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()))
+                .userFollows(entity.getFollowTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()))
+                .userView(entity.getViewTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()))
                 .build();
     }
     public ProjectDto(ProjectEntity entity){
@@ -70,6 +77,9 @@ public class ProjectDto {
             this.setStatus(entity.getStatus());
             this.setUpdatedDate(entity.getUpdatedDate());
             this.setStartDate(entity.getStartDate());
+            this.setUserDevs(entity.getDevTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()));
+            this.setUserFollows(entity.getFollowTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()));
+            this.setUserView(entity.getViewTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()));
         }
     }
 }
