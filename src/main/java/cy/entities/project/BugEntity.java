@@ -38,8 +38,5 @@ public class BugEntity extends ProjectBaseEntity{
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;
 
-    @Transient
-    private List<TagEntity> tagList;
-
 
 }

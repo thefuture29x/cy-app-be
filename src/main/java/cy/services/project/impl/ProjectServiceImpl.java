@@ -57,6 +57,7 @@ public class ProjectServiceImpl implements IProjectService {
     IUserProjectRepository iUserProjectRepository;
     @Override
     public ProjectDto findById(Long id) {
+        ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
         return ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
     }
 
