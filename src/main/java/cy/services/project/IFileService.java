@@ -6,5 +6,5 @@ import cy.models.project.FileModel;
 import cy.services.IBaseService;
 
 public interface IFileService extends IBaseService<FileEntity, FileDto, FileModel, Long> {
-
+    public FileEntity addEntity(FileModel model);
 }
