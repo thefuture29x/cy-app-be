@@ -54,7 +54,7 @@ public class NotificationEntity {
     @ManyToOne
     @JoinColumn(name = "request_OT_id")
     private RequestOTEntity requestOT;
-    
+
     @Column(name = "object_id")
     private Long objectId;
 
