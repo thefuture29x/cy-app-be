@@ -136,7 +136,42 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public FeatureDto update(FeatureModel model) {
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
-
+        oldFeature.setName(model.getName());
+        oldFeature.setDescription(model.getDescription());
+        oldFeature.setStartDate(model.getStartDate());
+        oldFeature.setEndDate(model.getEndDate());
+        oldFeature.setPriority(model.getPriority().name());
+        List<Long> curProjectIds = oldFeature.getProject().getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toList());
+        if(new HashSet<>(curProjectIds).containsAll(model.getUids())){
+            model.getUids().stream().forEach(x->this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build()));
+            oldFeature.setDevTeam(model.getUids().stream().map(x->this.userRepository.findById(x).orElseThrow(()->new CustomHandleException(2))).collect(Collectors.toList()));
+        }else {
+            throw new CustomHandleException(2131231);
+        }
+        List<TagEntity> oldTagList = oldFeature.getTagList();
+        List<FileEntity> oldFileList = oldFeature.getFiles();
+        if(oldFeature.getTagList()!=null && !oldFeature.getTagList().stream().map(x->x.getName()).allMatch(model.getTagList()::contains)) {
+            List<TagEntity> tagList = new ArrayList<>();
+            for (String tag : model.getTagList()
+            ) {
+                TagDto thisTag = this.tagService.add(TagModel.builder().name(tag).build());
+                tagList.add(TagEntity.builder().id(thisTag.getId()).name(thisTag.getName()).build());
+            }
+            oldFeature.setTagList(tagList);
+        }
+        List<TagEntity> deleteTagList = oldTagList.stream().filter(x->!oldFeature.getTagList().stream().map(y->y.getName()).collect(Collectors.toList()).contains(x.getName())).collect(Collectors.toList());
+        for (Long tid: deleteTagList.stream().map(x->x.getId()).collect(Collectors.toList())
+             ) {
+            this.tagRelationService.deleteById(tid);
+            this.tagService.deleteById(tid);
+        }
+        if(oldFeature.getAttachFiles()!=null && !oldFeature.getFiles().stream().map(x->x.getLink()).allMatch(model.getFiles().stream().map(y->y.get)::contains)) {
+            List<MultipartFile> files = model.getFiles();
+            List<FileEntity> fileEntities = new ArrayList<>();
+            for (MultipartFile file : files
+            ) {
+                FileModel model1 = new FileModel();
+                model1.setFile(file);
         return null;
     }
 
