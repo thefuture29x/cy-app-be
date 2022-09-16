@@ -13,7 +13,7 @@ import org.hibernate.annotations.WhereJoinTable;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
-
+@HistoryLogTitle(title = "sub task")
 @EntityListeners(ProjectListener.class)
 @Data
 @AllArgsConstructor
@@ -23,25 +23,31 @@ import java.util.Set;
 @Table(name = "tbl_sub_tasks")
 public class SubTaskEntity extends ProjectBaseEntity{
 
-    private String priority; // Độ ưu tiên
+    @HistoryLogTitle(title = "mức độ ưu tiên")
+    private String priority;
 
+    @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="task_id")
     private TaskEntity task;
 
+    @HistoryLogTitle(title = "", ignore = true )
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Where(clause = "category='SUBTASK'")
     private List<FileEntity> attachFiles;
 
+    @HistoryLogTitle(title = "assign to")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;
 
+    @HistoryLogTitle(title = "assign tester")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_tester_assign")
     private UserEntity assignToTester;
 
+    @HistoryLogTitle(title = "", ignore = true)
     @Transient
     private List<UserEntity> devTeam;
 }
