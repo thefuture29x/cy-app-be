@@ -217,8 +217,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
     @Override
     public boolean logUpdate(Long objectId, Object original, Object newObj, Const.tableName category) {
-//        UserEntity user = SecurityUtils.getCurrentUser().getUser(); // get current user
-        UserEntity user = UserEntity.builder().userName("admin").build(); // get current user
+        UserEntity user = SecurityUtils.getCurrentUser().getUser(); // get current user
         List<Field> originalInsFsList = null; // get list fields from object
 
         if (original.getClass().getSuperclass().getName().equals(ProjectBaseEntity.class.getName())) { // check if the class has super class is ProjectBaseEntity class
