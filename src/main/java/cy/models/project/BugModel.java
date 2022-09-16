@@ -1,6 +1,5 @@
 package cy.models.project;
 
-import cy.entities.UserEntity;
 import cy.entities.project.BugEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,11 +19,10 @@ public class BugModel {
     private String description;
     private Date startDate;
     private Date endDate;
-    private List<UserEntity> responsibleUserList;
-    private Long assignTo;
-    private String keyWord;
     private Boolean isDefault;
-    private MultipartFile[] attachFiles;
+    private MultipartFile[] files;
+    private List<TagModel> tags;
+    private Boolean isDelete;
 
 
     public static BugEntity modelToEntity(BugModel model) {
@@ -34,8 +32,8 @@ public class BugModel {
                .description(model.getDescription())
                .startDate(model.getStartDate())
                .endDate(model.getEndDate())
-               .keyWord(model.getKeyWord())
                .isDefault(model.getIsDefault())
+               .isDeleted(model.getIsDelete())
                .build();
     }
 

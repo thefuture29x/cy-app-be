@@ -1,18 +1,17 @@
 package cy.entities.project;
 
 import cy.entities.UserEntity;
+import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
-import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
 
+@EntityListeners(ProjectListener.class)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,15 +20,15 @@ import java.util.Set;
 @Table(name = "tbl_sub_tasks")
 public class SubTaskEntity extends ProjectBaseEntity{
 
-    private String priority;
+    private String priority; // Độ ưu tiên
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="task_id")
     private TaskEntity task;
 
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_sub_tasks'")
+    @OneToMany(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Where(clause = "category='SUBTASK'")
     private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,4 +38,7 @@ public class SubTaskEntity extends ProjectBaseEntity{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_tester_assign")
     private UserEntity assignToTester;
+
+    @Transient
+    private List<TagEntity> tagList;
 }

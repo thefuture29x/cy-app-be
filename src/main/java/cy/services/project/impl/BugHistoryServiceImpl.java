@@ -3,7 +3,7 @@ package cy.services.project.impl;
 import cy.dtos.project.BugHistoryDto;
 import cy.entities.project.BugHistoryEntity;
 import cy.models.project.BugHistoryModel;
-import cy.repositories.project.BugHistoryRepository;
+import cy.repositories.project.IBugHistoryRepository;
 import cy.services.project.IBugHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class BugHistoryServiceImpl implements IBugHistoryService {
     @Autowired
-    BugHistoryRepository bugHistoryRepository;
+    IBugHistoryRepository IBugHistoryRepository;
     @Override
     public List<BugHistoryDto> findAll() {
         return null;

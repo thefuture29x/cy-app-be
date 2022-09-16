@@ -13,7 +13,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "tbl_files")
+@Table(name = "tbl_files", uniqueConstraints = { @UniqueConstraint(columnNames =
+        { "object_id", "category" }) })
 public class FileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +31,6 @@ public class FileEntity {
     private Long objectId;
 
     private String category;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_upload_id")

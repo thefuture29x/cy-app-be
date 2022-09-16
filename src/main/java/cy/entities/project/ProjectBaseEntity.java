@@ -13,7 +13,6 @@ import javax.persistence.*;
 import java.util.Date;
 
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
 @Data
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
@@ -49,6 +48,8 @@ public class ProjectBaseEntity {
     private String description;
 
     private Boolean isDefault = false;
+
+
 
 
 

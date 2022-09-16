@@ -2,33 +2,30 @@ package cy.models.project;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import cy.utils.Const;
+import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProjectModel {
+@Builder
+public class FeatureModel {
     private Long id;
     @JsonSerialize(as = java.sql.Date.class)
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    private Date startDate;
+    private java.sql.Date startDate;
     @JsonSerialize(as = java.sql.Date.class)
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    private Date endDate;
+    private java.sql.Date endDate;
     private String status;
-    private Boolean isDeleted;
     private String name;
     private String description;
-    private MultipartFile[] files;
-    private MultipartFile avatar;
-    private Boolean isDefault;
-    private String textSearch;
-    private List<TagModel> tags;
-
+    private Const.priority priority;
+//    private List<Long> uids;
+    private List<MultipartFile> files;
 }

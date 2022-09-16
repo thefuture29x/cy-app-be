@@ -1,5 +1,8 @@
 package cy.entities.project;
 
+import cy.entities.UserEntity;
+import cy.entities.project.Listener.ProjectListener;
+import cy.utils.Const;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,11 +10,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
 import org.hibernate.annotations.WhereJoinTable;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 
+@EntityListeners(ProjectListener.class)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,13 +25,19 @@ import java.util.Set;
 @Table(name = "tbl_projects")
 public class ProjectEntity extends ProjectBaseEntity{
 
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='tbl_projects'")
+    @OneToMany(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @Where(clause = "category='PROJECT'")
     private List<FileEntity> attachFiles;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="avatar_file_id")
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "avatar_id")
     private FileEntity avatar;
+
+    @Transient
+    private List<TagEntity> tagList;
+
+    @Transient
+    private List<UserEntity> userEntities;
 
 }
