@@ -26,6 +26,9 @@ public class NotificationDto {
     private Long requestModifiId;
     private Long requestOTId;
 
+    private Long objectId;
+    private String category;
+
     public static NotificationDto toDto(NotificationEntity entity){
         if(entity == null) return null;
         return NotificationDto.builder()
@@ -40,6 +43,8 @@ public class NotificationDto {
                 .requestDeviceId(entity.getRequestDevice() == null ? null : entity.getRequestDevice().getId())
                 .requestModifiId(entity.getRequestModifi() == null ? null : entity.getRequestModifi().getId())
                 .requestOTId(entity.getRequestOT() == null ? null : entity.getRequestOT().getId())
+                .objectId(entity.getObjectId() == null ? null : entity.getObjectId())
+                .category(entity.getCategory() == null ? null : entity.getCategory())
                 .build();
     }
 }

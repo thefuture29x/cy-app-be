@@ -189,8 +189,9 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
         StringBuilder content = new StringBuilder()
                 .append(" đã thêm ")
-                .append(category.name().toLowerCase())
-                .append("mới.");
+                .append( annotationClass.title())
+                .append(" mới.");
+
 
         this.historyLogRepository.saveAndFlush(HistoryEntity
                 .builder()
