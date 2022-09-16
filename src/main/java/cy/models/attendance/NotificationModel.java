@@ -21,6 +21,8 @@ public class NotificationModel {
     private Long requestModifiId;
     private Long requestOTId;
 
+
+
     public static NotificationEntity toEntity(NotificationModel model){
         if(model == null) return null;
         return NotificationEntity.builder()
