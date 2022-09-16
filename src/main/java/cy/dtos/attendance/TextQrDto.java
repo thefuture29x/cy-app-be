@@ -22,6 +22,7 @@ public class TextQrDto {
     private String company;
     private String telephone;
     private String fax;
+    private String content;
     private UserDto uploadedBy;
 
     public static TextQrDto toDto(TextQrEntity textQrEntity) {
@@ -36,6 +37,7 @@ public class TextQrDto {
                 .company(textQrEntity.getCompany())
                 .telephone(textQrEntity.getTelephone())
                 .fax(textQrEntity.getFax())
+                .content(textQrEntity.getContent())
                 .uploadedBy(UserDto.toDto(textQrEntity.getUploadedBy()))
                 .build();
     }
