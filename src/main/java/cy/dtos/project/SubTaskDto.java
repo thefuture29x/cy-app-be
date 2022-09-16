@@ -39,7 +39,7 @@ public class SubTaskDto {
                 .priority(entity.getPriority())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
-                .attachFileUrls(entity.getAttachedFiles() != null ? entity.getAttachedFiles().stream().map(FileDto::toDto)
+                .attachFileUrls(entity.getFiles() != null ? entity.getFiles().stream().map(FileDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagList(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
