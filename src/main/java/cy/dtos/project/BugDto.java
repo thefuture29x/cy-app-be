@@ -34,8 +34,8 @@ public class BugDto {
 
     public static BugDto entityToDto(BugEntity obj) {
         List<String> lstFile = new ArrayList<>();
-        if(obj.getAttachedFiles() != null && obj.getAttachedFiles().size() > 0){
-            obj.getAttachedFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+        if(obj.getAttachFiles() != null && obj.getAttachFiles().size() > 0){
+            obj.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
         }
         return BugDto.builder()
                 .id(obj.getId())
