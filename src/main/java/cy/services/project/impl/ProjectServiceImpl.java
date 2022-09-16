@@ -185,6 +185,7 @@ public class ProjectServiceImpl implements IProjectService {
     public ProjectDto updateProject(ProjectModel projectModel) {
         try {
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
+            ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
             if(projectEntity == null)
                 return null;
             Long userId = SecurityUtils.getCurrentUserId();
@@ -305,6 +306,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
+            iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
             return ProjectDto.toDto(projectEntity);
         }
         catch (Exception e){
