@@ -19,6 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "tbl_bug_historys")
 public class BugHistoryEntity {
     @Id
@@ -36,4 +37,6 @@ public class BugHistoryEntity {
     @HistoryLogTitle(title = "ngày kết thúc")
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
+
+
 }

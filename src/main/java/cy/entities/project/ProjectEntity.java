@@ -2,19 +2,14 @@ package cy.entities.project;
 
 import cy.entities.UserEntity;
 import cy.entities.project.Listener.ProjectListener;
-import cy.utils.Const;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
-import org.hibernate.annotations.WhereJoinTable;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
 
 @EntityListeners(ProjectListener.class)
 @Data
