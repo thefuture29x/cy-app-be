@@ -8,6 +8,7 @@ import cy.models.project.BugModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
+import cy.services.project.IHistoryLogService;
 import cy.services.project.IRequestBugService;
 import cy.services.project.ITagService;
 import cy.utils.Const;
@@ -43,6 +44,8 @@ public class BugServiceImpl implements IRequestBugService {
     IFileRepository iFileRepository;
     @Autowired
     IUserRepository userRepository;
+    @Autowired
+    IHistoryLogService iHistoryLogService;
 
     @Override
     public List<BugDto> findAll() {
@@ -152,6 +155,7 @@ public class BugServiceImpl implements IRequestBugService {
             subTaskRepository.saveAndFlush(subTaskEntity);
             //Lưu dữ liệu vào bảng BugHistory
             saveDataInHistoryTable(bugEntity);
+            iHistoryLogService.logCreate(entity.getId(),entity, Const.tableName.BUG);
             return bugDto;
         }catch (Exception e){
             return null;
@@ -166,8 +170,10 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto update(BugModel model) {
         try {
-            BugEntity bugEntity = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
+            BugEntity bugEntity = model.modelToEntity(model);
             SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(11));
+            bugEntity.setSubTask(subTaskEntity);
+            bugEntity.setAssignTo(subTaskEntity.getAssignTo());
             bugEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
             //create tag
             if(model.getTags() != null && model.getTags().size() > 0){
@@ -181,6 +187,9 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                 }
             }
+            BugEntity entityOriginal = iBugRepository.findById(model.getId()).get();
+            BugEntity entity =  iBugRepository.saveAndFlush(bugEntity);
+
             //create file
             if(model.getFiles() != null && model.getFiles().length > 0){
                 for (MultipartFile m : model.getFiles()){
@@ -191,20 +200,43 @@ public class BugServiceImpl implements IRequestBugService {
                         fileEntity.setLink(urlFile);
                         fileEntity.setFileName(fileName);
                         fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
-                        fileEntity.setCategory(Const.tableName.PROJECT.name());
+                        fileEntity.setCategory(Const.tableName.BUG.name());
                         fileEntity.setUploadedBy(SecurityUtils.getCurrentUser().getUser());
-                        fileEntity.setObjectId(model.getId());
+                        fileEntity.setObjectId(entity.getId());
                         iFileRepository.save(fileEntity);
                     }
                 }
             }
-            iBugRepository.saveAndFlush(bugEntity);
+            //create tag
+            if(model.getTags() != null && model.getTags().size() > 0){
+                for (TagModel tagModel : model.getTags()){
+                    TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
+                    if(tagEntity == null){
+                        TagEntity tagEntity1 = new TagEntity();
+                        tagEntity1.setName(tagModel.getName());
+                        tagEntity1 =iTagRepository.save(tagEntity1);
+                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setIdTag(tagEntity1.getId());
+                        tagRelationEntity.setObjectId(bugEntity.getId());
+                        iTagRelationRepository.save(tagRelationEntity);
+                    }
+                    else if(tagEntity != null){
+                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setIdTag(tagEntity.getId());
+                        tagRelationEntity.setObjectId(bugEntity.getId());
+                        iTagRelationRepository.save(tagRelationEntity);
+                    }
+                }
+            }
             BugDto bugDto = BugDto.entityToDto(bugEntity);
             //chuyển trạng thái Subtask sang fixBug
             subTaskEntity.setStatus(Const.status.FIX_BUG.name());
             subTaskRepository.saveAndFlush(subTaskEntity);
             //Lưu dữ liệu vào bảng BugHistory
             saveDataInHistoryTable(bugEntity);
+            iHistoryLogService.logUpdate(entity.getId(), entityOriginal,entity, Const.tableName.BUG);
             return bugDto;
         }catch (Exception e){
             return null;
