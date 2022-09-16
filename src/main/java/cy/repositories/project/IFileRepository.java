@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface IFileRepository extends JpaRepository<FileEntity, Long> {
+public interface IFileRepository extends JpaRepository<FileEntity, Long>, JpaSpecificationExecutor<FileEntity> {
     FileEntity findByFileNameAndObjectId(String fileName, Long objectId);
 }
