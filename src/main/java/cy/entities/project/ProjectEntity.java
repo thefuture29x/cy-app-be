@@ -23,6 +23,7 @@ import java.util.Set;
 @SuperBuilder(toBuilder = true)
 @Entity
 @Table(name = "tbl_projects")
+@HistoryLogTitle(title = "project")
 public class ProjectEntity extends ProjectBaseEntity{
 
     @OneToMany(cascade = CascadeType.PERSIST)
