@@ -25,6 +25,7 @@ public class TextQrEntity {
     private String company;
     private String telephone;
     private String fax;
+    private String content;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_upload_id")
     private UserEntity uploadedBy;
