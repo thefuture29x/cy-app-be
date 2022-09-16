@@ -45,11 +45,7 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public TagDto findById(Long id) {
-        TagEntity entity = iTagRepository.findById(id).orElse(null);
-        if (entity == null){
-            return null;
-        }
-        return TagDto.toDto(iTagRepository.save(entity));
+        return TagDto.toDto(iTagRepository.findById(id).orElse(null));
     }
 
     @Override
@@ -88,7 +84,6 @@ public class TagServiceImpl implements ITagService {
         if (model.getId() == null){
             return null;
         }
-
         if (model.getName().isEmpty() || !model.getName().contains("#")){
             return null;
         }
@@ -108,14 +103,11 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public boolean deleteById(Long id) {
-
-        TagEntity entity = iTagRepository.findById(id).orElse(null);
-        if (entity == null){
+        if (iTagRepository.findById(id).orElse(null)== null){
             return false;
         }
         iTagRepository.deleteById(id);
-        entity = iTagRepository.findById(id).orElse(null);
-        if (entity == null){
+        if (iTagRepository.findById(id).orElse(null) == null){
             return true;
         }
         return false;
