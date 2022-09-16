@@ -7,6 +7,7 @@ import cy.models.project.TagModel;
 import cy.services.project.ITagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,9 +50,18 @@ public class TagResource {
         }
         return ResponseDto.of(true);
     }
-    @PostMapping("/findByPage")
-    public ResponseDto findByPage(@RequestBody Pageable pageable){
+    @PostMapping("/findByPage/{pageIndex}/{pageSize}")
+    public ResponseDto findByPage(@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize){
+        Pageable pageable = PageRequest.of(pageIndex,pageSize);
         Page<TagDto> tagDtos = iTagService.findAll(pageable);
         return ResponseDto.of(tagDtos);
     }
+    @GetMapping("/findPageByName/{pageIndex}/{pageSize}")
+    public ResponseDto findPageByName(@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize,@RequestParam("search") String search){
+        Pageable pageable = PageRequest.of(pageIndex,pageSize);
+        search = "#"+search;
+        Page<TagDto> tagDtos = iTagService.findPageByName(pageable,search);
+        return ResponseDto.of(tagDtos);
+    }
+
 }
