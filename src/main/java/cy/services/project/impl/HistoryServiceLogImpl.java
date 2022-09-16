@@ -456,8 +456,8 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
     }
 
 
-    public static void main(String[] args) {
-        ProjectEntity p = new ProjectEntity();
-        ProjectEntity p1 = new ProjectEntity();
-    }
+//    public static void main(String[] args) {
+//        ProjectEntity p = new ProjectEntity();
+//        ProjectEntity p1 = new ProjectEntity();
+//    }
 }

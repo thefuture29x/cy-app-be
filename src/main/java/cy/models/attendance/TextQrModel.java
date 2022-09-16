@@ -27,6 +27,8 @@ public class TextQrModel {
     private String telephone;
     @ApiModelProperty(notes = "Fax", dataType = "String")
     private String fax;
+    @ApiModelProperty(notes = "Content", dataType = "String")
+    private String Content;
 
     private Long uploadedBy;
 
@@ -40,6 +42,7 @@ public class TextQrModel {
                 .company(textQrModel.getCompany())
                 .telephone(textQrModel.getTelephone())
                 .fax(textQrModel.getFax())
+                .content(textQrModel.getContent())
                 .build();
     }
 }

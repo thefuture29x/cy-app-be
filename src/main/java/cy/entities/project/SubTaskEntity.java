@@ -11,6 +11,7 @@ import org.hibernate.annotations.Where;
 import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 @HistoryLogTitle(title = "sub task")

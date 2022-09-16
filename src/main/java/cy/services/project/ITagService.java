@@ -10,4 +10,6 @@ import org.springframework.data.domain.Pageable;
 public interface ITagService extends IBaseService<TagEntity, TagDto, TagModel, Long> {
 
     Page<TagDto> findPageByName(Pageable pageable, String search);
+
+    TagEntity addEntity(TagModel tagModel);
 }
