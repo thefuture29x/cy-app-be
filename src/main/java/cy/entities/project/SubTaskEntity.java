@@ -21,16 +21,16 @@ import java.util.Set;
 @Table(name = "tbl_sub_tasks")
 public class SubTaskEntity extends ProjectBaseEntity{
 
-    private String priority;
+    private String priority; // Độ ưu tiên
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="task_id")
     private TaskEntity task;
 
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='SUBTASK'")
-    private List<FileEntity> attachFiles;
+//    @OneToMany
+//    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+//    @Where(clause = "category='SUBTASK'")
+//    private List<FileEntity> attachFiles;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")

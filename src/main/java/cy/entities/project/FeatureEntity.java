@@ -25,8 +25,8 @@ public class FeatureEntity extends ProjectBaseEntity{
     @JoinColumn(name ="project_id")
     private ProjectEntity project;
 
-    @OneToMany
-    @JoinColumn(name = "object_id", insertable = false, updatable = false)
-    @Where(clause = "category='FEATURE'")
-    private List<FileEntity> attachFiles;
+//    @OneToMany
+////    @JoinColumn(name = "object_id", insertable = false, updatable = false)
+////    @Where(clause = "category='FEATURE'")
+//    private List<FileEntity> attachFiles;
 }

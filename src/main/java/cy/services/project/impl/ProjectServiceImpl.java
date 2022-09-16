@@ -1,16 +1,21 @@
 package cy.services.project.impl;
 
+import cy.dtos.TagDto;
 import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
 import cy.entities.attendance.RequestDeviceEntity;
 import cy.entities.project.FileEntity;
 import cy.entities.project.ProjectEntity;
+import cy.entities.project.TagEntity;
 import cy.models.project.ProjectModel;
+import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.IFileRepository;
 import cy.repositories.project.IProjectRepository;
+import cy.repositories.project.ITagRepository;
 import cy.services.project.IProjectService;
+import cy.services.project.ITagService;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
@@ -24,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.swing.text.html.HTML;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +49,11 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Autowired
     EntityManager manager;
+
+    @Autowired
+    ITagService iTagService;
+    @Autowired
+    ITagRepository iTagRepository;
 
     @Override
     public ProjectDto findById(Long id) {
@@ -72,35 +83,45 @@ public class ProjectServiceImpl implements IProjectService {
               projectEntity.setStatus(Const.status.TO_DO.name());
           }
           projectEntity.setUpdatedDate(currentDate);
+          if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
+              for (TagModel tagModel : projectModel.getTags()){
+                  TagDto tag = iTagService.add(tagModel);
+                  if(tag == null){
+                      TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
+                      if(tagEntity != null){
+
+                      }
+                  }
+              }
+          }
           projectEntity = iProjectRepository.save(projectEntity);
-          if(!projectModel.getAvatar().isEmpty()){
+          if(projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()){
               String urlAvatar =  fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
               FileEntity fileEntity =  new FileEntity();
+              String fileName = projectModel.getAvatar().getOriginalFilename();
               fileEntity.setCategory(Const.tableName.PROJECT.name());
               fileEntity.setUploadedBy(userEntity);
               fileEntity.setLink(urlAvatar);
               fileEntity.setObjectId(projectEntity.getId());
-              fileEntity.setFileType(projectModel.getAvatar().getOriginalFilename());
+              fileEntity.setFileName(fileName);
+              fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
               projectEntity.setAvatar(fileEntity);
               projectEntity = iProjectRepository.save(projectEntity);
           }
-          if(projectModel.getFiles().length > 0){
-              List<FileEntity> fileEntityList = new ArrayList<>();
+          if(projectModel.getFiles() != null && projectModel.getFiles().length > 0){
               for (MultipartFile m : projectModel.getFiles()){
                   if(!m.isEmpty()){
                       String urlFile =  fileUploadProvider.uploadFile("project", m);
                       FileEntity fileEntity = new FileEntity();
+                      String fileName = m.getOriginalFilename();
                       fileEntity.setLink(urlFile);
-                      fileEntity.setFileType(m.getOriginalFilename());
+                      fileEntity.setFileName(fileName);
+                      fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                       fileEntity.setCategory(Const.tableName.PROJECT.name());
                       fileEntity.setUploadedBy(userEntity);
                       fileEntity.setObjectId(projectEntity.getId());
-                      fileEntityList.add(fileEntity);
+                      iFileRepository.save(fileEntity);
                   }
-              }
-              if(fileEntityList.size() > 0){
-                  projectEntity.setAttachFiles(fileEntityList);
-                  projectEntity = iProjectRepository.save(projectEntity);
               }
           }
           return ProjectDto.toDto(projectEntity);
@@ -135,25 +156,28 @@ public class ProjectServiceImpl implements IProjectService {
             }
             projectEntity.setUpdatedDate(currentDate);
             projectEntity = iProjectRepository.save(projectEntity);
-            if(!projectModel.getAvatar().isEmpty()){
+            if(projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()){
                 String urlAvatar =  fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity =  new FileEntity();
+                String fileName = projectModel.getAvatar().getOriginalFilename();
                 fileEntity.setCategory(Const.tableName.PROJECT.name());
                 fileEntity.setUploadedBy(userEntity);
                 fileEntity.setLink(urlAvatar);
                 fileEntity.setObjectId(projectEntity.getId());
-                fileEntity.setFileType(projectModel.getAvatar().getOriginalFilename());
-                fileEntity =iFileRepository.save(fileEntity);
+                fileEntity.setFileName(fileName);
+                fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                 projectEntity.setAvatar(fileEntity);
                 projectEntity = iProjectRepository.save(projectEntity);
             }
-            if(projectModel.getFiles().length > 0){
+            if(projectModel.getFiles() != null && projectModel.getFiles().length > 0){
                 for (MultipartFile m : projectModel.getFiles()){
                     if(!m.isEmpty()){
                         String urlFile =  fileUploadProvider.uploadFile("project", m);
                         FileEntity fileEntity = new FileEntity();
+                        String fileName = m.getOriginalFilename();
                         fileEntity.setLink(urlFile);
-                        fileEntity.setFileType(m.getOriginalFilename());
+                        fileEntity.setFileName(fileName);
+                        fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                         fileEntity.setCategory(Const.tableName.PROJECT.name());
                         fileEntity.setUploadedBy(userEntity);
                         fileEntity.setObjectId(projectEntity.getId());
