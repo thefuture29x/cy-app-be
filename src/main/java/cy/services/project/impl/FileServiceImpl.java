@@ -83,6 +83,24 @@ public class FileServiceImpl implements IFileService {
     }
 
     @Override
+    public FileEntity addEntity(FileModel model) {
+        FileEntity fileEntity = FileModel.toEntity(model);
+        fileEntity.setUploadedBy(userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11)));
+        if (model.getFile() != null && !model.getFile().isEmpty()) {
+            try {
+                String result = fileUploadProvider.uploadFile(model.getCategory(), model.getFile());
+                String fileName = model.getFile().getOriginalFilename();
+                fileEntity.setLink(result);
+                fileEntity.setFileName(fileName);
+                fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return fileEntity;
+    }
+
+    @Override
     public List<FileDto> add(List<FileModel> model) {
         List<FileDto> fileDtoList = new ArrayList<>();
         if (model != null && !model.isEmpty()){

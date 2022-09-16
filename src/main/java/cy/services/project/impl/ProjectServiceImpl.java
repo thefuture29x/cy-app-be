@@ -4,13 +4,16 @@ import cy.dtos.TagDto;
 import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
+import cy.entities.attendance.NotificationEntity;
 import cy.entities.attendance.RequestDeviceEntity;
 import cy.entities.project.*;
 import cy.models.project.ProjectModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
+import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.project.*;
 import cy.resources.UserResources;
+import cy.services.project.IHistoryLogService;
 import cy.services.project.IProjectService;
 import cy.services.project.ITagService;
 import cy.utils.Const;
@@ -55,6 +58,8 @@ public class ProjectServiceImpl implements IProjectService {
     ITagRelationRepository iTagRelationRepository;
     @Autowired
     IUserProjectRepository iUserProjectRepository;
+    @Autowired
+    IHistoryLogService iHistoryLogService;
     @Override
     public ProjectDto findById(Long id) {
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
@@ -175,6 +180,7 @@ public class ProjectServiceImpl implements IProjectService {
                   }
               }
           }
+          iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT);
           return ProjectDto.toDto(projectEntity);
       }
       catch (Exception e){

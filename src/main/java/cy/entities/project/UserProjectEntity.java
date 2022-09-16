@@ -13,8 +13,8 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "tbl_user_projects",
-        uniqueConstraints = { @UniqueConstraint(columnNames =
-                { "object_id", "user_id",  "type", "category" }) })
+        uniqueConstraints = {@UniqueConstraint(columnNames =
+                {"object_id", "user_id", "type", "category"})})
 public class UserProjectEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
