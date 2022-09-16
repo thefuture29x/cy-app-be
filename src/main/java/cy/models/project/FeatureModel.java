@@ -26,6 +26,7 @@ public class FeatureModel {
     private String name;
     private String description;
     private Const.priority priority;
-//    private List<Long> uids;
+    private Long pid;
+    private List<Long> uids;
     private List<MultipartFile> files;
 }

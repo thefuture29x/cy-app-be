@@ -1,5 +1,6 @@
 package cy.entities.project;
 
+import cy.entities.UserEntity;
 import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,5 +34,5 @@ public class FeatureEntity extends ProjectBaseEntity{
     private List<FileEntity> attachFiles;
 
     @Transient
-    private List<TagEntity> tagList;
+    private List<UserEntity> devTeam;
 }

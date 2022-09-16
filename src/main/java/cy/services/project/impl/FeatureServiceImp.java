@@ -2,9 +2,11 @@ package cy.services.project.impl;
 
 import cy.dtos.project.FeatureDto;
 import cy.entities.project.FeatureEntity;
+import cy.entities.project.ProjectEntity;
 import cy.models.project.FeatureModel;
 import cy.models.project.FileModel;
 import cy.repositories.project.IFeatureRepository;
+import cy.repositories.project.IProjectRepository;
 import cy.services.project.IFeatureService;
 import cy.services.project.IFileService;
 import cy.utils.Const;
@@ -26,6 +28,8 @@ public class FeatureServiceImp implements IFeatureService {
     IFeatureRepository featureRepository;
     @Autowired
     IFileService fileService;
+    @Autowired
+    IProjectRepository projectRepository;
 
     @Override
     public List<FeatureDto> findAll() {
@@ -59,6 +63,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto add(FeatureModel model) {
+        ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(()->new RuntimeException("Project not exist!!!"));
         FeatureEntity entity = (FeatureEntity) FeatureEntity.builder().
                 startDate(model.getStartDate())
                 .endDate(model.getEndDate())
@@ -66,6 +71,7 @@ public class FeatureServiceImp implements IFeatureService {
                 .status(Const.status.TO_DO.name())
                 .description(model.getDescription())
                 .name(model.getName())
+                .project(projectEntity)
                 .priority(model.getPriority().name())
                 .build();
         this.featureRepository.save(entity);

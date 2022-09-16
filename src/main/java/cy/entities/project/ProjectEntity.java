@@ -34,10 +34,13 @@ public class ProjectEntity extends ProjectBaseEntity{
     @JoinColumn(name = "avatar_id")
     private FileEntity avatar;
 
-    @Transient
-    private List<TagEntity> tagList;
 
     @Transient
-    private List<UserEntity> userEntities;
+    private List<UserEntity> devTeam;
+    @Transient
+    private List<UserEntity> followTeam;
+    @Transient
+    private List<UserEntity> viewTeam;
+
 
 }
