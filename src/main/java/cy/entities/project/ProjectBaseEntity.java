@@ -15,7 +15,6 @@ import javax.persistence.*;
 import java.util.Date;
 
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
 @Data
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
