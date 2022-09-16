@@ -16,7 +16,7 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-
+@HistoryLogTitle(title = "task")
 @EntityListeners(ProjectListener.class)
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,18 +25,22 @@ import java.util.Set;
 @Data
 @Table(name = "tbl_tasks")
 public class TaskEntity extends ProjectBaseEntity{
+    @HistoryLogTitle(title = "mức độ ưu tiên")
     private String priority;
 
 
+    @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="feature_id")
     private FeatureEntity feature;
 
+    @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Where(clause = "category='TASK")
     private List<FileEntity> attachFiles;
 
+    @HistoryLogTitle(title = "", ignore = true)
     @Transient
     private List<UserEntity> devTeam;
 }
