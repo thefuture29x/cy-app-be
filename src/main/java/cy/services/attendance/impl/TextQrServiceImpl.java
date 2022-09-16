@@ -111,6 +111,7 @@ public class TextQrServiceImpl implements ITextQrService {
         textQrEntity.setCompany(model.getCompany());
         textQrEntity.setTelephone(model.getTelephone());
         textQrEntity.setFax(model.getFax());
+        textQrEntity.setContent(model.getContent());
         return TextQrDto.toDto(textQrRepository.save(textQrEntity));
     }
 

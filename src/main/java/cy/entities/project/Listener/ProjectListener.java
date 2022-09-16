@@ -34,15 +34,7 @@ public class ProjectListener {
             ((ProjectEntity) o).setDevTeam(devList);
             ((ProjectEntity) o).setFollowTeam(followList);
             ((ProjectEntity) o).setViewTeam(viewList);
-//
-//
-//            //Get Attached Files
-//            Query projectFileQuery = manager.createQuery("SELECT f from FileEntity f join ProjectEntity p on p.id = f.objectId where f.objectId = :objectId and f.category =:category");
-//            projectFileQuery.setParameter("objectId", o.getId());
-//            projectFileQuery.setParameter("category", category);
-//            List<FileEntity> fileEntityList = projectFileQuery.getResultList();
-//            ((ProjectEntity) o).setAttachFiles(null);
-//            ((ProjectEntity) o).setAttachFiles(fileEntityList);
+
         } else if (o instanceof FeatureEntity) {
             category = Const.tableName.FEATURE.name();
             //Get People
@@ -51,13 +43,7 @@ public class ProjectListener {
             featurePersonQuery.setParameter("category", category);
             List<UserEntity> devLists = featurePersonQuery.getResultList();
             ((FeatureEntity) o).setDevTeam(devLists);
-//
-//            //Get Attached Files
-//            Query featureFileQuery = manager.createQuery("SELECT f from FileEntity f join FeatureEntity p on p.id = f.objectId where f.objectId = :objectId and f.category =:category");
-//            featureFileQuery.setParameter("objectId", o.getId());
-//            featureFileQuery.setParameter("category", category);
-//            List<FileEntity> fileEntityList = featureFileQuery.getResultList();
-//            ((FeatureEntity) o).setAttachFiles(fileEntityList);
+
         } else if (o instanceof TaskEntity) {
             category = Const.tableName.TASK.name();
             //Get People
@@ -66,14 +52,8 @@ public class ProjectListener {
             taskPersonQuery.setParameter("category", category);
             List<UserEntity> devLists = taskPersonQuery.getResultList();
             ((TaskEntity) o).setDevTeam(devLists);
-//
-//            //Get Attached Files
-//            Query taskFileQuery = manager.createQuery("SELECT f from FileEntity f join TaskEntity p on p.id = f.objectId where f.objectId = :objectId and f.category =:category");
-//            taskFileQuery.setParameter("objectId", o.getId());
-//            taskFileQuery.setParameter("category", category);
-//            List<FileEntity> fileEntityList = taskFileQuery.getResultList();
-//            ((TaskEntity) o).setAttachFiles(fileEntityList);
-        } else{
+
+        } else if(o instanceof SubTaskEntity){
             category = Const.tableName.SUBTASK.name();
             //Get People
             Query subTaskPersonQuery = manager.createQuery("SELECT u from UserEntity u join UserProjectEntity p on p.idUser = u.userId where p.objectId = :objectId and p.category = :category");
@@ -81,6 +61,8 @@ public class ProjectListener {
             subTaskPersonQuery.setParameter("category", category);
             List<UserEntity> devLists = subTaskPersonQuery.getResultList();
             ((SubTaskEntity) o).setDevTeam(devLists);
+        }else {
+            category = Const.tableName.BUG.name();
         }
 
 
@@ -95,7 +77,7 @@ public class ProjectListener {
 
         idField.setAccessible(true);
         //Get Tag
-        Query tagQuery = manager.createQuery("SELECT t FROM TagEntity t JOIN TagRelationEntity tr on tr.objectId = :objectId and tr.category = :category");
+        Query tagQuery = manager.createQuery("SELECT t FROM TagEntity t JOIN TagRelationEntity tr on t.id = tr.idTag where tr.objectId = :objectId and tr.category = :category");
         try {
         tagQuery.setParameter("objectId", idField.get(o));
         } catch (IllegalAccessException e) {
@@ -110,15 +92,8 @@ public class ProjectListener {
         fileQuery.setParameter("objectId", o.getId());
         fileQuery.setParameter("category", category);
         List<FileEntity> fileEntityList = fileQuery.getResultList();
-        o.setAttachedFiles(fileEntityList);
+        o.setFiles(fileEntityList);
         idField.setAccessible(false);
     }
 
-
-//    public static void main(String[] args) throws NoSuchFieldException {
-//        ProjectEntity p = new ProjectEntity();
-//        Field idField = p.getClass().getSuperclass().getDeclaredField("id");
-//
-//        System.out.println("args = " + Arrays.deepToString(args));
-//    }
 }

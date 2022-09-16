@@ -11,6 +11,7 @@ import org.hibernate.annotations.Where;
 import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -34,5 +35,5 @@ public class FeatureEntity extends ProjectBaseEntity{
     private List<FileEntity> attachFiles;
 
     @Transient
-    private List<UserEntity> devTeam;
+    private List<UserEntity> devTeam = new ArrayList<>();
 }

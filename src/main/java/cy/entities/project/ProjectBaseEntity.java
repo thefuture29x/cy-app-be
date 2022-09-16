@@ -54,7 +54,7 @@ public class ProjectBaseEntity {
     private List<TagEntity> tagList;
 
     @Transient
-    private List<FileEntity> attachedFiles;
+    private List<FileEntity> files;
 
 
 }

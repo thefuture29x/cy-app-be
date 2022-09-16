@@ -27,6 +27,8 @@ public class FeatureModel {
     private String description;
     private Const.priority priority;
     private Long pid;
+    private List<String> tagList;
+    private Boolean isDefault;
     private List<Long> uids;
     private List<MultipartFile> files;
 }
