@@ -32,5 +32,8 @@ public class ProjectModel {
     private Boolean isDefault;
     private String textSearch;
     private List<TagModel> tags;
+    private List<Long> userDev;
+    private List<Long> userFollow;
+    private List<Long> userViewer;
 
 }
