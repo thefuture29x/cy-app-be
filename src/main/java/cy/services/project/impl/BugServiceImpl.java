@@ -1,30 +1,33 @@
 package cy.services.project.impl;
 
+import cy.dtos.CustomHandleException;
 import cy.dtos.project.BugDto;
 import cy.entities.project.BugEntity;
-import cy.entities.project.FileEntity;
+import cy.entities.project.BugHistoryEntity;
+import cy.models.project.BugHistoryModel;
 import cy.models.project.BugModel;
+import cy.repositories.project.BugHistoryRepository;
 import cy.repositories.project.BugRepository;
 import cy.services.project.IRequestBugService;
-import cy.utils.Const;
 import cy.utils.FileUploadProvider;
-import org.json.JSONObject;
+import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class BugServiceImpl implements IRequestBugService {
     @Autowired
     FileUploadProvider fileUploadProvider;
     @Autowired
+    BugHistoryRepository bugHistoryRepository;
+    @Autowired
+    SubTaskRepository subTaskRepository;
+    @Autowired
     BugRepository bugRepository;
+
     @Override
     public List<BugDto> findAll() {
         return null;
@@ -32,7 +35,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public Page<BugDto> findAll(Pageable page) {
-        return null;
+        return bugRepository.findAll(page).map(data -> BugDto.entityToDto(data));
     }
 
     @Override
@@ -47,41 +50,33 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto findById(Long id) {
-        return null;
+        return BugDto.entityToDto(bugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
     }
 
     @Override
     public BugEntity getById(Long id) {
         return null;
     }
-Const aConst;
+
     @Override
     public BugDto add(BugModel model) {
-        BugEntity bugEntity= model.modelToEntity(model);
-        FileEntity fileEntity = new FileEntity();
-        List<String> s3Urls = new ArrayList<>();
-        if(model.getAttachFiles() != null && model.getAttachFiles().length > 0){
-            for(MultipartFile fileMultipart : model.getAttachFiles()){
-                if(!fileMultipart.isEmpty()){
-                    String result = null;
-                    try {
-                        result = fileUploadProvider.uploadFile("bug",fileMultipart);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    s3Urls.add(result);
-                }
-            }
-            JSONObject jsonObject = new JSONObject(Map.of("files", s3Urls));
-            fileEntity.setCategory(Const.tableName.BUG.toString());
-            fileEntity.getFileType();
-            fileEntity.setLink(jsonObject.toString());
-            fileEntity.setObjectId(bugEntity.getId());
-
-          /*  bugEntity.setAttachFiles(jsonObject.toString());*/
-        }
+        BugEntity bugEntity = model.modelToEntity(model);
+        bugEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
         bugRepository.saveAndFlush(bugEntity);
-        BugDto bugDto=BugDto.entityToDto(bugEntity);
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
+        //chuyển trạng thái Subtask sang fixBug
+
+
+        //Lưu dữ liệu vào bảng BugHistory
+        BugHistoryModel bugHistoryModel = null;
+        bugHistoryModel.setBugId(bugEntity.getId());
+        bugHistoryModel.setStartDate(bugEntity.getStartDate());
+        bugHistoryModel.setEndDate(bugEntity.getEndDate());
+        BugHistoryEntity bugHistoryEntity = bugHistoryModel.modelToEntity(bugHistoryModel);
+        bugHistoryEntity.setBugId(bugEntity);
+        bugHistoryRepository.saveAndFlush(bugHistoryEntity);
+
+
         return bugDto;
     }
 
@@ -94,10 +89,28 @@ Const aConst;
     public BugDto update(BugModel model) {
         return null;
     }
+    /*
+    *@author:HieuMM_Cy
+    *@since:9/16/2022-8:44 AM
+    *@description:Bug Done
+    *@update:
+    **/
+    public BugDto updateStatus(Long id) {
+        BugEntity bugEntity = bugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
+        //chuyển trạng thái Subtask sang inreview
+        bugRepository.saveAndFlush(bugEntity);
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
+        return bugDto;
+    }
 
     @Override
     public boolean deleteById(Long id) {
-        return false;
+        try {
+            bugRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override

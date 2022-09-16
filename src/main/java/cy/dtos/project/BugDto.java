@@ -35,11 +35,7 @@ public class BugDto {
                 .description(obj.getDescription())
                 .startDate(obj.getStartDate())
                 .endDate(obj.getEndDate())
-              //  .responsibleUserList(obj.getAssignTo() != null ? UserDto.toDto(obj.getAssignTo()) : null)
-             //   .assignTo(obj.getAssignTo())
-                .keyWord(obj.getKeyWord())
                 .isDefault(obj.getIsDefault())
-              //  .attachFiles(obj.getAttachFiles() != null ? new JSONObject(obj.getAttachFiles()).getJSONArray("files").toList() : null)
                 .build();
     }
 }

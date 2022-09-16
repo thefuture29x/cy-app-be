@@ -1,8 +1,7 @@
-package cy.dtos.project;
+package cy.models.project;
 
 import cy.entities.project.BugHistoryEntity;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,19 +12,18 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class BugHistoryDto {
+public class BugHistoryModel {
     private Long id;
     private Long bugId;
     @Temporal(TemporalType.TIMESTAMP)
     private Date startDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
-    public static BugHistoryDto entityToDto(BugHistoryEntity obj) {
-        return BugHistoryDto.builder()
-                .id(obj.getId())
-                .startDate(obj.getStartDate())
-                .endDate(obj.getEndDate())
+    public static BugHistoryEntity modelToEntity(BugHistoryModel model) {
+        return BugHistoryEntity.builder()
+                .id(model.getId())
+                .startDate(model.getStartDate())
+                .endDate(model.getEndDate())
                 .build();
     }
 }
