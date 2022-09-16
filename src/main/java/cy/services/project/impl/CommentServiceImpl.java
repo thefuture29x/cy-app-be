@@ -12,16 +12,19 @@ import cy.repositories.project.specification.CommentSpecification;
 import cy.repositories.project.specification.FileSpecification;
 import cy.services.project.ICommentService;
 import cy.services.project.IFileService;
+import cy.services.project.IHistoryLogService;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 public class CommentServiceImpl implements ICommentService {
 
@@ -31,10 +34,13 @@ public class CommentServiceImpl implements ICommentService {
 
     private final IFileService fileService;
 
-    public CommentServiceImpl(ICommentRepository commentRepository, IFileRepository fileRepository, IFileService fileService) {
+    private final IHistoryLogService historyLogService;
+
+    public CommentServiceImpl(ICommentRepository commentRepository, IFileRepository fileRepository, IFileService fileService, IHistoryLogService historyLogService) {
         this.commentRepository = commentRepository;
         this.fileRepository = fileRepository;
         this.fileService = fileService;
+        this.historyLogService = historyLogService;
     }
 
 
@@ -81,16 +87,19 @@ public class CommentServiceImpl implements ICommentService {
         }
 
         commentEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
-        this.commentRepository.saveAndFlush(commentEntity)
 
         //    for save File
-        List<FileModel> fileModels = model.getNewFiles().stream().map(file -> FileModel.builder()
+        List<FileEntity> files = model.getNewFiles().stream().map(file -> this.fileService.addEntity(FileModel.builder()
                 .file(file)
                 .category(Const.tableName.COMMENT.name())
                 .objectId(commentEntity.getId())
-                .build()).collect(Collectors.toList());
-        this.fileService.add(fileModels);
+                .build())).collect(Collectors.toList());
 
+        commentEntity.setAttachFiles(files);
+        this.commentRepository.saveAndFlush(commentEntity);
+        commentEntity.setFiles(files);
+
+        this.historyLogService.logCreate(commentEntity.getId(), commentEntity, Const.tableName.COMMENT);
         return CommentDto.toDto(commentEntity);
     }
 
@@ -104,6 +113,8 @@ public class CommentServiceImpl implements ICommentService {
     @Override
     public CommentDto update(CommentModel model) {
         CommentEntity commentEntity = this.getById(model.getId());
+        CommentEntity originComment = (CommentEntity) Const.copy(commentEntity);
+
         if (!model.getCategory().name().equals(commentEntity.getCategory())
                 || !model.getObjectId().equals(commentEntity.getObjectId()))
             throw new CustomHandleException(402);
@@ -116,6 +127,17 @@ public class CommentServiceImpl implements ICommentService {
                 .and(FileSpecification.byCategory(model.getCategory()));
         List<FileEntity> files = this.fileRepository.findAll(spec);
 
+        files.addAll(model.getNewFiles().stream().map(file -> this.fileService.addEntity(FileModel.builder()
+                .file(file)
+                .category(Const.tableName.COMMENT.name())
+                .objectId(commentEntity.getId())
+                .build())).collect(Collectors.toList()));
+
+        commentEntity.setAttachFiles(files);
+        this.commentRepository.saveAndFlush(commentEntity);
+        commentEntity.setFiles(files);
+
+        this.historyLogService.logUpdate(commentEntity.getId(), originComment, commentEntity, Const.tableName.COMMENT);
         return CommentDto.toDto(this.commentRepository.saveAndFlush(commentEntity));
     }
 

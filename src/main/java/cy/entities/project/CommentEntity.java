@@ -7,10 +7,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Where;
+import org.springframework.beans.BeanUtils;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+
 @HistoryLogTitle(title = "bình luận")
 @Data
 @Builder
@@ -26,7 +28,7 @@ public class CommentEntity {
 
     @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="user_id")
+    @JoinColumn(name = "user_id")
     private UserEntity userId;
 
     @HistoryLogTitle(title = "", ignore = true)
@@ -40,7 +42,8 @@ public class CommentEntity {
     @Column(name = "created_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
+
+    @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Where(clause = "category='COMMENT'")
@@ -48,9 +51,15 @@ public class CommentEntity {
 
     @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="id_parent")
+    @JoinColumn(name = "id_parent")
     private CommentEntity idParent;
 
     @HistoryLogTitle(title = "", ignore = true)
     private Long ObjectId;
+
+    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
+    @Transient
+    List<FileEntity> files;
+
+
 }
