@@ -23,11 +23,12 @@ public class BugModel {
     private MultipartFile[] files;
     private List<TagModel> tags;
     private Boolean isDelete;
-
+    private String priority;
 
     public static BugEntity modelToEntity(BugModel model) {
        return BugEntity.builder()
                .id(model.getId())
+               .priority(model.getPriority())
                .name(model.getNameBug())
                .description(model.getDescription())
                .startDate(model.getStartDate())

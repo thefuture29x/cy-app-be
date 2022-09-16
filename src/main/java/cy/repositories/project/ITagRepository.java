@@ -13,4 +13,8 @@ public interface ITagRepository extends JpaRepository<TagEntity,Long> {
 
     @Query("select t from TagEntity t ")
     Page<TagEntity> findAllByPage(Pageable pageable);
+
+
+    @Query("select t from TagEntity t where t.name like ?1%")
+    Page<TagEntity> findPageByName(String search,Pageable pageable);
 }

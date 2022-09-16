@@ -130,4 +130,11 @@ public class TagServiceImpl implements ITagService {
         }
         return true;
     }
+
+    @Override
+    public Page<TagDto> findPageByName(Pageable pageable, String search) {
+        Page<TagEntity> tagEntities = iTagRepository.findPageByName(search,pageable);
+        Page<TagDto> tagDtos = tagEntities.map(x -> TagDto.toDto(x));
+        return tagDtos;
+    }
 }

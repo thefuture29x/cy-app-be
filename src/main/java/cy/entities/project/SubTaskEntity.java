@@ -40,5 +40,5 @@ public class SubTaskEntity extends ProjectBaseEntity{
     private UserEntity assignToTester;
 
     @Transient
-    private List<TagEntity> tagList;
+    private List<UserEntity> devTeam;
 }

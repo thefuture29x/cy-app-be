@@ -38,5 +38,5 @@ public class TaskEntity extends ProjectBaseEntity{
     private List<FileEntity> attachFiles;
 
     @Transient
-    private List<TagEntity> tagList;
+    private List<UserEntity> devTeam;
 }

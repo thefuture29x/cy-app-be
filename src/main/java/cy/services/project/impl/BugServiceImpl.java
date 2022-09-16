@@ -38,6 +38,8 @@ public class BugServiceImpl implements IRequestBugService {
     @Autowired
     ITagRepository iTagRepository;
     @Autowired
+    ITagRelationRepository iTagRelationRepository;
+    @Autowired
     IFileRepository iFileRepository;
     @Autowired
     IUserRepository userRepository;
@@ -121,7 +123,29 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                 }
             }
-
+            //create tag
+            if(model.getTags() != null && model.getTags().size() > 0){
+                for (TagModel tagModel : model.getTags()){
+                    TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
+                    if(tagEntity == null){
+                        TagEntity tagEntity1 = new TagEntity();
+                        tagEntity1.setName(tagModel.getName());
+                        tagEntity1 =iTagRepository.save(tagEntity1);
+                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setIdTag(tagEntity1.getId());
+                        tagRelationEntity.setObjectId(bugEntity.getId());
+                        iTagRelationRepository.save(tagRelationEntity);
+                    }
+                    else if(tagEntity != null){
+                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setIdTag(tagEntity.getId());
+                        tagRelationEntity.setObjectId(bugEntity.getId());
+                        iTagRelationRepository.save(tagRelationEntity);
+                    }
+                }
+            }
             BugDto bugDto = BugDto.entityToDto(bugEntity);
             //chuyển trạng thái Subtask sang fixBug
             subTaskEntity.setStatus(Const.status.FIX_BUG.name());

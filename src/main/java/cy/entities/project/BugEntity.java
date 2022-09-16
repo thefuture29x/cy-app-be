@@ -18,8 +18,9 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 @Entity
 @Table(name = "tbl_bugs")
-public class  BugEntity extends ProjectBaseEntity{
+public class BugEntity extends ProjectBaseEntity{
 
+    private String priority;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="sub_task_id")

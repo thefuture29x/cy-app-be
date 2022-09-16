@@ -1,5 +1,6 @@
 package cy.dtos.project;
 
+import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.entities.project.BugEntity;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,20 +20,26 @@ import java.util.stream.Collectors;
 public class BugDto {
     private Long id;
     private String nameBug;
+    private String priority;
     private Long subTask;
     private String description;
     private Date startDate;
     private Date endDate;
     private UserDto assignTo;
-    private String tag;
     private Boolean isDefault;
     private Boolean isDelete;
-    private List<FileDto> attachFiles;
+    private List<TagDto> tags;
+    private List<String> attachFiles;
     private List<BugHistoryDto> historyLogBug;
 
     public static BugDto entityToDto(BugEntity obj) {
+        List<String> lstFile = new ArrayList<>();
+        if(obj.getAttachedFiles() != null && obj.getAttachedFiles().size() > 0){
+            obj.getAttachedFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+        }
         return BugDto.builder()
                 .id(obj.getId())
+                .priority(obj.getPriority())
                 .nameBug(obj.getName())
                 .subTask((obj.getCreateBy() != null ? obj.getCreateBy().getUserId() : null))
                 .description(obj.getDescription())
@@ -42,7 +50,8 @@ public class BugDto {
                 .assignTo(obj.getCreateBy() != null ? UserDto.toDto(obj.getCreateBy()) : null)
                 .historyLogBug(obj.getHistoryBugList() != null
                         ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
-               // .attachFiles(obj.getAttachFiles()!=null?obj.getAttachFiles().stream().map(data->FileDto.toDto(data)).collect(Collectors.toList()):null)
+                .attachFiles(lstFile)
+                .tags(obj.getTagList() != null ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
     }
 }
