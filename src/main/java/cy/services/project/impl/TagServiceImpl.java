@@ -68,7 +68,7 @@ public class TagServiceImpl implements ITagService {
         }
         entity = new TagEntity();
         entity.setName(model.getName());
-        return TagDto.toDto(iTagRepository.save(entity));
+        return TagDto.toDto(iTagRepository.saveAndFlush(entity));
     }
 
     @Override
@@ -136,5 +136,14 @@ public class TagServiceImpl implements ITagService {
         Page<TagEntity> tagEntities = iTagRepository.findPageByName(search,pageable);
         Page<TagDto> tagDtos = tagEntities.map(x -> TagDto.toDto(x));
         return tagDtos;
+    }
+
+    @Override
+    public TagEntity addEntity(TagModel tagModel) {
+        TagEntity entity = iTagRepository.findByName(tagModel.getName());
+        if (entity != null ){
+            return null;
+        }
+        return TagEntity.builder().name(tagModel.getName()).build();
     }
 }

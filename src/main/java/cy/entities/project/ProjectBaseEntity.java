@@ -2,14 +2,11 @@ package cy.entities.project;
 
 import cy.entities.UserEntity;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Parent;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -57,7 +54,7 @@ public class ProjectBaseEntity {
     private List<TagEntity> tagList;
 
     @Transient
-    private List<FileEntity> attachedFiles;
+    private List<FileEntity> files;
 
 
 }
