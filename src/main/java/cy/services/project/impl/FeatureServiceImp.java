@@ -5,6 +5,7 @@ import cy.dtos.TagDto;
 import cy.dtos.project.FeatureDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
+import cy.entities.project.Listener.ProjectListener;
 import cy.models.project.FeatureModel;
 import cy.models.project.FileModel;
 import cy.models.project.TagModel;
@@ -19,6 +20,7 @@ import cy.services.project.ITagRelationService;
 import cy.services.project.ITagService;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
+import org.apache.xmlbeans.impl.xb.xsdschema.Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,6 +52,7 @@ public class FeatureServiceImp implements IFeatureService {
     ITagService tagService;
     @Autowired
     ITagRelationService tagRelationService;
+
 
     @Override
     public List<FeatureDto> findAll() {
@@ -83,6 +87,10 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public FeatureDto add(FeatureModel model) {
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(()->new CustomHandleException(45354345));
+        Set<Long> currentProjectUIDs = projectEntity.getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toSet());
+        if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
+            throw new CustomHandleException(2131231);
+        }
         List<TagEntity> tagList= new ArrayList<>();
         for (String tag: model.getTagList()
              ) {
@@ -110,9 +118,10 @@ public class FeatureServiceImp implements IFeatureService {
                 .project(projectEntity)
                 .attachFiles(fileEntities)
                 .tagList(tagList)
+                .isDefault(model.getIsDefault())
                 .priority(model.getPriority().name())
                 .build();
-        this.featureRepository.save(entity);
+        this.featureRepository.saveAndFlush(entity);
 
         //Add Tags
         tagList.stream().forEach(x-> this.tagRelationService.add(TagRelationModel.builder().idTag(x.getId()).category(Const.tableName.FEATURE.name()).objectId(entity.getId()).build()));
@@ -136,8 +145,57 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public FeatureDto update(FeatureModel model) {
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
+        Set<Long> currentProjectUIDs = oldFeature.getProject().getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toSet());
+        if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
+            throw new CustomHandleException(2131231);
+        }
+        ProjectEntity projectEntity = oldFeature.getProject();
+        oldFeature.setName(model.getName());
+        oldFeature.setDescription(model.getDescription());
+        oldFeature.setStartDate(model.getStartDate());
+        oldFeature.setEndDate(model.getEndDate());
+        oldFeature.setIsDefault(model.getIsDefault());
+        oldFeature.setPriority(model.getPriority().name());
+        //Clear old tags
+        clearTagList(oldFeature);
+        //Add new tags
+        List<String> newTagList = model.getTagList();
+        List<TagEntity> newTagEntityList = new ArrayList<>();
+        newTagList.stream().forEach(x->{
+            TagDto tagDto = this.tagService.add(TagModel.builder().name(x).build());
+            newTagEntityList.add(TagEntity.builder().id(tagDto.getId()).name(tagDto.getName()).build());
+            this.tagRelationService.add(TagRelationModel.builder().idTag(tagDto.getId()).category(Const.tableName.FEATURE.name()).objectId(oldFeature.getId()).build());
+        });
+        oldFeature.setTagList(newTagEntityList);
 
-        return null;
+        //Clear old files
+        clearFileList(oldFeature);
+        //Add new files
+        List<MultipartFile> newFileList = model.getFiles();
+        List<FileEntity> newFileEntityList = new ArrayList<>();
+        newFileList.stream().forEach(x->{
+            FileModel fileModel = new FileModel();
+            fileModel.setFile(x);
+            fileModel.setObjectId(oldFeature.getId());
+            fileModel.setCategory(Const.tableName.FEATURE.name());
+            newFileEntityList.add(this.fileService.addEntity(fileModel));
+        });
+        oldFeature.setAttachFiles(newFileEntityList);
+
+        clearDevTeam(oldFeature);
+        List<Long> currentAvailableDev = projectEntity.getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toList());
+        List<Long> newDevTeam = model.getUids();
+        List<UserEntity> newDevTeamEntity = new ArrayList<>();
+        if(new HashSet<>(currentAvailableDev).containsAll(newDevTeam)) {
+            newDevTeam.stream().forEach(x -> {
+                newDevTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
+                this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
+            });
+            oldFeature.setDevTeam(newDevTeamEntity);
+        }else {
+            throw new CustomHandleException(2131231);
+        }
+        return FeatureDto.toDto(this.featureRepository.save(oldFeature));
     }
 
     @Override
@@ -150,5 +208,18 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public boolean deleteByIds(List<Long> ids) {
         return false;
+    }
+
+    private void clearTagList(FeatureEntity feature) {
+        this.tagRelationService.findTagByCategoryAndObject(Const.tableName.FEATURE.name(), feature.getId()).stream().forEach(x->this.tagRelationService.deleteById(x.getId()));
+    }
+    private void clearFileList(FeatureEntity feature) {
+        this.fileService.deleteByIds(feature.getAttachFiles().stream().map(x->x.getId()).collect(Collectors.toList()));
+    }
+
+    private void clearDevTeam(FeatureEntity feature) {
+        feature.getDevTeam().stream().forEach(x->{
+            this.userProjectRepository.deleteByCategoryAndObjectIdAndIdUser(Const.tableName.FEATURE.name(),feature.getId(),x.getUserId());
+        });
     }
 }
