@@ -40,7 +40,7 @@ public class TaskDto {
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .featureId(entity.getFeature().getId())
-//                .attachFiles(entity.getAttachFiles() != null ? new JSONObject(entity.getAttachFiles()).getJSONArray("files").toList() : List.of())
+                .attachFiles(entity.getAttachFiles() != null ? new JSONObject(entity.getAttachFiles()).getJSONArray("files").toList() : List.of())
                 .build();
 
     }

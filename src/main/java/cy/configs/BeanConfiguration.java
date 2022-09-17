@@ -1,5 +1,6 @@
 package cy.configs;
 
+import cy.entities.project.Listener.ProjectListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -24,12 +25,16 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManagerFactory;
 import java.util.Date;
 import java.util.TimeZone;
 
 
 @Configuration
 public class BeanConfiguration {
+    public BeanConfiguration(EntityManagerFactory emf) {
+        ProjectListener.emf = emf;
+    }
 
     //Password encoder bean configuration
     @Bean
