@@ -14,10 +14,7 @@ import cy.repositories.IUserRepository;
 import cy.repositories.project.IFeatureRepository;
 import cy.repositories.project.IProjectRepository;
 import cy.repositories.project.IUserProjectRepository;
-import cy.services.project.IFeatureService;
-import cy.services.project.IFileService;
-import cy.services.project.ITagRelationService;
-import cy.services.project.ITagService;
+import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
 import org.apache.xmlbeans.impl.xb.xsdschema.Attribute;
@@ -52,6 +49,9 @@ public class FeatureServiceImp implements IFeatureService {
     ITagService tagService;
     @Autowired
     ITagRelationService tagRelationService;
+    @Autowired
+    IHistoryLogService iHistoryLogService;
+
 
 
     @Override
@@ -134,6 +134,7 @@ public class FeatureServiceImp implements IFeatureService {
             throw new CustomHandleException(2131231);
         }
 //        entity.setProject();
+        iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.FEATURE);
         return FeatureDto.toDto(entity);
     }
 
@@ -144,6 +145,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
+        FeatureEntity featureOriginal = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
         Set<Long> currentProjectUIDs = oldFeature.getProject().getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toSet());
         if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
@@ -195,6 +197,7 @@ public class FeatureServiceImp implements IFeatureService {
         }else {
             throw new CustomHandleException(2131231);
         }
+        iHistoryLogService.logUpdate(oldFeature.getId(), featureOriginal,oldFeature, Const.tableName.FEATURE);
         return FeatureDto.toDto(this.featureRepository.save(oldFeature));
     }
 
@@ -202,6 +205,7 @@ public class FeatureServiceImp implements IFeatureService {
     public boolean deleteById(Long id) {
         FeatureEntity oldEntity = this.getById(id);
         oldEntity.setIsDeleted(true);
+        iHistoryLogService.logDelete(id,oldEntity, Const.tableName.FEATURE);
         return true;
     }
 
