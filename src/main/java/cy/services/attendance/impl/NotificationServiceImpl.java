@@ -96,6 +96,8 @@ public class NotificationServiceImpl implements INotificationService {
         if(model.getRequestOTId() != null) {
             notification.setRequestOT(this.requestOvertimeService.getById(model.getRequestOTId()));
         }
+        notification.setCategory(model.getCategory());
+        notification.setObjectId(model.getObjectId());
         return NotificationDto.toDto(this.notificationRepository.save(notification));
     }
 
