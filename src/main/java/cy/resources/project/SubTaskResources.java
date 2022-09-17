@@ -28,7 +28,7 @@ public class SubTaskResources {
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @DeleteMapping(value = "/delete/{id}")
     public Object delete(@PathVariable Long id) {
-        return ResponseDto.of(iSubTaskService.deleteById(id));
+        return ResponseDto.of(iSubTaskService.changIsDeleteById(id));
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})

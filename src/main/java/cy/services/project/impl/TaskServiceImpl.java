@@ -4,7 +4,6 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
-import cy.dtos.project.TagRelationDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.TagEntity;
@@ -44,8 +43,9 @@ public class TaskServiceImpl implements ITaskService {
     private final ITagRelationRepository tagRelationRepository;
     private final ITagService tagService;
     private final ITagRepository tagRepository;
+    private final IHistoryLogService iHistoryLogService;
 
-    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFeatureService featureService, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository) {
+    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFeatureService featureService, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService) {
         this.repository = repository;
         this.fileService = fileService;
         this.featureService = featureService;
@@ -55,6 +55,7 @@ public class TaskServiceImpl implements ITaskService {
         this.tagRelationRepository = tagRelationRepository;
         this.tagService = tagService;
         this.tagRepository = tagRepository;
+        this.iHistoryLogService = iHistoryLogService;
     }
 
     @Override
@@ -162,6 +163,7 @@ public class TaskServiceImpl implements ITaskService {
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
+        iHistoryLogService.logCreate(taskEntity.getId(),taskEntity, Const.tableName.TASK);
         return result;
     }
 
@@ -172,6 +174,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
+        TaskEntity taskExist = this.getById(model.getId());
         TaskEntity taskOld = this.getById(model.getId());
 
         taskOld.setStartDate(model.getStartDate());
@@ -262,14 +265,32 @@ public class TaskServiceImpl implements ITaskService {
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
+
+        iHistoryLogService.logUpdate(taskupdate.getId(),taskExist,taskupdate, Const.tableName.TASK);
+
         return result;
     }
 
     @Override
     public boolean deleteById(Long id) {
         TaskEntity oldTask = this.getById(id);
-        oldTask.setIsDeleted(true);
-        this.repository.saveAndFlush(oldTask);
+
+        // trong bang subtag co id nao lien quan den id do se bi xoa
+        // goi den ham xoa trong service cua Manh ne
+
+        // trong bang userproject xoa nhung data co id do + categori = 'TASK'
+        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId("TASK", id);
+        for (UserProjectEntity userProjectEntity : userProjectEntities) {
+            this.userProjectRepository.delete(userProjectEntity);
+        }
+        //trong bang tag_relation xoa nhung data co id do + category = 'TASK'
+        List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId("TASK", id);
+        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
+            this.tagRelationRepository.delete(tagRelationEntity);
+        }
+        // xoa trong bang task id do
+        this.repository.deleteById(id);
+
         return true;
     }
 
@@ -299,5 +320,14 @@ public class TaskServiceImpl implements ITaskService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean changIsDeleteById(Long id) {
+        TaskEntity oldTask = this.getById(id);
+        oldTask.setIsDeleted(true);
+        this.repository.saveAndFlush(oldTask);
+        iHistoryLogService.logDelete(id,oldTask, Const.tableName.TASK);
+        return true;
     }
 }

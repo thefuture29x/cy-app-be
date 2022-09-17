@@ -314,6 +314,32 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public boolean deleteById(Long id) {
+        try{
+            this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
+
+            for (UserProjectEntity userProjectEntity : this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
+                this.userProjectRepository.delete(userProjectEntity);
+            }
+
+            for (TagRelationEntity tagRelationEntity : this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
+                this.tagRelationRepository.delete(tagRelationEntity);
+            }
+
+            this.subTaskRepository.deleteById(id);
+
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteByIds(List<Long> ids) {
+        return false;
+    }
+
+    @Override
+    public boolean changIsDeleteById(Long id) {
         Optional<SubTaskEntity> subTaskDeleted = this.subTaskRepository.findById(id);
         if (subTaskDeleted.isEmpty()) {
             throw new CustomHandleException(199);
@@ -323,10 +349,5 @@ public class SubTaskServiceImpl implements ISubTaskService {
             iHistoryLogService.logDelete(id,subTaskDeleted.get(), Const.tableName.SUBTASK);
         }
         return true;
-    }
-
-    @Override
-    public boolean deleteByIds(List<Long> ids) {
-        return false;
     }
 }

@@ -52,6 +52,6 @@ public class TaskResouce {
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseDto deleteTask(@PathVariable Long id) {
-        return ResponseDto.of(this.taskService.deleteById(id));
+        return ResponseDto.of(this.taskService.changIsDeleteById(id));
     }
 }
