@@ -64,7 +64,7 @@ public class TagServiceImpl implements ITagService {
         }
         TagEntity entity = iTagRepository.findByName(model.getName());
         if (entity != null ){
-            return null;
+            return TagDto.toDto(entity);
         }
         entity = new TagEntity();
         entity.setName(model.getName());

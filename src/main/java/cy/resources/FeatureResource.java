@@ -29,4 +29,10 @@ public class FeatureResource {
         return ResponseDto.of(this.featureService.add(model));
     }
 
+    @PostMapping("/update-feature")
+    public ResponseDto updateFeature(@Valid FeatureModel model){
+        return ResponseDto.of(this.featureService.update(model));
+    }
+
+
 }

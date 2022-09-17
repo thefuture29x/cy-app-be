@@ -79,7 +79,7 @@ public class FileServiceImpl implements IFileService {
                 throw new RuntimeException(e);
             }
         }
-        return FileDto.toDto(fileRepository.save(fileEntity));
+        return FileDto.toDto(fileRepository.saveAndFlush(fileEntity));
     }
 
     @Override

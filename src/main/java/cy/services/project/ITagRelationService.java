@@ -8,5 +8,8 @@ import cy.models.project.TagModel;
 import cy.models.project.TagRelationModel;
 import cy.services.IBaseService;
 
+import java.util.List;
+
 public interface ITagRelationService extends IBaseService<TagRelationEntity, TagRelationDto, TagRelationModel, Long> {
+    List<TagRelationEntity> findTagByCategoryAndObject(String category, Long objectId);
 }

@@ -29,6 +29,8 @@ public class TagRelationServiceImpl implements ITagRelationService {
     @Autowired
     ITagRelationRepository iTagRelationRepository;
     @Autowired
+    IFeatureRepository iFeatureRepository;
+    @Autowired
     IProjectRepository iProjectRepository;
     @Autowired
     ITaskRepository iTaskRepository;
@@ -99,7 +101,13 @@ public class TagRelationServiceImpl implements ITagRelationService {
                 return null;
             }
             tagRelationEntity.setObjectId(taskEntity.getId());
-        }else if (model.getCategory().contains(Const.tableName.SUBTASK.toString())){
+        }else if (model.getCategory().contains(Const.tableName.FEATURE.toString())){
+            FeatureEntity featureEntity = iFeatureRepository.findById(model.getObjectId()).orElse(null);
+            if (featureEntity == null){
+                return null;
+            }
+            tagRelationEntity.setObjectId(featureEntity.getId());
+        } else if (model.getCategory().contains(Const.tableName.SUBTASK.toString())){
             SubTaskEntity subTaskEntity = iSubTaskRepository.findById(model.getObjectId()).orElse(null);
             if (subTaskEntity == null){
                 return null;
@@ -124,11 +132,32 @@ public class TagRelationServiceImpl implements ITagRelationService {
 
     @Override
     public boolean deleteById(Long id) {
-        return false;
+        try{
+            iTagRelationRepository.deleteById(id);
+            return true;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public boolean deleteByIds(List<Long> ids) {
-        return false;
+        for (Long id : ids){
+            try{
+                iTagRelationRepository.deleteById(id);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public List<TagRelationEntity> findTagByCategoryAndObject(String category, Long objectId) {
+        return iTagRelationRepository.getByCategoryAndObjectId(category, objectId);
     }
 }
