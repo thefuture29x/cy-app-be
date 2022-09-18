@@ -36,6 +36,8 @@ public class FeatureServiceImp implements IFeatureService {
     @Autowired
     IFeatureRepository featureRepository;
     @Autowired
+    IFileRepository fileRepository;
+    @Autowired
     IFileService fileService;
     @Autowired
     IProjectRepository projectRepository;
@@ -220,6 +222,8 @@ public class FeatureServiceImp implements IFeatureService {
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             this.tagRelationRepository.delete(tagRelationEntity);
         }
+        // delete file
+        fileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
         // delete Feature
         this.featureRepository.deleteById(id);
 

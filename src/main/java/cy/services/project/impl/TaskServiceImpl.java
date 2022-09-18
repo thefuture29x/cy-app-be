@@ -16,6 +16,7 @@ import cy.repositories.project.*;
 import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
+import org.apache.poi.hssf.record.PageBreakRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -318,22 +319,21 @@ public class TaskServiceImpl implements ITaskService {
         return this.userProjectRepository.saveAndFlush(userProject);
     }
 
-    // delete dev
-    public Boolean deleteDev(Long id){
-        UserProjectEntity userProject = this.userProjectRepository.findById(id).orElse(null);
-        if(userProject != null){
-            this.userProjectRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public boolean changIsDeleteById(Long id) {
-        TaskEntity oldTask = this.getById(id);
-        oldTask.setIsDeleted(true);
-        this.repository.saveAndFlush(oldTask);
-        iHistoryLogService.logDelete(id,oldTask, Const.tableName.TASK);
+//        TaskEntity oldTask = this.getById(id);
+//        oldTask.setIsDeleted(true);
+//        this.repository.saveAndFlush(oldTask);
+//        iHistoryLogService.logDelete(id,oldTask, Const.tableName.TASK);
+
+        if(this.repository.findById(38L).isPresent()){
+            this.repository.deleteById(38L);
+
+        }
+
+        if(this.subTaskRepository.findById(4L).isPresent()){
+            this.subTaskService.deleteById(4L);
+        }
         return true;
     }
 }

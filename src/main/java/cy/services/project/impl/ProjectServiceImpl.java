@@ -13,10 +13,7 @@ import cy.repositories.IUserRepository;
 import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.project.*;
 import cy.resources.UserResources;
-import cy.services.project.IFeatureService;
-import cy.services.project.IHistoryLogService;
-import cy.services.project.IProjectService;
-import cy.services.project.ITagService;
+import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
@@ -49,7 +46,8 @@ public class ProjectServiceImpl implements IProjectService {
     FileUploadProvider fileUploadProvider;
     @Autowired
     IFileRepository iFileRepository;
-
+    @Autowired
+    IFileService fileService;
     @Autowired
     EntityManager manager;
 
@@ -339,6 +337,8 @@ public class ProjectServiceImpl implements IProjectService {
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             this.iTagRelationRepository.delete(tagRelationEntity);
         }
+        // delete file
+        iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
         // delete Project
         this.iProjectRepository.deleteById(id);
 

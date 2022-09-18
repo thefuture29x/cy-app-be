@@ -32,37 +32,33 @@ public class ScheduledJobConfig {
 
     //Cron for delete
     // second(1-59) minute(0-59) hour(1-23) dayOfMonth(1-31) month(1-12) dayOfWeek(0-6, sunday = 0)
-    @Scheduled(cron = "0 0/5 * * * *")
+    @Scheduled(cron = "0 0/1 * * * *")
     public void checkStatusIsDelete(){
-        // check subTask
-        List<SubTaskEntity> subTaskEntities = subTaskRepository.checkSubTasksDelete();
-        if(!subTaskEntities.isEmpty()){
-            subTaskEntities.stream().forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
-        }
+//        // check Project
+//        if(!this.projectRepository.checkProjectDelete().isEmpty()){
+//            this.projectRepository.checkProjectDelete().forEach(project -> this.projectService.deleteProject(project.getId()));
+//        }
+//
+//        // check Feature
+//        if(!this.featureRepository.checkFeatureDelete().isEmpty()){
+//            this.featureRepository.checkFeatureDelete().forEach(feature -> this.featureService.deleteById(feature.getId()));
+//        }
+//
+//        // check Task
+//        if(!taskRepository.checkTasksDelete().isEmpty()){
+//            taskRepository.checkTasksDelete().forEach(taskEntity -> this.taskService.deleteById(taskEntity.getId()));
+//        }
+//
+//        // check subTask
+//        if(!subTaskRepository.checkSubTasksDelete().isEmpty()){
+//            subTaskRepository.checkSubTasksDelete().forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
+//        }
+//
+//        //check BUG
+//        if(!this.bugRepository.checkBugDelete().isEmpty()){
+//            this.bugRepository.checkBugDelete().forEach(bugEntity -> this.bugService.deleteBug(bugEntity.getId()));
+//        }
 
-        // check Task
-        List<TaskEntity> taskEntities = taskRepository.checkTasksDelete();
-        if(!taskEntities.isEmpty()){
-            taskEntities.stream().forEach(taskEntity -> this.taskService.deleteById(taskEntity.getId()));
-        }
-
-        // check Feature
-        List<FeatureEntity> featureEntities = this.featureRepository.checkFeatureDelete();
-        if(!featureEntities.isEmpty()){
-            featureEntities.stream().forEach(feature -> this.featureService.deleteById(feature.getId()));
-        }
-
-        // check Project
-        List<ProjectEntity> projectEntities = this.projectRepository.checkProjectDelete();
-        if(!projectEntities.isEmpty()){
-            projectEntities.stream().forEach(project -> this.projectService.deleteProject(project.getId()));
-        }
-
-        //check BUG
-        List<BugEntity> bugEntities = this.bugRepository.checkBugDelete();
-        if(!bugEntities.isEmpty()){
-            bugEntities.stream().forEach(bugEntity -> this.bugService.deleteBug(bugEntity.getId()));
-        }
     }
 
 }

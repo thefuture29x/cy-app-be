@@ -8,6 +8,7 @@ import cy.models.project.BugModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
+import cy.services.project.IFileService;
 import cy.services.project.IHistoryLogService;
 import cy.services.project.IRequestBugService;
 import cy.services.project.ITagService;
@@ -42,6 +43,8 @@ public class BugServiceImpl implements IRequestBugService {
     ITagRelationRepository iTagRelationRepository;
     @Autowired
     IFileRepository iFileRepository;
+    @Autowired
+    IFileService fileService;
     @Autowired
     IUserRepository userRepository;
     @Autowired
@@ -294,6 +297,8 @@ public class BugServiceImpl implements IRequestBugService {
         // delete tagRalation
         this.iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream()
                 .forEach(tagRelationEntity -> this.iTagRelationRepository.delete(tagRelationEntity));
+        // delete file
+        iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
         //delete Bug
         this.iBugRepository.deleteById(id);
     }

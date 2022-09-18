@@ -50,7 +50,6 @@ public class TaskResouce {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseDto deleteTask(@PathVariable Long id) {
         return ResponseDto.of(this.taskService.changIsDeleteById(id));
     }
