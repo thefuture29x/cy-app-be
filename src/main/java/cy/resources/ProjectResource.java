@@ -36,7 +36,7 @@ public class ProjectResource {
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @DeleteMapping(value = "/delete")
     public ResponseDto delete(@RequestParam(name = "id")Long id) {
-        return ResponseDto.of(iProjectService.deleteProject(id));
+        return ResponseDto.of(iProjectService.changIsDeleteById(id));
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})

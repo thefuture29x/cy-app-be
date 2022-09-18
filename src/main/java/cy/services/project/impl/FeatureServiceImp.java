@@ -11,9 +11,7 @@ import cy.models.project.FileModel;
 import cy.models.project.TagModel;
 import cy.models.project.TagRelationModel;
 import cy.repositories.IUserRepository;
-import cy.repositories.project.IFeatureRepository;
-import cy.repositories.project.IProjectRepository;
-import cy.repositories.project.IUserProjectRepository;
+import cy.repositories.project.*;
 import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
@@ -50,8 +48,13 @@ public class FeatureServiceImp implements IFeatureService {
     @Autowired
     ITagRelationService tagRelationService;
     @Autowired
+    ITagRelationRepository tagRelationRepository;
+    @Autowired
     IHistoryLogService iHistoryLogService;
-
+    @Autowired
+    ITaskService taskService;
+    @Autowired
+    ITaskRepository taskRepository;
 
 
     @Override
@@ -203,9 +206,23 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public boolean deleteById(Long id) {
-        FeatureEntity oldEntity = this.getById(id);
-        oldEntity.setIsDeleted(true);
-        iHistoryLogService.logDelete(id,oldEntity, Const.tableName.FEATURE);
+        // delete Task
+        List<TaskEntity> taskEntities = this.taskRepository.findByFeatureId(id);
+        taskEntities.forEach(taskEntity -> this.taskService.deleteById(taskEntity.getId()));
+
+        // delete userProject
+        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id);
+        for (UserProjectEntity userProjectEntity : userProjectEntities) {
+            this.userProjectRepository.delete(userProjectEntity);
+        }
+        //delete tag_relation
+        List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id);
+        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
+            this.tagRelationRepository.delete(tagRelationEntity);
+        }
+        // delete Feature
+        this.featureRepository.deleteById(id);
+
         return true;
     }
 
@@ -225,5 +242,14 @@ public class FeatureServiceImp implements IFeatureService {
         feature.getDevTeam().stream().forEach(x->{
             this.userProjectRepository.deleteByCategoryAndObjectIdAndIdUser(Const.tableName.FEATURE.name(),feature.getId(),x.getUserId());
         });
+    }
+
+    @Override
+    public boolean changIsDeleteById(Long id) {
+        FeatureEntity oldFeature = this.getById(id);
+        oldFeature.setIsDeleted(true);
+        this.featureRepository.saveAndFlush(oldFeature);
+        iHistoryLogService.logDelete(id,oldFeature, Const.tableName.FEATURE);
+        return true;
     }
 }

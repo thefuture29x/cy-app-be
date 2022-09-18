@@ -14,4 +14,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     // find record had isDelete = true and timeDelete > 5'
     @Query(value = "select * from tbl_sub_tasks where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 5 MINUTE)))",nativeQuery = true)
     List<SubTaskEntity> checkSubTasksDelete();
+
+    @Query(value = "select * from tbl_sub_tasks where task_id = ?1", nativeQuery = true)
+    List<SubTaskEntity> findByTaskId(Long id);
 }

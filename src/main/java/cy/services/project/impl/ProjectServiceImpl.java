@@ -13,6 +13,7 @@ import cy.repositories.IUserRepository;
 import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.project.*;
 import cy.resources.UserResources;
+import cy.services.project.IFeatureService;
 import cy.services.project.IHistoryLogService;
 import cy.services.project.IProjectService;
 import cy.services.project.ITagService;
@@ -38,6 +39,10 @@ import java.util.List;
 public class ProjectServiceImpl implements IProjectService {
     @Autowired
     IProjectRepository iProjectRepository;
+    @Autowired
+    IFeatureRepository featureRepository;
+    @Autowired
+    IFeatureService featureService;
     @Autowired
     IUserRepository userRepository;
     @Autowired
@@ -320,13 +325,33 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public Boolean deleteProject(Long id) {
-        try{
-            iProjectRepository.deleteById(id);
-            return true;
+        // delete Feature
+        List<FeatureEntity> featureEntities = this.featureRepository.findByProjectId(id);
+        featureEntities.forEach(feature -> this.featureService.deleteById(feature.getId()));
+
+        // delete userProject
+        List<UserProjectEntity> userProjectEntities = this.iUserProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), id);
+        for (UserProjectEntity userProjectEntity : userProjectEntities) {
+            this.iUserProjectRepository.delete(userProjectEntity);
         }
-        catch (Exception e){
-            return false;
+        //delete tag_relation
+        List<TagRelationEntity> tagRelationEntities =  this.iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), id);
+        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
+            this.iTagRelationRepository.delete(tagRelationEntity);
         }
+        // delete Project
+        this.iProjectRepository.deleteById(id);
+
+        return true;
+    }
+
+    @Override
+    public Boolean changIsDeleteById(Long id) {
+        ProjectEntity oldProject = this.iProjectRepository.findById(id).orElseThrow(() -> new RuntimeException("Project not exist!!"));
+        oldProject.setIsDeleted(true);
+        this.iProjectRepository.saveAndFlush(oldProject);
+        iHistoryLogService.logDelete(id,oldProject, Const.tableName.PROJECT);
+        return true;
     }
 
     @Override

@@ -6,4 +6,5 @@ import cy.models.project.BugModel;
 import cy.services.IBaseService;
 
 public interface IRequestBugService extends IBaseService<BugEntity, BugDto, BugModel,Long> {
+    void deleteBug(Long id);
 }

@@ -46,6 +46,8 @@ public class BugServiceImpl implements IRequestBugService {
     IUserRepository userRepository;
     @Autowired
     IHistoryLogService iHistoryLogService;
+    @Autowired
+    IUserProjectRepository userProjectRepository;
 
     @Override
     public List<BugDto> findAll() {
@@ -275,8 +277,24 @@ public class BugServiceImpl implements IRequestBugService {
         }
     }
 
+
+
     @Override
     public boolean deleteByIds(List<Long> ids) {
         return false;
+    }
+
+    @Override
+    public void deleteBug(Long id) {
+        // delete historyBug
+        this.iBugHistoryRepository.findByBugId(id).stream().forEach(bugHistoryEntity -> this.iBugHistoryRepository.delete(bugHistoryEntity));
+        // delete userProject
+        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream()
+                .forEach(userProjectEntity -> this.userProjectRepository.delete(userProjectEntity));
+        // delete tagRalation
+        this.iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream()
+                .forEach(tagRelationEntity -> this.iTagRelationRepository.delete(tagRelationEntity));
+        //delete Bug
+        this.iBugRepository.deleteById(id);
     }
 }

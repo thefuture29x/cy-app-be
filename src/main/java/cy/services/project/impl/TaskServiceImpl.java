@@ -6,19 +6,13 @@ import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
-import cy.entities.project.TagEntity;
-import cy.entities.project.TagRelationEntity;
-import cy.entities.project.TaskEntity;
-import cy.entities.project.UserProjectEntity;
+import cy.entities.project.*;
 import cy.models.project.FileModel;
 import cy.models.project.TagModel;
 import cy.models.project.TagRelationModel;
 import cy.models.project.TaskModel;
 import cy.repositories.IUserRepository;
-import cy.repositories.project.ITagRelationRepository;
-import cy.repositories.project.ITagRepository;
-import cy.repositories.project.ITaskRepository;
-import cy.repositories.project.IUserProjectRepository;
+import cy.repositories.project.*;
 import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
@@ -36,7 +30,7 @@ import java.util.List;
 public class TaskServiceImpl implements ITaskService {
     private final ITaskRepository repository;
     private final IFileService fileService;
-    private final IFeatureService featureService;
+    private final IFeatureRepository featureRepository;
     private final IUserProjectRepository userProjectRepository;
     private final IUserRepository userRepository;
     private final ITagRelationService tagRelationService;
@@ -44,11 +38,13 @@ public class TaskServiceImpl implements ITaskService {
     private final ITagService tagService;
     private final ITagRepository tagRepository;
     private final IHistoryLogService iHistoryLogService;
+    private final ISubTaskService subTaskService;
+    private final ISubTaskRepository subTaskRepository;
 
-    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFeatureService featureService, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService) {
+    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository) {
         this.repository = repository;
         this.fileService = fileService;
-        this.featureService = featureService;
+        this.featureRepository = featureRepository;
         this.userProjectRepository = userProjectRepository;
         this.userRepository = userRepository;
         this.tagRelationService = tagRelationService;
@@ -56,6 +52,8 @@ public class TaskServiceImpl implements ITaskService {
         this.tagService = tagService;
         this.tagRepository = tagRepository;
         this.iHistoryLogService = iHistoryLogService;
+        this.subTaskService = subTaskService;
+        this.subTaskRepository = subTaskRepository;
     }
 
     @Override
@@ -96,7 +94,7 @@ public class TaskServiceImpl implements ITaskService {
         taskEntity.setCreateBy(userEntity);
 
         // feature save
-        taskEntity.setFeature(this.featureService.getById(model.getFeatureId()));
+        taskEntity.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
 
         // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
         Date currentDate = new Date();
@@ -189,7 +187,7 @@ public class TaskServiceImpl implements ITaskService {
         taskOld.setCreateBy(userEntity);
 
         // feature save
-        taskOld.setFeature(this.featureService.getById(model.getFeatureId()));
+        taskOld.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
 
         // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
         Date currentDate = new Date();
@@ -273,22 +271,22 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public boolean deleteById(Long id) {
-        TaskEntity oldTask = this.getById(id);
 
-        // trong bang subtag co id nao lien quan den id do se bi xoa
-        // goi den ham xoa trong service cua Manh ne
+        // delete subTask
+        List<SubTaskEntity> subTaskEntities = this.subTaskRepository.findByTaskId(id);
+        subTaskEntities.forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
 
-        // trong bang userproject xoa nhung data co id do + categori = 'TASK'
-        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId("TASK", id);
+        // delete userProject
+        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
         for (UserProjectEntity userProjectEntity : userProjectEntities) {
             this.userProjectRepository.delete(userProjectEntity);
         }
-        //trong bang tag_relation xoa nhung data co id do + category = 'TASK'
-        List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId("TASK", id);
+        //delete tag_relation
+        List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             this.tagRelationRepository.delete(tagRelationEntity);
         }
-        // xoa trong bang task id do
+        // delete Task
         this.repository.deleteById(id);
 
         return true;

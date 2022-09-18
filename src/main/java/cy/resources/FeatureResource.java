@@ -2,16 +2,16 @@ package cy.resources;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
+import cy.entities.RoleEntity;
 import cy.models.project.FeatureModel;
 import cy.repositories.project.IFeatureRepository;
 import cy.services.project.IFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 @RestController
@@ -34,5 +34,11 @@ public class FeatureResource {
         return ResponseDto.of(this.featureService.update(model));
     }
 
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseDto deleteFeature(@PathVariable Long id) {
+        return ResponseDto.of(this.featureService.changIsDeleteById(id));
+    }
 
 }
