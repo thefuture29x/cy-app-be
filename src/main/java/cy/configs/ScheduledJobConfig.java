@@ -32,7 +32,7 @@ public class ScheduledJobConfig {
 
     //Cron for delete
     // second(1-59) minute(0-59) hour(1-23) dayOfMonth(1-31) month(1-12) dayOfWeek(0-6, sunday = 0)
-    @Scheduled(cron = "0 0/1 * * * *")
+    @Scheduled(cron = "0 0/5 * * * *")
     public void checkStatusIsDelete(){
         // check subTask
         List<SubTaskEntity> subTaskEntities = subTaskRepository.checkSubTasksDelete();

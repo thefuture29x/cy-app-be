@@ -14,4 +14,7 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
     @Transactional
     @Query(value = "select * from tbl_bugs where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 5 MINUTE)))",nativeQuery = true)
     List<BugEntity> checkBugDelete();
+
+    @Query(value = "select * from tbl_bugs where sub_task_id = ?1", nativeQuery = true)
+    List<BugEntity> getAllBugBySubTaskId(Long subtaskId);
 }

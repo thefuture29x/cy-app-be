@@ -30,6 +30,7 @@ import java.util.List;
 public class TaskServiceImpl implements ITaskService {
     private final ITaskRepository repository;
     private final IFileService fileService;
+    private final IFileRepository fileRepository;
     private final IFeatureRepository featureRepository;
     private final IUserProjectRepository userProjectRepository;
     private final IUserRepository userRepository;
@@ -41,9 +42,10 @@ public class TaskServiceImpl implements ITaskService {
     private final ISubTaskService subTaskService;
     private final ISubTaskRepository subTaskRepository;
 
-    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository) {
+    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository) {
         this.repository = repository;
         this.fileService = fileService;
+        this.fileRepository = fileRepository;
         this.featureRepository = featureRepository;
         this.userProjectRepository = userProjectRepository;
         this.userRepository = userRepository;
@@ -271,25 +273,31 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public boolean deleteById(Long id) {
+        try {
+            // delete subTask
+            List<SubTaskEntity> subTaskEntities = this.subTaskRepository.findByTaskId(id);
+            subTaskEntities.forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
 
-        // delete subTask
-        List<SubTaskEntity> subTaskEntities = this.subTaskRepository.findByTaskId(id);
-        subTaskEntities.forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
+            // delete userProject
+            List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+            for (UserProjectEntity userProjectEntity : userProjectEntities) {
+                this.userProjectRepository.delete(userProjectEntity);
+            }
+            //delete tag_relation
+            List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+            for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
+                this.tagRelationRepository.delete(tagRelationEntity);
+            }
+            // delete file
+            fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
 
-        // delete userProject
-        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
-        for (UserProjectEntity userProjectEntity : userProjectEntities) {
-            this.userProjectRepository.delete(userProjectEntity);
+            // delete Task
+            this.repository.deleteById(id);
+
+            return true;
+        }catch (Exception e){
+            return false;
         }
-        //delete tag_relation
-        List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
-        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
-            this.tagRelationRepository.delete(tagRelationEntity);
-        }
-        // delete Task
-        this.repository.deleteById(id);
-
-        return true;
     }
 
     @Override

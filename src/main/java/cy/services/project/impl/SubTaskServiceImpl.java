@@ -52,6 +52,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Autowired
     FileUploadProvider fileUploadProvider;
+    @Autowired
+    IBugRepository bugRepository;
 
     @Autowired
     IHistoryLogService iHistoryLogService;
@@ -317,6 +319,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
         try{
             this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
 
+            // delete bug
+            this.bugRepository.getAllBugBySubTaskId(id).forEach(bugEntity -> this.bugRepository.delete(bugEntity));
+
             for (UserProjectEntity userProjectEntity : this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
                 this.userProjectRepository.delete(userProjectEntity);
             }
@@ -324,6 +329,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
             for (TagRelationEntity tagRelationEntity : this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
                 this.tagRelationRepository.delete(tagRelationEntity);
             }
+
+            // delete file
+            fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id).stream().forEach(fileEntity -> this.fileRepository.deleteById(fileEntity.getId()));
 
             this.subTaskRepository.deleteById(id);
 
