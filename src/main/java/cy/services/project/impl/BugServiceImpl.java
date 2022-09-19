@@ -169,8 +169,10 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto update(BugModel model) {
         try {
-            BugEntity entityOriginal = iBugRepository.findById(model.getId()).get();
+            BugEntity entityOriginal = (BugEntity) Const.copy(iBugRepository.findById(model.getId()).get());
             BugEntity bugEntity = model.modelToEntity(model);
+
+
             SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(11));
             bugEntity.setSubTask(subTaskEntity);
             bugEntity.setAssignTo(subTaskEntity.getAssignTo());
@@ -239,6 +241,7 @@ public class BugServiceImpl implements IRequestBugService {
             }
             iBugRepository.save(bugEntity);
             BugDto bugDto = BugDto.entityToDto(bugEntity);
+            iHistoryLogService.logUpdate(bugEntity.getId(), entityOriginal,bugEntity, Const.tableName.BUG);
             return bugDto;
         } catch (Exception e) {
             return null;

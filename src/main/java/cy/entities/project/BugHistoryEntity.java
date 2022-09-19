@@ -16,6 +16,7 @@ import java.util.Date;
 @Builder
 @Table(name = "tbl_bug_historys")
 public class BugHistoryEntity {
+    @HistoryLogTitle(title = "", ignore = true)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
