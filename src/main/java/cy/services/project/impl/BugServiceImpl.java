@@ -236,7 +236,7 @@ public class BugServiceImpl implements IRequestBugService {
             subTaskRepository.saveAndFlush(subTaskEntity);
             //Lưu dữ liệu vào bảng BugHistory
             saveDataInHistoryTable(bugEntity);
-            iHistoryLogService.logUpdate(entity.getId(), entityOriginal,entity, Const.tableName.BUG);
+//            iHistoryLogService.logUpdate(entity.getId(), entityOriginal,entity, Const.tableName.BUG);
             return bugDto;
         }catch (Exception e){
             return null;
