@@ -220,7 +220,7 @@ public class ProjectServiceImpl implements IProjectService {
             projectEntity.setUpdatedDate(currentDate);
             List<UserProjectEntity> userProjectEntities = iUserProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
             if(userProjectEntities != null && userProjectEntities.size()> 0){
-                iUserProjectRepository.deleteAll(userProjectEntities);
+                iUserProjectRepository.deleteAllInBatch(userProjectEntities);
             }
             if(projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0){
                 for (Long userDev : projectModel.getUserDev()){
