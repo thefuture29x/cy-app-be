@@ -54,9 +54,9 @@ public class ProjectDto {
                 .description(entity.getDescription())
                 .avatar(entity.getAvatar() == null ? null : entity.getAvatar().getLink())
                 .attachFiles(lstFile)
-                .userDevs(entity.getDevTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()))
-                .userFollows(entity.getFollowTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()))
-                .userView(entity.getViewTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()))
+                .userDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
+                .userFollows(entity.getFollowTeam() != null ? entity.getFollowTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
+                .userView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
                 .build();
     }
     public ProjectDto(ProjectEntity entity){
@@ -77,9 +77,9 @@ public class ProjectDto {
             this.setStatus(entity.getStatus());
             this.setUpdatedDate(entity.getUpdatedDate());
             this.setStartDate(entity.getStartDate());
-            this.setUserDevs(entity.getDevTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()));
-            this.setUserFollows(entity.getFollowTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()));
-            this.setUserView(entity.getViewTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()));
+            this.setUserDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
+            this.setUserFollows(entity.getFollowTeam() != null ? entity.getFollowTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
+            this.setUserView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
         }
     }
 }
