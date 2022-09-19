@@ -16,4 +16,6 @@ public interface IFileRepository extends JpaRepository<FileEntity, Long>, JpaSpe
 
     @Query("select tr from FileEntity tr where tr.category LIKE ?1 and tr.objectId = ?2")
     List<FileEntity> getByCategoryAndObjectId(String category, Long objectId);
+    
+    List<FileEntity> findByCategoryAndObjectId(String category, Long objectId);
 }

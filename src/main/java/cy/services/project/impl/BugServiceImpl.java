@@ -302,4 +302,8 @@ public class BugServiceImpl implements IRequestBugService {
         //delete Bug
         this.iBugRepository.deleteById(id);
     }
+    
+    public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
+        return iBugRepository.findAllBugOfProject(idProject,pageable).map(data -> BugDto.entityToDto(data));
+    }
 }

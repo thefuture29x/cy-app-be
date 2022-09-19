@@ -12,8 +12,8 @@ public class ProjectListener {
 
     public static EntityManagerFactory emf;
 
-    @PostLoad
-    public void afterGet(ProjectBaseEntity o) {
+//    @PostLoad
+//    public void afterGet(ProjectBaseEntity o) {
 //        String category;
 //        EntityManager manager = emf.createEntityManager();
 //        if (o instanceof ProjectEntity) {
@@ -91,6 +91,6 @@ public class ProjectListener {
 //        List<FileEntity> fileEntityList = fileQuery.getResultList();
 //        o.setFiles(fileEntityList);
 //        idField.setAccessible(false);
-    }
+//    }
 
 }

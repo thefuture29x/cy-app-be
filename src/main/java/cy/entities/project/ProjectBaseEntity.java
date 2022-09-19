@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectBaseEntity {
+    @HistoryLogTitle(title = "", ignore = true)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,6 +43,7 @@ public class ProjectBaseEntity {
     @HistoryLogTitle(title = "ngày bắt đầu")
     @Temporal(TemporalType.TIMESTAMP)
     private Date startDate;
+
     @HistoryLogTitle(title = "ngày kết thúc")
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
@@ -67,9 +69,9 @@ public class ProjectBaseEntity {
     @Transient
     private List<TagEntity> tagList;
 
-    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
-    @Transient
-    private List<FileEntity> files;
+//    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
+//    @Transient
+//    private List<FileEntity> files;
 
 
 }

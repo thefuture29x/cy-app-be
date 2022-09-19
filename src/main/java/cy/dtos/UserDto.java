@@ -83,5 +83,22 @@ public class UserDto {
                         .collect(Collectors.toList()))
                 .build();
     }
+    public UserDto(UserEntity userEntity){
+        if (userEntity != null) {
+            this.id = userEntity.getUserId();
+            this.address = userEntity.getAddress();
+            this.avatar = userEntity.getAddress();
+            this.birthDate = userEntity.getBirthDate();
+            this.createdDate = userEntity.getCreatedDate();
+            this.phone = userEntity.getPhone();
+            this.manager = new UserDto(userEntity.getManager());
+            this.email = userEntity.getEmail();
+            this.sex = userEntity.getSex();
+            this.userName = userEntity.getUserName();
+            this.status = userEntity.getStatus();
+            this.updatedDate = userEntity.getUpdatedDate();
+            this.fullName = userEntity.getFullName();
+        }
+    }
 }
 

@@ -1,6 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.TagDto;
+import cy.dtos.UserDto;
 import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -64,7 +66,16 @@ public class ProjectServiceImpl implements IProjectService {
     @Override
     public ProjectDto findById(Long id) {
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
-        return ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
+        ProjectDto projectDto = ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
+        if(projectDto == null)
+            return null;
+        List<UserDto> userDev = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+        List<UserDto> userFollow = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+        List<UserDto> userView = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+        projectDto.setUserView(userView);
+        projectDto.setUserDevs(userDev);
+        projectDto.setUserFollows(userFollow);
+        return projectDto;
     }
 
     @Override
@@ -185,6 +196,7 @@ public class ProjectServiceImpl implements IProjectService {
           return ProjectDto.toDto(projectEntity);
       }
       catch (Exception e){
+          System.out.println(e);
           return null;
       }
     }
@@ -284,7 +296,8 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            if(projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()){
+
+            if(projectModel.getAvatar( ) != null && !projectModel.getAvatar().isEmpty()){
                 String urlAvatar =  fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity =  new FileEntity();
                 String fileName = projectModel.getAvatar().getOriginalFilename();
@@ -296,6 +309,11 @@ public class ProjectServiceImpl implements IProjectService {
                 fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                 projectEntity.setAvatar(fileEntity);
                 projectEntity = iProjectRepository.save(projectEntity);
+            }
+            if(projectEntity.getAttachFiles() != null && projectEntity.getAttachFiles().size() > 0)
+                projectEntity.getAttachFiles().clear();
+            else{
+                projectEntity.setAttachFiles(new ArrayList<>());
             }
             if(projectModel.getFiles() != null && projectModel.getFiles().length > 0){
                 for (MultipartFile m : projectModel.getFiles()){
@@ -309,14 +327,17 @@ public class ProjectServiceImpl implements IProjectService {
                         fileEntity.setCategory(Const.tableName.PROJECT.name());
                         fileEntity.setUploadedBy(userEntity);
                         fileEntity.setObjectId(projectEntity.getId());
-                        iFileRepository.save(fileEntity);
+                        iFileRepository.saveAndFlush(fileEntity);
+                        projectEntity.getAttachFiles().add(fileEntity);
                     }
                 }
             }
+            iProjectRepository.save(projectEntity);
             iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
             return ProjectDto.toDto(projectEntity);
         }
         catch (Exception e){
+            System.out.println(e);
             return null;
         }
     }

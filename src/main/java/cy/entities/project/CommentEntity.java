@@ -43,8 +43,8 @@ public class CommentEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
 
-    @HistoryLogTitle(title = "", ignore = true)
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Where(clause = "category='COMMENT'")
     private List<FileEntity> attachFiles;
@@ -56,10 +56,5 @@ public class CommentEntity {
 
     @HistoryLogTitle(title = "", ignore = true)
     private Long ObjectId;
-
-    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
-    @Transient
-    List<FileEntity> files;
-
 
 }
