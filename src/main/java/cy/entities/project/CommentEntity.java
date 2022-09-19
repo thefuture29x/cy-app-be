@@ -44,7 +44,7 @@ public class CommentEntity {
     private Date createdDate;
 
     @HistoryLogTitle(title = "", ignore = true)
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Where(clause = "category='COMMENT'")
     private List<FileEntity> attachFiles;

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.reflect.Modifier.PUBLIC;
 
 @Component
+@Transactional
 public class HistoryServiceLogImpl implements IHistoryLogService {
 
 
@@ -49,7 +51,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
     @Override
     public Page<HistoryLogDto> filter(Pageable page, Specification<HistoryEntity> specs) {
-        return null;
+        return this.historyLogRepository.findAll(specs, page).map(HistoryLogDto::toDto);
     }
 
     @Override
