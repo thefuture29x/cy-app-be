@@ -182,6 +182,7 @@ public class ProjectServiceImpl implements IProjectService {
           return ProjectDto.toDto(projectEntity);
       }
       catch (Exception e){
+          System.out.println(e);
           return null;
       }
     }
@@ -281,7 +282,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            if(projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()){
+            if(projectModel.getAvatar( ) != null && !projectModel.getAvatar().isEmpty()){
                 String urlAvatar =  fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity =  new FileEntity();
                 String fileName = projectModel.getAvatar().getOriginalFilename();
@@ -310,10 +311,11 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
+            //iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
             return ProjectDto.toDto(projectEntity);
         }
         catch (Exception e){
+            System.out.println(e);
             return null;
         }
     }
@@ -321,7 +323,12 @@ public class ProjectServiceImpl implements IProjectService {
     @Override
     public Boolean deleteProject(Long id) {
         try{
-            iProjectRepository.deleteById(id);
+//            iProjectRepository.deleteById(id);
+            ProjectEntity projectEntity = iProjectRepository.findById(id).orElse(null);
+            if(projectEntity == null)
+                return false;
+            projectEntity.setIsDeleted(true);
+            iProjectRepository.save(projectEntity);
             return true;
         }
         catch (Exception e){
