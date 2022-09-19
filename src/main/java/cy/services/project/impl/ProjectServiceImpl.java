@@ -1,19 +1,13 @@
 package cy.services.project.impl;
 
-import cy.dtos.TagDto;
 import cy.dtos.UserDto;
-import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
-import cy.entities.attendance.NotificationEntity;
-import cy.entities.attendance.RequestDeviceEntity;
 import cy.entities.project.*;
 import cy.models.project.ProjectModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
-import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.project.*;
-import cy.resources.UserResources;
 import cy.services.project.IHistoryLogService;
 import cy.services.project.IProjectService;
 import cy.services.project.ITagService;
