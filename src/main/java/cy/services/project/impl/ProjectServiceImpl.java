@@ -288,7 +288,7 @@ public class ProjectServiceImpl implements IProjectService {
                 String urlAvatar =  fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity =  new FileEntity();
                 String fileName = projectModel.getAvatar().getOriginalFilename();
-                //fileEntity.setCategory(Const.tableName.PROJECT.name());
+                fileEntity.setCategory(Const.tableName.PROJECT.name());
                 fileEntity.setUploadedBy(userEntity);
                 fileEntity.setLink(urlAvatar);
                 fileEntity.setObjectId(projectEntity.getId());
@@ -320,7 +320,7 @@ public class ProjectServiceImpl implements IProjectService {
                 }
             }
             iProjectRepository.save(projectEntity);
-            //iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
+            iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
             return ProjectDto.toDto(projectEntity);
         }
         catch (Exception e){

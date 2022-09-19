@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.lang.reflect.Modifier.PUBLIC;
 
 @Component
+@Transactional
 public class HistoryServiceLogImpl implements IHistoryLogService {
 
 
@@ -54,7 +56,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
     @Override
     public Page<HistoryLogDto> filter(Pageable page, Specification<HistoryEntity> specs) {
-        return null;
+        return this.historyLogRepository.findAll(specs, page).map(HistoryLogDto::toDto);
     }
 
     @Override
@@ -243,6 +245,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         StringBuilder checkFileChangeContent = new StringBuilder();
 
         for (int i = 0; i < fieldLength; ++i) {
+            changedContent.setLength(0);
             Field field = originalInsFsList.get(i);
             // IGNORE STATIC FIELDS
             if (field.getModifiers() == 9 || field.getModifiers() == 10)
@@ -255,7 +258,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             // annotation on field
             HistoryLogTitle annotationField = field.getAnnotation(HistoryLogTitle.class);
             if (annotationField == null) {
-
                 throw new CustomHandleException(371);
             }
             if (annotationField.ignore())
@@ -278,15 +280,16 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .userId(user)
                 .build();
         HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
+
         if (changedCount.get() == 0)
             return false;
+
         else if (changedCount.get() == 1 && changedFiles.get() == 1)  // user only change attach files
             historyEntity.setContent(checkFileChangeContent.toString());
-        else if (changedCount.get() > 1) {
+        else if (changedCount.get() == 1) {
             historyEntity.setContent(changedContent.toString());
         } else {// user only change 1 field
             // annotation on class
-
             if (annotationClass == null) {
                 throw new CustomHandleException(371);
             }
@@ -296,7 +299,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                     .append(annotationClass.title())
                     .append(".");
             historyEntity.setContent(changedContent.toString());
-
         }
         iNotificationService.add(NotificationModel.builder()
                 .title(user.getFullName() + " đã thay đổi " + annotationClass.title())
@@ -383,7 +385,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
                     } else {
                         List<FileEntity> originalFiles = (List<FileEntity>) field.get(original);
-                        checkFileChangeContent.append(" đã cập xóa file đính kèm!");
+                        checkFileChangeContent.append(" đã xóa file đính kèm!");
                         originalFiles.forEach(file -> {
                             checkFileChangeContent.append(createHtmlATag(file, " đã bị xóa"));
                         });

@@ -87,12 +87,12 @@ public class ProjectListener {
         tagQuery.setParameter("category", category);
         List<TagEntity> tagList = tagQuery.getResultList();
         o.setTagList(tagList);
-        //Get File
-        Query fileQuery = manager.createQuery("SELECT f from FileEntity f where f.objectId = :objectId and f.category =:category");
-        fileQuery.setParameter("objectId", o.getId());
-        fileQuery.setParameter("category", category);
-        List<FileEntity> fileEntityList = fileQuery.getResultList();
-        o.setFiles(fileEntityList);
+//        //Get File
+//        Query fileQuery = manager.createQuery("SELECT f from FileEntity f where f.objectId = :objectId and f.category =:category");
+//        fileQuery.setParameter("objectId", o.getId());
+//        fileQuery.setParameter("category", category);
+//        List<FileEntity> fileEntityList = fileQuery.getResultList();
+//        o.setFiles(fileEntityList);
         idField.setAccessible(false);
     }
 
