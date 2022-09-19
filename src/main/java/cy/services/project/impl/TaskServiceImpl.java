@@ -321,19 +321,10 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public boolean changIsDeleteById(Long id) {
-//        TaskEntity oldTask = this.getById(id);
-//        oldTask.setIsDeleted(true);
-//        this.repository.saveAndFlush(oldTask);
-//        iHistoryLogService.logDelete(id,oldTask, Const.tableName.TASK);
-
-        if(this.repository.findById(38L).isPresent()){
-            this.repository.deleteById(38L);
-
-        }
-
-        if(this.subTaskRepository.findById(4L).isPresent()){
-            this.subTaskService.deleteById(4L);
-        }
+        TaskEntity oldTask = this.getById(id);
+        oldTask.setIsDeleted(true);
+        this.repository.saveAndFlush(oldTask);
+        iHistoryLogService.logDelete(id,oldTask, Const.tableName.TASK);
         return true;
     }
 }

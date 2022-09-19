@@ -37,7 +37,7 @@ public class TaskEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    @Where(clause = "category='TASK")
+    @Where(clause = "category='TASK'")
     private List<FileEntity> attachFiles;
 
     @HistoryLogTitle(title = "", ignore = true)
