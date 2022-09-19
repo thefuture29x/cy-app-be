@@ -1,6 +1,8 @@
 package cy.services.project.impl;
 
+import cy.dtos.CustomHandleException;
 import cy.dtos.TagDto;
+import cy.dtos.project.DataSearchTag;
 import cy.dtos.project.TagRelationDto;
 import cy.entities.attendance.RequestDeviceEntity;
 import cy.entities.project.*;
@@ -74,48 +76,30 @@ public class TagRelationServiceImpl implements ITagRelationService {
         if (model.getIdTag() == null){
             return null;
         }
-        TagEntity tagEntity = iTagRepository.findById(model.getIdTag()).orElse(null);
-        if (tagEntity == null){
-            return null;
-        }
+        TagEntity tagEntity = iTagRepository.findById(model.getIdTag()).orElseThrow(() -> new CustomHandleException(183,"không tìm thấy Tag = "+model.getIdTag()));
+
         tagRelationEntity.setIdTag(model.getIdTag());
         if (model.getObjectId() == null){
             return null;
         }
-        if (model.getCategory() == null || model.getCategory().isEmpty()){
+        if ( model.getCategory().isEmpty()){
             return null;
         }
-        if (model.getObjectId() == null){
-            return null;
-        }
-
         if (model.getCategory().contains(Const.tableName.PROJECT.toString())){
-            ProjectEntity projectEntity = iProjectRepository.findById(model.getObjectId()).orElse(null);
-            if (projectEntity == null){
-                return null;
-            }
-            tagRelationEntity.setObjectId(projectEntity.getId());
+            ProjectEntity projectEntity = iProjectRepository.findById(model.getObjectId()).orElseThrow(() -> new CustomHandleException(183,"không tìm thấy id PROJECT = "+model.getObjectId()));
         }else if (model.getCategory().contains(Const.tableName.TASK.toString())){
-            TaskEntity taskEntity = iTaskRepository.findById(model.getObjectId()).orElse(null);
-            if (taskEntity == null){
-                return null;
-            }
-            tagRelationEntity.setObjectId(taskEntity.getId());
+            TaskEntity taskEntity = iTaskRepository.findById(model.getObjectId()).orElseThrow(() -> new CustomHandleException(183,"không tìm thấy id TASK = "+model.getObjectId()));
         }else if (model.getCategory().contains(Const.tableName.FEATURE.toString())){
-            FeatureEntity featureEntity = iFeatureRepository.findById(model.getObjectId()).orElse(null);
-            if (featureEntity == null){
-                return null;
-            }
-            tagRelationEntity.setObjectId(featureEntity.getId());
+            FeatureEntity featureEntity = iFeatureRepository.findById(model.getObjectId()).orElseThrow(() -> new CustomHandleException(183,"không tìm thấy id FEATURE = "+model.getObjectId()));
         } else if (model.getCategory().contains(Const.tableName.SUBTASK.toString())){
-            SubTaskEntity subTaskEntity = iSubTaskRepository.findById(model.getObjectId()).orElse(null);
-            if (subTaskEntity == null){
-                return null;
-            }
-            tagRelationEntity.setObjectId(subTaskEntity.getId());
+            SubTaskEntity subTaskEntity = iSubTaskRepository.findById(model.getObjectId()).orElseThrow(() -> new CustomHandleException(183,"không tìm thấy id SUBTASK = "+model.getObjectId()));
         }else {
             return null;
         }
+        if (iTagRelationRepository.checkIsEmpty(model.getObjectId(), model.getIdTag(), model.getCategory()) != null ){
+            return TagRelationDto.toDto(iTagRelationRepository.checkIsEmpty(model.getObjectId(), model.getIdTag(), model.getCategory()));
+        };
+        tagRelationEntity.setObjectId(model.getObjectId());
         tagRelationEntity.setCategory(model.getCategory());
         return TagRelationDto.toDto( iTagRelationRepository.save(tagRelationEntity));
     }
@@ -159,5 +143,12 @@ public class TagRelationServiceImpl implements ITagRelationService {
     @Override
     public List<TagRelationEntity> findTagByCategoryAndObject(String category, Long objectId) {
         return iTagRelationRepository.getByCategoryAndObjectId(category, objectId);
+    }
+
+    @Override
+    public Page<DataSearchTag> findAllByTag(String search, Pageable pageable) {
+        search = '#' + search;
+        Page<DataSearchTag> dataSearchTags = this.iTagRelationRepository.findAllByTag(search,pageable);
+        return dataSearchTags;
     }
 }

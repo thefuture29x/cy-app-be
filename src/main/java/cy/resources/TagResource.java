@@ -27,11 +27,7 @@ public class TagResource {
     }
     @GetMapping("{id}")
     public ResponseDto findById(@PathVariable("id") Long id){
-         TagDto tagDto = iTagService.findById(id);
-        if (tagDto == null){
-            return ResponseDto.of(181,tagDto);
-        }
-        return ResponseDto.of(tagDto);
+        return ResponseDto.of(iTagService.findById(id));
     }
 
     @PostMapping("update")
@@ -45,10 +41,7 @@ public class TagResource {
 
     @DeleteMapping("{id}")
     public ResponseDto deleteById(@PathVariable("id") Long id){
-        if (iTagService.deleteById(id) == false){
-            return ResponseDto.of(181,id);
-        }
-        return ResponseDto.of(true);
+        return ResponseDto.of(iTagService.deleteById(id));
     }
     @PostMapping("/findByPage/{pageIndex}/{pageSize}")
     public ResponseDto findByPage(@PathVariable("pageIndex") Integer pageIndex,@PathVariable("pageSize") Integer pageSize){
