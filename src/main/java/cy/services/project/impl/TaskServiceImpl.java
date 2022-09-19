@@ -103,10 +103,9 @@ public class TaskServiceImpl implements ITaskService {
 
         // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
         Date currentDate = new Date();
-        if(model.getStartDate().before(currentDate)){
+        if (model.getStartDate().before(currentDate)) {
             taskEntity.setStatus(Const.status.IN_PROGRESS.name());
-        }
-        else {
+        } else {
             taskEntity.setStatus(Const.status.TO_DO.name());
         }
 
@@ -114,10 +113,10 @@ public class TaskServiceImpl implements ITaskService {
 
         // add tag
         List<String> tagList = new ArrayList<>();
-        if(model.getTagNames() != null && model.getTagNames().size() > 0){
-            for (String tagName: model.getTagNames()) {
+        if (model.getTagNames() != null && model.getTagNames().size() > 0) {
+            for (String tagName : model.getTagNames()) {
                 TagEntity tagEntity = this.tagRepository.findByName(tagName);
-                if(tagEntity == null){
+                if (tagEntity == null) {
                     TagModel newTagModel = TagModel.builder().name(tagName).build();
                     TagDto newTagDto = this.tagService.add(newTagModel);
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
@@ -127,7 +126,7 @@ public class TaskServiceImpl implements ITaskService {
                             .build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(newTagDto.getName());
-                }else {
+                } else {
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
                             .idTag(tagEntity.getId())
                             .objectId(taskEntity.getId())
@@ -142,7 +141,7 @@ public class TaskServiceImpl implements ITaskService {
 
         // add dev
         List<UserDto> devList = new ArrayList<>();
-        if(model.getDevIds() != null && model.getDevIds().size() > 0){
+        if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
                 UserProjectEntity userProject = this.addDev(devId);
                 userProject.setObjectId(taskEntity.getId());
@@ -159,14 +158,14 @@ public class TaskServiceImpl implements ITaskService {
             fileModel.setFile(file);
             fileModel.setObjectId(taskEntity.getId());
             fileModel.setCategory(Const.tableName.TASK.name());
-           FileDto fileAfterSaveZ = fileService.add(fileModel);
+            FileDto fileAfterSaveZ = fileService.add(fileModel);
             fileAfterSave.add(fileAfterSaveZ.getLink());
         }
-        TaskDto result =  TaskDto.toDto(this.repository.saveAndFlush(taskEntity));
+        TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskEntity));
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
-        iHistoryLogService.logCreate(taskEntity.getId(),taskEntity, Const.tableName.TASK);
+        iHistoryLogService.logCreate(taskEntity.getId(), taskEntity, Const.tableName.TASK);
         return result;
     }
 
@@ -196,10 +195,9 @@ public class TaskServiceImpl implements ITaskService {
 
         // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
         Date currentDate = new Date();
-        if(model.getStartDate().before(currentDate)){
+        if (model.getStartDate().before(currentDate)) {
             taskOld.setStatus(Const.status.IN_PROGRESS.name());
-        }
-        else {
+        } else {
             taskOld.setStatus(Const.status.TO_DO.name());
         }
 
@@ -207,16 +205,14 @@ public class TaskServiceImpl implements ITaskService {
 
         // add tag
         List<String> tagList = new ArrayList<>();
-        if(model.getTagNames() != null && model.getTagNames().size() > 0){
+        if (model.getTagNames() != null && model.getTagNames().size() > 0) {
             // delete tag relation old
-            for (TagEntity tagEntity : taskOld.getTagList()) {
-                List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectIdAAndIdTag(Const.tableName.TASK.name(), taskOld.getId(), tagEntity.getId());
-                tagRelationEntities.stream().forEach(tagRelationEntity -> this.tagRelationRepository.delete(tagRelationEntity));
-            }
+            List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
+            tagRelationEntities.stream().forEach(tagRelationEntity -> this.tagRelationRepository.delete(tagRelationEntity));
 
-            for (String tagName: model.getTagNames()) {
+            for (String tagName : model.getTagNames()) {
                 TagEntity tagEntity = this.tagRepository.findByName(tagName);
-                if(tagEntity == null){
+                if (tagEntity == null) {
                     TagModel newTagModel = TagModel.builder().name(tagName).build();
                     TagDto newTagDto = this.tagService.add(newTagModel);
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
@@ -226,7 +222,7 @@ public class TaskServiceImpl implements ITaskService {
                             .build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(newTagDto.getName());
-                }else {
+                } else {
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
                             .idTag(tagEntity.getId())
                             .objectId(taskupdate.getId())
@@ -244,7 +240,7 @@ public class TaskServiceImpl implements ITaskService {
         oldUserProjects.stream().forEach(oldUserProject -> this.userProjectRepository.delete(oldUserProject));
         // add dev
         List<UserDto> devList = new ArrayList<>();
-        if(model.getDevIds() != null && model.getDevIds().size() > 0){
+        if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
                 UserProjectEntity userProject = this.addDev(devId);
                 userProject.setObjectId(taskupdate.getId());
@@ -252,6 +248,12 @@ public class TaskServiceImpl implements ITaskService {
                 UserEntity userEntity1 = this.userRepository.findById(devId).orElseThrow(() -> new CustomHandleException(11));
                 devList.add(UserDto.toDto(userEntity1));
             }
+        }
+
+        // delete old file
+        List<FileEntity> fileEntities = this.fileRepository.getByCategoryAndObjectId(Const.tableName.TAG.name(), model.getId());
+        if(!fileEntities.isEmpty()){
+            fileEntities.forEach(file -> this.fileRepository.deleteById(file.getId()));
         }
 
         // save file
@@ -264,7 +266,7 @@ public class TaskServiceImpl implements ITaskService {
             FileDto fileAfterSaveZ = fileService.add(fileModel);
             fileAfterSave.add(fileAfterSaveZ.getLink());
         }
-        TaskDto result =  TaskDto.toDto(this.repository.saveAndFlush(taskupdate));
+        TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskupdate));
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
@@ -287,7 +289,7 @@ public class TaskServiceImpl implements ITaskService {
                 this.userProjectRepository.delete(userProjectEntity);
             }
             //delete tag_relation
-            List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+            List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
             for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
                 this.tagRelationRepository.delete(tagRelationEntity);
             }
@@ -298,7 +300,7 @@ public class TaskServiceImpl implements ITaskService {
             this.repository.deleteById(id);
 
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
@@ -309,7 +311,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     // add dev
-    public UserProjectEntity addDev(Long id){
+    public UserProjectEntity addDev(Long id) {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         UserProjectEntity userProject = UserProjectEntity.builder()
@@ -326,7 +328,7 @@ public class TaskServiceImpl implements ITaskService {
         TaskEntity oldTask = this.getById(id);
         oldTask.setIsDeleted(true);
         this.repository.saveAndFlush(oldTask);
-        iHistoryLogService.logDelete(id,oldTask, Const.tableName.TASK);
+        iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK);
         return true;
     }
 }
