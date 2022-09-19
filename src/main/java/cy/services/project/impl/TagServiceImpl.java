@@ -1,8 +1,10 @@
 package cy.services.project.impl;
 
+import cy.dtos.CustomHandleException;
 import cy.dtos.TagDto;
 import cy.entities.project.TagEntity;
 import cy.models.project.TagModel;
+import cy.repositories.project.ITagRelationRepository;
 import cy.repositories.project.ITagRepository;
 import cy.services.project.ITagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ public class TagServiceImpl implements ITagService {
 
     @Autowired
     ITagRepository iTagRepository;
+    @Autowired
+    ITagRelationRepository iTagRelationRepository;
     @Override
     public List<TagDto> findAll() {
         List<TagDto> tagDtos = iTagRepository.findAll().stream().map(x->TagDto.toDto(x)).collect(Collectors.toList());
@@ -45,11 +49,8 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public TagDto findById(Long id) {
-        TagEntity entity = iTagRepository.findById(id).orElse(null);
-        if (entity == null){
-            return null;
-        }
-        return TagDto.toDto(iTagRepository.save(entity));
+        TagEntity entity = iTagRepository.findById(id).orElseThrow(() -> new CustomHandleException(183));
+        return TagDto.toDto(entity);
     }
 
     @Override
@@ -108,25 +109,20 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public boolean deleteById(Long id) {
-
-        TagEntity entity = iTagRepository.findById(id).orElse(null);
-        if (entity == null){
+        try {
+            this.iTagRelationRepository.deleteAllByTag(id);
+            this.iTagRepository.deleteById(id);
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
             return false;
         }
-        iTagRepository.deleteById(id);
-        entity = iTagRepository.findById(id).orElse(null);
-        if (entity == null){
-            return true;
-        }
-        return false;
     }
 
     @Override
     public boolean deleteByIds(List<Long> ids) {
         for (Long id : ids){
-            if (deleteById(id) == false){
-                return false;
-            }
+           deleteById(id);
         }
         return true;
     }
