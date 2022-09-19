@@ -9,6 +9,7 @@ public @interface HistoryLogTitle {
     String title();
 
     boolean isMultipleFiles() default false;
+    boolean isTagFields() default false;
 
     boolean ignore() default false;
 }

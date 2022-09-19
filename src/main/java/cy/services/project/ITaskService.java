@@ -6,4 +6,5 @@ import cy.models.project.TaskModel;
 import cy.services.IBaseService;
 
 public interface ITaskService extends IBaseService<TaskEntity, TaskDto, TaskModel, Long> {
+    boolean changIsDeleteById(Long id);
 }

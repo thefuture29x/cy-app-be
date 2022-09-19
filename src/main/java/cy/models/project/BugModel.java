@@ -24,6 +24,7 @@ public class BugModel {
     private List<TagModel> tags;
     private Boolean isDelete;
     private String priority;
+    private Long userAssign;
 
     public static BugEntity modelToEntity(BugModel model) {
        return BugEntity.builder()

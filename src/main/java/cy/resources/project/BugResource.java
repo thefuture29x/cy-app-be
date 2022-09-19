@@ -28,9 +28,13 @@ public class BugResource {
     public ResponseDto delete(@RequestParam(name = "id")Long id) {
         return ResponseDto.of(bugService.deleteById(id));
     }
-    @GetMapping(value = "/updateStatusBugDone")
-    public ResponseDto updateStatusBugDone(@RequestParam(name = "id")Long id) {
-        return ResponseDto.of(bugService.updateStatusBugDone(id));
+    @PutMapping(value = "/updateStatusBugToSubTask")
+    public ResponseDto updateStatusBugDone(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
+        return ResponseDto.of(bugService.updateStatusBugToSubTask(id,status));
+    }
+    @PutMapping(value = "/updateStatusSubTaskToBug")
+    public ResponseDto updateStatusSubTaskToBug(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
+        return ResponseDto.of(bugService.updateStatusSubTaskToBug(id,status));
     }
 
 }

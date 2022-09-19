@@ -7,10 +7,7 @@ import cy.repositories.project.IFeatureRepository;
 import cy.services.project.IFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -28,5 +25,16 @@ public class FeatureResource {
     public ResponseDto addNewFeature(@Valid FeatureModel model){
         return ResponseDto.of(this.featureService.add(model));
     }
+
+    @PostMapping("/update-feature")
+    public ResponseDto updateFeature(@Valid FeatureModel model){
+        return ResponseDto.of(this.featureService.update(model));
+    }
+
+    @DeleteMapping("/delete-feature/{id}")
+    public ResponseDto deleteFeature(@PathVariable("id") Long id){
+        return ResponseDto.of(this.featureService.deleteById(id));
+    }
+
 
 }

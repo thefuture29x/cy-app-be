@@ -21,7 +21,7 @@ public class TagResource {
     public ResponseDto add(@RequestBody TagModel tagModel){
         TagDto tagDto = iTagService.add(tagModel);
         if(tagDto== null ){
-            return ResponseDto.of(181,tagDto);
+            return ResponseDto.of(183,tagDto);
         }
         return ResponseDto.of(tagDto);
     }

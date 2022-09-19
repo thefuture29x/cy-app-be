@@ -4,10 +4,13 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.project.HistoryLogDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
+import cy.models.attendance.NotificationModel;
 import cy.repositories.project.IHistoryLogRepository;
+import cy.services.attendance.INotificationService;
 import cy.services.project.IHistoryLogService;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,6 +29,8 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
 
     private final IHistoryLogRepository historyLogRepository;
+    @Autowired
+    INotificationService iNotificationService;
 
     public HistoryServiceLogImpl(IHistoryLogRepository historyLogRepository) {
         this.historyLogRepository = historyLogRepository;
@@ -188,9 +193,12 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             throw new CustomHandleException(371);
 
         StringBuilder content = new StringBuilder()
+                .append(user.getFullName())
                 .append(" đã thêm ")
-                .append(category.name().toLowerCase())
-                .append("mới.");
+                .append(annotationClass.title())
+                .append(" mới.");
+
+
 
         this.historyLogRepository.saveAndFlush(HistoryEntity
                 .builder()
@@ -199,18 +207,24 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .content(content.toString())
                 .userId(user)
                 .build());
+
+        iNotificationService.add(NotificationModel.builder()
+                .title(user.getFullName() + " đã tạo mới " + annotationClass.title())
+                .content(content.toString())
+                .objectId(objectId)
+                .category(category.name())
+                .build());
     }
 
     @Override
     public boolean logUpdate(Long objectId, Object original, Object newObj, Const.tableName category) {
-//        UserEntity user = SecurityUtils.getCurrentUser().getUser(); // get current user
-        UserEntity user = UserEntity.builder().userName("admin").build(); // get current user
+        UserEntity user = SecurityUtils.getCurrentUser().getUser(); // get current user
         List<Field> originalInsFsList = null; // get list fields from object
 
         if (original.getClass().getSuperclass().getName().equals(ProjectBaseEntity.class.getName())) { // check if the class has super class is ProjectBaseEntity class
-            originalInsFsList = (List<Field>) combineMultipleArrays(original.getClass().getDeclaredFields(), original.getClass().getSuperclass().getDeclaredFields());
+            originalInsFsList = (List<Field>) Const.combineMultipleArrays(original.getClass().getDeclaredFields(), original.getClass().getSuperclass().getDeclaredFields());
         } else
-            originalInsFsList = (List<Field>) combineMultipleArrays(original.getClass().getDeclaredFields());
+            originalInsFsList = (List<Field>) Const.combineMultipleArrays(original.getClass().getDeclaredFields());
 
         // if 2 object is not the same class, it's not possible to compare
         if (!original.getClass().getName().equals(newObj.getClass().getName())
@@ -263,7 +277,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .category(category.name())
                 .userId(user)
                 .build();
-
+        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
         if (changedCount.get() == 0)
             return false;
         else if (changedCount.get() == 1 && changedFiles.get() == 1)  // user only change attach files
@@ -272,7 +286,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             historyEntity.setContent(changedContent.toString());
         } else {// user only change 1 field
             // annotation on class
-            HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
+
             if (annotationClass == null) {
                 throw new CustomHandleException(371);
             }
@@ -282,8 +296,16 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                     .append(annotationClass.title())
                     .append(".");
             historyEntity.setContent(changedContent.toString());
+
         }
-//        this.historyLogRepository.saveAndFlush(historyEntity);
+        iNotificationService.add(NotificationModel.builder()
+                .title(user.getFullName() + " đã thay đổi " + annotationClass.title())
+                .content(historyEntity.getContent())
+                .objectId(objectId)
+                .category(historyEntity.getCategory())
+                .build());
+
+        this.historyLogRepository.saveAndFlush(historyEntity);
         return true;
     }
 
@@ -309,6 +331,13 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .category(category.name())
                 .content(content.toString())
                 .userId(user)
+                .build());
+
+        iNotificationService.add(NotificationModel.builder()
+                .title(user.getFullName() + " đã xóa " + annotationClass.title())
+                .content(content.toString())
+                .objectId(objectId)
+                .category(category.name())
                 .build());
     }
 
@@ -427,15 +456,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         return aHtmlTag;
     }
 
-    private Collection<?> combineMultipleArrays(Object[]... arrays) {
-        Collection<Object> result = new ArrayList<>();
-        for (Object[] array : arrays) {
-            for (Object o : array) {
-                result.add(o);
-            }
-        }
-        return result;
-    }
 
 //    public static void main(String[] args) {
 //        ProjectEntity p = new ProjectEntity();
