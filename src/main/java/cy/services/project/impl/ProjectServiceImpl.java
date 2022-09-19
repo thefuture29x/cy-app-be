@@ -1,6 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.TagDto;
+import cy.dtos.UserDto;
 import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
@@ -62,7 +63,16 @@ public class ProjectServiceImpl implements IProjectService {
     @Override
     public ProjectDto findById(Long id) {
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
-        return ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
+        ProjectDto projectDto = ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
+        if(projectDto == null)
+            return null;
+        List<UserDto> userDev = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+        List<UserDto> userFollow = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+        List<UserDto> userView = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+        projectDto.setUserView(userView);
+        projectDto.setUserDevs(userDev);
+        projectDto.setUserFollows(userFollow);
+        return projectDto;
     }
 
     @Override
