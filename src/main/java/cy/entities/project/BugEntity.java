@@ -42,9 +42,10 @@ public class BugEntity extends ProjectBaseEntity{
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;
 
-    @HistoryLogTitle(title = "", isTagFields = true, ignore = true)
     @Transient
     private List<TagEntity> tagList;
 
+    @OneToMany(mappedBy = "bugId")
+    private List<BugHistoryEntity> historyBugList;
 
 }

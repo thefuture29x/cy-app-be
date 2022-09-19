@@ -1,5 +1,6 @@
 package cy.services.attendance.impl;
 
+import cy.configs.Base64ToMultipartFile;
 import cy.dtos.CustomHandleException;
 import cy.dtos.attendance.TextQrDto;
 import cy.entities.attendance.TextQrEntity;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -67,7 +69,7 @@ public class TextQrServiceImpl implements ITextQrService {
         textQrEntity.setUploadedBy(userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11)));
         if (model.getImage() != null && !model.getImage().isEmpty()) {
             try {
-                textQrEntity.setImage(fileUploadProvider.uploadFile("text-qr", model.getImage()));
+                textQrEntity.setImage(fileUploadProvider.uploadFile("text-qr", convertBase64ToStringPath(model.getImage())));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -83,7 +85,7 @@ public class TextQrServiceImpl implements ITextQrService {
             textQrEntity.setUploadedBy(userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11)));
             if (textQrModel.getImage() != null && !textQrModel.getImage().isEmpty()) {
                 try {
-                    textQrEntity.setImage(fileUploadProvider.uploadFile("text-qr", textQrModel.getImage()));
+                    textQrEntity.setImage(fileUploadProvider.uploadFile("text-qr", convertBase64ToStringPath(textQrModel.getImage())));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -98,9 +100,9 @@ public class TextQrServiceImpl implements ITextQrService {
     public TextQrDto update(TextQrModel model) {
         TextQrEntity textQrEntity = this.getById(model.getId());
         textQrEntity.setUploadedBy(userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(() -> new CustomHandleException(11)));
-        if (model.getImage() != null && !model.getImage().isEmpty() && model.getImage().getSize() > 0) {
+        if (model.getImage() != null && !model.getImage().isEmpty() && !model.getImage().contains("http")) {
             try {
-                textQrEntity.setImage(fileUploadProvider.uploadFile("text-qr", model.getImage()));
+                textQrEntity.setImage(fileUploadProvider.uploadFile("text-qr", convertBase64ToStringPath(model.getImage())));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -111,6 +113,7 @@ public class TextQrServiceImpl implements ITextQrService {
         textQrEntity.setCompany(model.getCompany());
         textQrEntity.setTelephone(model.getTelephone());
         textQrEntity.setFax(model.getFax());
+        textQrEntity.setContent(model.getContent());
         return TextQrDto.toDto(textQrRepository.save(textQrEntity));
     }
 
@@ -134,4 +137,18 @@ public class TextQrServiceImpl implements ITextQrService {
             return false;
         }
     }
+
+    public MultipartFile convertBase64ToStringPath(String image) throws IOException {
+        final String[] base64Array = image.split(",");
+        String dataUir, data;
+        if (base64Array.length > 1) {
+            dataUir = base64Array[0];
+            data = base64Array[1];
+        } else {
+            dataUir = "data:image/jpg;base64";
+            data = base64Array[0];
+        }
+        return new Base64ToMultipartFile(data, dataUir);
+    }
+
 }

@@ -44,7 +44,7 @@ public class TextQrResource {
     @RolesAllowed({RoleEntity.ADMINISTRATOR,RoleEntity.ADMIN,RoleEntity.MANAGER,RoleEntity.LEADER, RoleEntity.EMPLOYEE})
     @Operation(summary = "Delete text QR data")
     @DeleteMapping("delete")
-    public ResponseDto delete(Long id) {
+    public ResponseDto delete(@RequestParam(name = "id") Long id) {
         return ResponseDto.of(textQrService.deleteById(id));
     }
 

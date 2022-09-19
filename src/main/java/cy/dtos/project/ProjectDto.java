@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -29,13 +30,16 @@ public class ProjectDto {
     private List<String> attachFiles;
     private String avatar;
     private Boolean isDefault;
+    private List<UserDto> userDevs;
+    private List<UserDto> userFollows;
+    private List<UserDto> userView;
 
     public static ProjectDto toDto(ProjectEntity entity){
         if(entity == null)
             return null;
         List<String> lstFile = new ArrayList<>();
-        if(entity.getAttachedFiles() != null && entity.getAttachedFiles().size() > 0){
-            entity.getAttachedFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+        if(entity.getFiles() != null && entity.getFiles().size() > 0){
+            entity.getFiles().stream().forEach(x-> lstFile.add(x.getLink()));
         }
         return ProjectDto.builder()
                 .id(entity.getId())
@@ -50,13 +54,16 @@ public class ProjectDto {
                 .description(entity.getDescription())
                 .avatar(entity.getAvatar() == null ? null : entity.getAvatar().getLink())
                 .attachFiles(lstFile)
+                .userDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
+                .userFollows(entity.getFollowTeam() != null ? entity.getFollowTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
+                .userView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
                 .build();
     }
     public ProjectDto(ProjectEntity entity){
         if(entity != null){
             List<String> lstFile = new ArrayList<>();
-            if(entity.getAttachedFiles() != null && entity.getAttachedFiles().size() > 0){
-                entity.getAttachedFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+            if(entity.getFiles() != null && entity.getFiles().size() > 0){
+                entity.getFiles().stream().forEach(x-> lstFile.add(x.getLink()));
             }
             this.setId(entity.getId());
             this.setCreatedDate(entity.getCreatedDate());
@@ -70,6 +77,9 @@ public class ProjectDto {
             this.setStatus(entity.getStatus());
             this.setUpdatedDate(entity.getUpdatedDate());
             this.setStartDate(entity.getStartDate());
+            this.setUserDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
+            this.setUserFollows(entity.getFollowTeam() != null ? entity.getFollowTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
+            this.setUserView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
         }
     }
 }

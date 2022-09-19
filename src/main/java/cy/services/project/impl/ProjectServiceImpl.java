@@ -4,13 +4,16 @@ import cy.dtos.TagDto;
 import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
+import cy.entities.attendance.NotificationEntity;
 import cy.entities.attendance.RequestDeviceEntity;
 import cy.entities.project.*;
 import cy.models.project.ProjectModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
+import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.project.*;
 import cy.resources.UserResources;
+import cy.services.project.IHistoryLogService;
 import cy.services.project.IProjectService;
 import cy.services.project.ITagService;
 import cy.utils.Const;
@@ -26,9 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.swing.text.html.HTML;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -55,6 +56,8 @@ public class ProjectServiceImpl implements IProjectService {
     ITagRelationRepository iTagRelationRepository;
     @Autowired
     IUserProjectRepository iUserProjectRepository;
+    @Autowired
+    IHistoryLogService iHistoryLogService;
     @Override
     public ProjectDto findById(Long id) {
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
@@ -175,9 +178,11 @@ public class ProjectServiceImpl implements IProjectService {
                   }
               }
           }
+          iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT);
           return ProjectDto.toDto(projectEntity);
       }
       catch (Exception e){
+          System.out.println(e);
           return null;
       }
     }
@@ -185,6 +190,7 @@ public class ProjectServiceImpl implements IProjectService {
     public ProjectDto updateProject(ProjectModel projectModel) {
         try {
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
+            ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
             if(projectEntity == null)
                 return null;
             Long userId = SecurityUtils.getCurrentUserId();
@@ -276,7 +282,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            if(projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()){
+            if(projectModel.getAvatar( ) != null && !projectModel.getAvatar().isEmpty()){
                 String urlAvatar =  fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity =  new FileEntity();
                 String fileName = projectModel.getAvatar().getOriginalFilename();
@@ -305,9 +311,11 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
+            //iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
             return ProjectDto.toDto(projectEntity);
         }
         catch (Exception e){
+            System.out.println(e);
             return null;
         }
     }
@@ -315,7 +323,12 @@ public class ProjectServiceImpl implements IProjectService {
     @Override
     public Boolean deleteProject(Long id) {
         try{
-            iProjectRepository.deleteById(id);
+//            iProjectRepository.deleteById(id);
+            ProjectEntity projectEntity = iProjectRepository.findById(id).orElse(null);
+            if(projectEntity == null)
+                return false;
+            projectEntity.setIsDeleted(true);
+            iProjectRepository.save(projectEntity);
             return true;
         }
         catch (Exception e){

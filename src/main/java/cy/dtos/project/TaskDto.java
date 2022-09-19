@@ -1,17 +1,16 @@
 package cy.dtos.project;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cy.dtos.UserDto;
+import cy.entities.project.TagEntity;
 import cy.entities.project.TaskEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.json.JSONObject;
-import org.springframework.web.multipart.MultipartFile;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,10 +25,17 @@ public class TaskDto {
     private String description;
     private String priority;
     private Long featureId;
-    private List<Object> attachFiles;
+    private List<UserDto> devList;
+    private List<String> tagName;
+    private List<String> files;
 
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;
+
+        List<String> lstFile = new ArrayList<>();
+        if(entity.getFiles() != null && entity.getFiles().size() > 0){
+            entity.getFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+        }
 
         return TaskDto.builder()
                 .id(entity.getId())
@@ -40,7 +46,8 @@ public class TaskDto {
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .featureId(entity.getFeature().getId())
-//                .attachFiles(entity.getAttachFiles() != null ? new JSONObject(entity.getAttachFiles()).getJSONArray("files").toList() : List.of())
+                .tagName(entity.getTagList() == null ? null : entity.getTagList().stream().map(TagEntity::getName).collect(Collectors.toList()))
+                .files(lstFile)
                 .build();
 
     }

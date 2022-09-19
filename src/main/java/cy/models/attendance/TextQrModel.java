@@ -13,8 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class TextQrModel {
     @ApiModelProperty(notes = "ID", dataType = "Long", example = "1")
     private Long id;
-    @ApiModelProperty(notes = "Image", dataType = "MultipartFile")
-    private MultipartFile image;
+    @ApiModelProperty(notes = "Image", dataType = "String")
+    private String image;
     @ApiModelProperty(notes = "Name", dataType = "String")
     private String name;
     @ApiModelProperty(notes = "Email", dataType = "String")
@@ -27,6 +27,8 @@ public class TextQrModel {
     private String telephone;
     @ApiModelProperty(notes = "Fax", dataType = "String")
     private String fax;
+    @ApiModelProperty(notes = "Content", dataType = "String")
+    private String Content;
 
     private Long uploadedBy;
 
@@ -34,12 +36,14 @@ public class TextQrModel {
         if (textQrModel == null) return null;
         return TextQrEntity.builder()
                 .id(textQrModel.getId())
+                .image(textQrModel.getImage())
                 .name(textQrModel.getName())
                 .email(textQrModel.getEmail())
                 .address(textQrModel.getAddress())
                 .company(textQrModel.getCompany())
                 .telephone(textQrModel.getTelephone())
                 .fax(textQrModel.getFax())
+                .content(textQrModel.getContent())
                 .build();
     }
 }
