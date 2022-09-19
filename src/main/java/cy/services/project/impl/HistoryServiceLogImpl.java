@@ -193,6 +193,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             throw new CustomHandleException(371);
 
         StringBuilder content = new StringBuilder()
+                .append(user.getFullName())
                 .append(" đã thêm ")
                 .append(annotationClass.title())
                 .append(" mới.");
