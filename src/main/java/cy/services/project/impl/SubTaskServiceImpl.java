@@ -10,6 +10,7 @@ import cy.models.project.SubTaskModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.services.project.IHistoryLogService;
+import cy.services.project.IRequestBugService;
 import cy.services.project.ISubTaskService;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
@@ -54,6 +55,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
     FileUploadProvider fileUploadProvider;
     @Autowired
     IBugRepository bugRepository;
+    @Autowired
+    IRequestBugService bugService;
 
     @Autowired
     IHistoryLogService iHistoryLogService;
@@ -320,7 +323,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
 
             // delete bug
-            this.bugRepository.getAllBugBySubTaskId(id).forEach(bugEntity -> this.bugRepository.delete(bugEntity));
+            this.bugRepository.getAllBugBySubTaskId(id).forEach(bugEntity -> this.bugService.deleteBug(bugEntity.getId()));
 
             for (UserProjectEntity userProjectEntity : this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
                 this.userProjectRepository.delete(userProjectEntity);
