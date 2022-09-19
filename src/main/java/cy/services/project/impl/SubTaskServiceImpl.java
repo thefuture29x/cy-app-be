@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class SubTaskServiceImpl implements ISubTaskService {
     @Autowired
     IUserRepository userRepository;
@@ -320,7 +322,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public boolean deleteById(Long id) {
         try{
-            this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
+            SubTaskEntity sb = this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
 
             // delete bug
             this.bugRepository.getAllBugBySubTaskId(id).forEach(bugEntity -> this.bugService.deleteBug(bugEntity.getId()));
@@ -336,7 +338,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             // delete file
             fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id).stream().forEach(fileEntity -> this.fileRepository.deleteById(fileEntity.getId()));
 
-            this.subTaskRepository.deleteById(id);
+            this.subTaskRepository.delete(sb);
 
             return true;
         }catch (Exception e){

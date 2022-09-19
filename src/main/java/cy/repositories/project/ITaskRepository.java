@@ -14,7 +14,7 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
 
     @Modifying
     @Transactional
-    @Query(value = "select * from tbl_tasks where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 5 MINUTE)))",nativeQuery = true)
+    @Query(value = "select * from tbl_tasks where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 12 HOUR)))",nativeQuery = true)
     List<TaskEntity> checkTasksDelete();
 
     @Query(value = "select * from tbl_tasks where feature_id = ?1", nativeQuery = true)

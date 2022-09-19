@@ -290,7 +290,7 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public void deleteBug(Long id) {
         // delete historyBug
-        this.iBugHistoryRepository.findByBugId(id).stream().forEach(bugHistoryEntity -> this.iBugHistoryRepository.delete(bugHistoryEntity));
+         this.iBugHistoryRepository.findByBugId(id).forEach(bugHistoryEntity -> this.iBugHistoryRepository.delete(bugHistoryEntity));
         // delete userProject
         this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream()
                 .forEach(userProjectEntity -> this.userProjectRepository.delete(userProjectEntity));

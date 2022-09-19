@@ -12,7 +12,7 @@ import java.util.List;
 public interface IFeatureRepository extends JpaRepository<FeatureEntity,Long>, JpaSpecificationExecutor<FeatureEntity> {
     @Modifying
     @Transactional
-    @Query(value = "select * from tbl_features where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 5 MINUTE)))",nativeQuery = true)
+    @Query(value = "select * from tbl_features where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 12 HOUR)))",nativeQuery = true)
     List<FeatureEntity> checkFeatureDelete();
 
     @Query(value = "select * from tbl_features where project_id = ?1", nativeQuery = true)

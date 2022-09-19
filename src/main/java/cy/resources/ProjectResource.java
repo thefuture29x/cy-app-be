@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
+
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "project")
 @RestController
 public class ProjectResource {

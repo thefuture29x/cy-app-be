@@ -23,11 +23,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Service
+@Transactional
 public class TaskServiceImpl implements ITaskService {
     private final ITaskRepository repository;
     private final IFileService fileService;
@@ -267,7 +269,7 @@ public class TaskServiceImpl implements ITaskService {
         result.setTagName(tagList);
         result.setDevList(devList);
 
-        iHistoryLogService.logUpdate(taskupdate.getId(),taskExist,taskupdate, Const.tableName.TASK);
+//        iHistoryLogService.logUpdate(taskupdate.getId(),taskExist,taskupdate, Const.tableName.TASK);
 
         return result;
     }

@@ -36,7 +36,6 @@ public class FeatureResource {
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @DeleteMapping("/{id}")
-    @Transactional
     public ResponseDto deleteFeature(@PathVariable Long id) {
         return ResponseDto.of(this.featureService.changIsDeleteById(id));
     }

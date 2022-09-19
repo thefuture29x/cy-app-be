@@ -14,6 +14,6 @@ import java.util.List;
 public interface IProjectRepository  extends JpaRepository<ProjectEntity, Long> {
     @Modifying
     @Transactional
-    @Query(value = "select * from tbl_projects where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 5 MINUTE)))",nativeQuery = true)
+    @Query(value = "select * from tbl_projects where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 12 HOUR)))",nativeQuery = true)
     List<ProjectEntity> checkProjectDelete();
 }
