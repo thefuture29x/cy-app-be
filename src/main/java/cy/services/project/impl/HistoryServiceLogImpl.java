@@ -218,14 +218,13 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
     @Override
     public boolean logUpdate(Long objectId, Object original, Object newObj, Const.tableName category) {
-//        UserEntity user = SecurityUtils.getCurrentUser().getUser(); // get current user
-        UserEntity user = UserEntity.builder().userName("admin").build(); // get current user
+        UserEntity user = SecurityUtils.getCurrentUser().getUser(); // get current user
         List<Field> originalInsFsList = null; // get list fields from object
 
         if (original.getClass().getSuperclass().getName().equals(ProjectBaseEntity.class.getName())) { // check if the class has super class is ProjectBaseEntity class
-            originalInsFsList = (List<Field>) combineMultipleArrays(original.getClass().getDeclaredFields(), original.getClass().getSuperclass().getDeclaredFields());
+            originalInsFsList = (List<Field>) Const.combineMultipleArrays(original.getClass().getDeclaredFields(), original.getClass().getSuperclass().getDeclaredFields());
         } else
-            originalInsFsList = (List<Field>) combineMultipleArrays(original.getClass().getDeclaredFields());
+            originalInsFsList = (List<Field>) Const.combineMultipleArrays(original.getClass().getDeclaredFields());
 
         // if 2 object is not the same class, it's not possible to compare
         if (!original.getClass().getName().equals(newObj.getClass().getName())
@@ -457,18 +456,9 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         return aHtmlTag;
     }
 
-    private Collection<?> combineMultipleArrays(Object[]... arrays) {
-        Collection<Object> result = new ArrayList<>();
-        for (Object[] array : arrays) {
-            for (Object o : array) {
-                result.add(o);
-            }
-        }
-        return result;
-    }
 
-    public static void main(String[] args) {
-        ProjectEntity p = new ProjectEntity();
-        ProjectEntity p1 = new ProjectEntity();
-    }
+//    public static void main(String[] args) {
+//        ProjectEntity p = new ProjectEntity();
+//        ProjectEntity p1 = new ProjectEntity();
+//    }
 }

@@ -1,6 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
+import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.SubTaskDto;
 import cy.entities.UserEntity;
@@ -8,6 +9,7 @@ import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
+import cy.services.project.IHistoryLogService;
 import cy.services.project.ISubTaskService;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
@@ -50,6 +52,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Autowired
     FileUploadProvider fileUploadProvider;
+
+    @Autowired
+    IHistoryLogService iHistoryLogService;
 
     @Override
     public List<SubTaskDto> findAll() {
@@ -113,16 +118,19 @@ public class SubTaskServiceImpl implements ISubTaskService {
         this.updateObjectId(fileEntityList, saveSubTask.getId());
 
         // Split tag list
-        List<String> tagListSplit = this.saveTagList(model.getTagList(), saveSubTask.getId());
+        List<TagDto> tagListSplit = this.saveTagList(model.getTagList(), saveSubTask.getId());
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
         subTaskDto.setAssignedUser(userEntitiesAssigned.stream().map(UserDto::toDto).collect(Collectors.toList()));
+
+        iHistoryLogService.logCreate(saveSubTask.getId(),saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
 
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
         Optional<SubTaskEntity> subTaskExisted = this.subTaskRepository.findById(modelUpdate.getId());
+        SubTaskEntity subTaskEntityOriginal = subTaskExisted.get();
         if (subTaskExisted.isEmpty()) {
             throw new CustomHandleException(197);
         }
@@ -163,13 +171,15 @@ public class SubTaskServiceImpl implements ISubTaskService {
         this.clearTagList(saveSubTask.getId());
 
         // Split tag list
-        List<String> tagListSplit = this.saveTagList(modelUpdate.getTagList(), saveSubTask.getId());
+        List<TagDto> tagListSplit = this.saveTagList(modelUpdate.getTagList(), saveSubTask.getId());
 
         saveSubTask.setTask(subTaskExisted.get().getTask());
         // Join 2 file lists
         saveSubTask.getAttachFiles().addAll(fileEntityList); // If save attach file, it will be null
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
+
+        iHistoryLogService.logUpdate(saveSubTask.getId(),subTaskEntityOriginal,saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
 
@@ -261,7 +271,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return fileEntityList;
     }
 
-    public List<String> saveTagList(String tagList, Long subTaskId) {
+    public List<TagDto> saveTagList(String tagList, Long subTaskId) {
+        List<TagDto> tagDtoList = new ArrayList<>();
         List<String> tagListSplit = Arrays.stream(tagList.split(",")).collect(Collectors.toList());
         Long tagId = null;
         for (String tag : tagListSplit) {
@@ -272,6 +283,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 TagEntity tagEntity = new TagEntity();
                 tagEntity.setName(tag);
                 TagEntity tagEntitySaved = tagRepository.save(tagEntity);
+                tagDtoList.add(TagDto.toDto(tagEntitySaved));
                 tagId = tagEntitySaved.getId();
             } else {
                 tagId = isTagExist.getId();
@@ -283,7 +295,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             tagRelationEntity.setCategory(Const.tableName.SUBTASK + "");
             tagRelationRepository.save(tagRelationEntity);
         }
-        return tagListSplit;
+        return tagDtoList;
     }
 
     public void updateObjectId(List<FileEntity> fileEntityList, Long objectId) {
@@ -302,18 +314,40 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public boolean deleteById(Long id) {
+        try{
+            this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
+
+            for (UserProjectEntity userProjectEntity : this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
+                this.userProjectRepository.delete(userProjectEntity);
+            }
+
+            for (TagRelationEntity tagRelationEntity : this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
+                this.tagRelationRepository.delete(tagRelationEntity);
+            }
+
+            this.subTaskRepository.deleteById(id);
+
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteByIds(List<Long> ids) {
+        return false;
+    }
+
+    @Override
+    public boolean changIsDeleteById(Long id) {
         Optional<SubTaskEntity> subTaskDeleted = this.subTaskRepository.findById(id);
         if (subTaskDeleted.isEmpty()) {
             throw new CustomHandleException(199);
         } else {
             subTaskDeleted.get().setIsDeleted(true);
             this.subTaskRepository.save(subTaskDeleted.get());
+            iHistoryLogService.logDelete(id,subTaskDeleted.get(), Const.tableName.SUBTASK);
         }
         return true;
-    }
-
-    @Override
-    public boolean deleteByIds(List<Long> ids) {
-        return false;
     }
 }

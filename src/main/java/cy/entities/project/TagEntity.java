@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@HistoryLogTitle(title = "tag")
 @Data
 @Builder
 @AllArgsConstructor
@@ -14,9 +15,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "tbl_tags")
 public class TagEntity {
+    @HistoryLogTitle(title = "", ignore = true)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @HistoryLogTitle(title = "tag name")
     @Column(unique = true)
     private String name;
 }

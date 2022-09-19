@@ -29,9 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.swing.text.html.HTML;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -191,6 +189,7 @@ public class ProjectServiceImpl implements IProjectService {
     public ProjectDto updateProject(ProjectModel projectModel) {
         try {
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
+            ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
             if(projectEntity == null)
                 return null;
             Long userId = SecurityUtils.getCurrentUserId();
@@ -311,6 +310,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
+            iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
             return ProjectDto.toDto(projectEntity);
         }
         catch (Exception e){
