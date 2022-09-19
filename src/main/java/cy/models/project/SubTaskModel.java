@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.*;
@@ -41,15 +42,13 @@ public class SubTaskModel {
     // Start date must be in the future or present.
     @NotNull
     @FutureOrPresent(message = "Start date must be in the future or present.")
-    @JsonSerialize(as = java.sql.Date.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
     // End date must not be null or empty.
     // End date must be in the future or present.
     @NotNull
     @FutureOrPresent(message = "End date must be in the future or present.")
-    @JsonSerialize(as = java.sql.Date.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     // User id assign to list should not be null or empty.
     // Subtask must have at least 1 user assigned.

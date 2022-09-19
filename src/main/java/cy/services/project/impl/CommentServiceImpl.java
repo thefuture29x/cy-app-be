@@ -169,7 +169,13 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public Page<CommentDto> findAllByCategoryAndObjectId(Pageable pageable, Const.tableName category, Long objectId) {
-        return this.commentRepository.findAll(CommentSpecification.byCategoryAndObjectId(category, objectId), pageable).map(CommentDto::toDto);
+        return this.commentRepository.findAll(Specification.where(
+                CommentSpecification.byCategory(category)
+        ).and(
+                CommentSpecification.byObjectId(objectId)
+        ).and(
+                CommentSpecification.byParentId(null)
+        ), pageable).map(CommentDto::toDto);
     }
 
     @Override
