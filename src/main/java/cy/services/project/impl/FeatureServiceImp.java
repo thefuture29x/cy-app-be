@@ -150,10 +150,10 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
-        FeatureEntity featureOriginal = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
-        FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
-        Set<Long> currentProjectUIDs = oldFeature.getProject().getDevTeam().stream().map(x -> x.getUserId()).collect(Collectors.toSet());
-        if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
+        FeatureEntity featureOriginal = (FeatureEntity) Const.copy(this.featureRepository.findById(model.getId()));
+        FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
+        Set<Long> currentProjectUIDs = oldFeature.getProject().getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toSet());
+        if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
             throw new CustomHandleException(2131231);
         }
         ProjectEntity projectEntity = oldFeature.getProject();

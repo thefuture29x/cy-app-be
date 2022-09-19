@@ -176,7 +176,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
-        TaskEntity taskExist = this.getById(model.getId());
+        TaskEntity taskExist = (TaskEntity) Const.copy(this.getById(model.getId()));
         TaskEntity taskOld = this.getById(model.getId());
 
         taskOld.setStartDate(model.getStartDate());

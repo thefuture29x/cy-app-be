@@ -137,7 +137,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
         Optional<SubTaskEntity> subTaskExisted = this.subTaskRepository.findById(modelUpdate.getId());
-        SubTaskEntity subTaskEntityOriginal = subTaskExisted.get();
+        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(this.subTaskRepository.findById(modelUpdate.getId()));
         if (subTaskExisted.isEmpty()) {
             throw new CustomHandleException(197);
         }

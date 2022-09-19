@@ -3,16 +3,13 @@ package cy.entities.project;
 import cy.entities.UserEntity;
 import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
-import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
 @HistoryLogTitle(title = "bug")
 @EntityListeners(ProjectListener.class)
 @Data
@@ -42,9 +39,12 @@ public class BugEntity extends ProjectBaseEntity{
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;
 
+
+    @HistoryLogTitle(title = "", ignore = true)
     @Transient
     private List<TagEntity> tagList;
 
+    @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(mappedBy = "bugId")
     private List<BugHistoryEntity> historyBugList;
 
