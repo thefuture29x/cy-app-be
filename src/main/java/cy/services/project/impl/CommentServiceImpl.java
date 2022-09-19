@@ -21,6 +21,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -87,17 +88,18 @@ public class CommentServiceImpl implements ICommentService {
         }
 
         commentEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
-
-        //    for save File
-        List<FileEntity> files = model.getNewFiles().stream().map(file -> this.fileService.addEntity(FileModel.builder()
-                .file(file)
-                .category(Const.tableName.COMMENT.name())
-                .objectId(commentEntity.getId())
-                .build())).collect(Collectors.toList());
-
-        commentEntity.setAttachFiles(files);
         this.commentRepository.saveAndFlush(commentEntity);
-        commentEntity.setFiles(files);
+        //    for save File
+        if (model.getNewFiles() != null) {
+            List<FileEntity> files = model.getNewFiles().stream().map(file -> this.fileService.addEntity(FileModel.builder()
+                    .file(file)
+                    .category(Const.tableName.COMMENT.name())
+                    .objectId(commentEntity.getId())
+                    .build())).collect(Collectors.toList());
+
+            if (files.size() > 0)
+                commentEntity.setAttachFiles(files);
+        }
 
         this.historyLogService.logCreate(commentEntity.getId(), commentEntity, Const.tableName.COMMENT);
         return CommentDto.toDto(commentEntity);
@@ -114,31 +116,44 @@ public class CommentServiceImpl implements ICommentService {
     public CommentDto update(CommentModel model) {
         CommentEntity commentEntity = this.getById(model.getId());
         CommentEntity originComment = (CommentEntity) Const.copy(commentEntity);
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (!commentEntity.getUserId().getUserId().equals(userId)) {
+            throw new CustomHandleException(403); // not comment of user
+        }
 
         if (!model.getCategory().name().equals(commentEntity.getCategory())
                 || !model.getObjectId().equals(commentEntity.getObjectId()))
             throw new CustomHandleException(402);
 
         commentEntity.setContent(model.getContent());
-        commentEntity.setUserId(SecurityUtils.getCurrentUser().getUser());
+
 
         //   for save file
-        Specification spec = Specification.where(FileSpecification.byIdIn(model.getAttachFiles()))
-                .and(FileSpecification.byCategory(model.getCategory()));
-        List<FileEntity> files = this.fileRepository.findAll(spec);
+        List<FileEntity> files = new ArrayList<>();
+        if (commentEntity.getAttachFiles() != null && model.getAttachFiles() != null) {
+            commentEntity.getAttachFiles().forEach(f -> {
+                if (model.getAttachFiles().contains(f.getId()))
+                    files.add(f);
+            });
+//            commentEntity.setAttachFiles(null);
+        } else commentEntity.setAttachFiles(null);
 
-        files.addAll(model.getNewFiles().stream().map(file -> this.fileService.addEntity(FileModel.builder()
-                .file(file)
-                .category(Const.tableName.COMMENT.name())
-                .objectId(commentEntity.getId())
-                .build())).collect(Collectors.toList()));
+        if (model.getNewFiles() != null) {
+            files.addAll(model.getNewFiles().stream().map(file -> this.fileService.addEntity(FileModel.builder()
+                    .file(file)
+                    .category(Const.tableName.COMMENT.name())
+                    .objectId(commentEntity.getId())
+                    .build())).collect(Collectors.toList()));
+        }
 
-        commentEntity.setAttachFiles(files);
+
+        if (files.size() > 0)
+            commentEntity.setAttachFiles(files);
+
         this.commentRepository.saveAndFlush(commentEntity);
-        commentEntity.setFiles(files);
 
         this.historyLogService.logUpdate(commentEntity.getId(), originComment, commentEntity, Const.tableName.COMMENT);
-        return CommentDto.toDto(this.commentRepository.saveAndFlush(commentEntity));
+        return CommentDto.toDto(commentEntity);
     }
 
     @Override
@@ -154,8 +169,13 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public Page<CommentDto> findAllByCategoryAndObjectId(Pageable pageable, Const.tableName category, Long objectId) {
-        return this.commentRepository.findAll(Specification.where(CommentSpecification.byCategoryAndObjectId(category, objectId)), pageable).map(CommentDto::toDto);
-
+        return this.commentRepository.findAll(Specification.where(
+                CommentSpecification.byCategory(category)
+        ).and(
+                CommentSpecification.byObjectId(objectId)
+        ).and(
+                CommentSpecification.byParentId(null)
+        ), pageable).map(CommentDto::toDto);
     }
 
     @Override

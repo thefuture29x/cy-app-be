@@ -336,4 +336,9 @@ public class BugServiceImpl implements IRequestBugService {
     public boolean deleteByIds(List<Long> ids) {
         return false;
     }
+
+    @Override
+    public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
+        return iBugRepository.findAllBugOfProject(idProject,pageable).map(data -> BugDto.entityToDto(data));
+    }
 }

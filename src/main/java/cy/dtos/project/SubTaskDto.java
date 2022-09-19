@@ -6,6 +6,7 @@ import cy.entities.project.SubTaskEntity;
 import cy.utils.Const;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -24,7 +25,9 @@ public class SubTaskDto {
     private TaskDto taskDto;
     private String description;
     private String priority;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     private List<UserDto> assignedUser;
     private List<FileDto> attachFileUrls;
@@ -39,7 +42,7 @@ public class SubTaskDto {
                 .priority(entity.getPriority())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
-                .attachFileUrls(entity.getFiles() != null ? entity.getFiles().stream().map(FileDto::toDto)
+                .attachFileUrls(entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(FileDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagList(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())

@@ -20,7 +20,7 @@ public class CommentSpecification {
     }
 
     public static Specification<CommentEntity> byCategoryAndObjectId(Const.tableName category, Long objectId) {
-        return Specification.where(byCategory(category)).and(byObjectId(objectId)).and(byParentId(null));
+        return Specification.where(byCategory(category)).and(byObjectId(objectId));
     }
 
 

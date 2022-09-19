@@ -5,6 +5,7 @@ import cy.dtos.ResponseDto;
 import cy.models.project.BugModel;
 import cy.services.project.impl.BugServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "bug")
@@ -35,6 +36,10 @@ public class BugResource {
     @PutMapping(value = "/updateStatusSubTaskToBug")
     public ResponseDto updateStatusSubTaskToBug(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
         return ResponseDto.of(bugService.updateStatusSubTaskToBug(id,status));
+    }
+    @GetMapping(value = "findAllBugOfProject")
+    public ResponseDto findAllBugOfProject(@RequestParam(name = "id")Long idProject ,Pageable pageable){
+        return ResponseDto.of(bugService.findAllBugOfProject(idProject,pageable));
     }
 
 }

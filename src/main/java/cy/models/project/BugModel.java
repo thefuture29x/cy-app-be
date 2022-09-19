@@ -4,6 +4,7 @@ import cy.entities.project.BugEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
@@ -17,7 +18,9 @@ public class BugModel {
     private String nameBug;
     private Long subTask;
     private String description;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     private Boolean isDefault;
     private MultipartFile[] files;

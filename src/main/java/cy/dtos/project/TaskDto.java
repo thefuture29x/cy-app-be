@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,7 +20,9 @@ import java.util.stream.Collectors;
 @Builder
 public class TaskDto {
     private Long id;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     private String status;
     private String name;
@@ -33,8 +37,8 @@ public class TaskDto {
         if(entity ==  null) return null;
 
         List<String> lstFile = new ArrayList<>();
-        if(entity.getFiles() != null && entity.getFiles().size() > 0){
-            entity.getFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
+            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
         }
 
         return TaskDto.builder()

@@ -46,7 +46,7 @@ public class CommentDto {
                 .ObjectId(commentEntity.getObjectId())
                 .createdBy(UserMetaDto.toDto(commentEntity.getUserId()))
                 .createdDate(commentEntity.getCreatedDate())
-//                .attachFiles(commentEntity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()))
+                .attachFiles(commentEntity.getAttachFiles() != null ? commentEntity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : null)
                 .build();
     }
 }

@@ -32,7 +32,7 @@ public class SubTaskEntity extends ProjectBaseEntity{
     @JoinColumn(name ="task_id")
     private TaskEntity task;
 
-    @HistoryLogTitle(title = "", ignore = true )
+    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     @Where(clause = "category='SUBTASK'")
