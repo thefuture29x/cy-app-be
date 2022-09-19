@@ -1,5 +1,6 @@
 package cy.repositories;
 
+import cy.dtos.UserDto;
 import cy.dtos.attendance.PayRollDto;
 import cy.entities.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,5 +41,7 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
     List<PayRollDto> calculatePayRoll(@Param("timeStart")String timeStart, @Param("timeEnd")String timeEnd);
     @Query(name = "search_user_pay_roll", nativeQuery = true)
     List<PayRollDto> searchUserPayRoll(@Param("timeStart")String timeStart, @Param("timeEnd")String timeEnd, @Param("nameUser") String nameUser);
+    @Query("select new cy.dtos.UserDto(u) from UserEntity u inner join UserProjectEntity up on u.userId = up.idUser where up.category = ?1 and up.type=?2 and up.objectId=?3")
+    List<UserDto> getByCategoryAndTypeAndObjectid(String category, String type, Long objectId);
 
 }
