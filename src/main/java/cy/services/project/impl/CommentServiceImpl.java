@@ -136,7 +136,7 @@ public class CommentServiceImpl implements ICommentService {
                     files.add(f);
             });
 //            commentEntity.setAttachFiles(null);
-        }
+        } else commentEntity.setAttachFiles(null);
 
         if (model.getNewFiles() != null) {
             files.addAll(model.getNewFiles().stream().map(file -> this.fileService.addEntity(FileModel.builder()

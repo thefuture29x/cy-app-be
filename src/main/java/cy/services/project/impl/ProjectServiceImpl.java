@@ -311,7 +311,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            //iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
+            iHistoryLogService.logUpdate(projectEntity.getId(),projectOriginal,projectEntity, Const.tableName.PROJECT);
             return ProjectDto.toDto(projectEntity);
         }
         catch (Exception e){

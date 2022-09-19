@@ -33,8 +33,8 @@ public class TaskDto {
         if(entity ==  null) return null;
 
         List<String> lstFile = new ArrayList<>();
-        if(entity.getFiles() != null && entity.getFiles().size() > 0){
-            entity.getFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
+            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
         }
 
         return TaskDto.builder()
