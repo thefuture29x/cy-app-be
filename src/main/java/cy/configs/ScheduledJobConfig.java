@@ -1,9 +1,8 @@
 package cy.configs;
 
-import cy.entities.project.SubTaskEntity;
-import cy.repositories.project.ISubTaskRepository;
-import cy.repositories.project.ITaskRepository;
-import cy.services.project.ISubTaskService;
+import cy.entities.project.*;
+import cy.repositories.project.*;
+import cy.services.project.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -16,15 +15,29 @@ public class ScheduledJobConfig {
     ISubTaskService subTaskService;
     @Autowired
     ITaskRepository taskRepository;
+    @Autowired
+    ITaskService taskService;
+    @Autowired
+    IFeatureRepository featureRepository;
+    @Autowired
+    IFeatureService featureService;
+    @Autowired
+    IProjectRepository projectRepository;
+    @Autowired
+    IProjectService projectService;
+    @Autowired
+    IBugRepository bugRepository;
+    @Autowired
+    IRequestBugService bugService;
 
     //Cron for delete
     // second(1-59) minute(0-59) hour(1-23) dayOfMonth(1-31) month(1-12) dayOfWeek(0-6, sunday = 0)
-    @Scheduled(cron = "0 0/5 * * * *")
+    @Scheduled(cron = "0 0/30 * * * *")
     public void checkStatusIsDelete(){
-        List<SubTaskEntity> subTaskEntities = subTaskRepository.checkSubTasksDelete();
-        if(!subTaskEntities.isEmpty()){
-            subTaskEntities.stream().forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
-        }
+//        List<SubTaskEntity> subTaskEntities = subTaskRepository.checkSubTasksDelete();
+//        if(!subTaskEntities.isEmpty()){
+//            subTaskEntities.stream().forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
+//        }
 //        taskRepository.deleteTaskEntitiesByIsDeleted();
     }
 
