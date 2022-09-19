@@ -27,6 +27,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -82,8 +83,34 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public TaskDto findById(Long id) {
-        return TaskDto.toDto(this.getById(id));
+    public TaskDto  findById(Long id) {
+        TaskEntity taskEntity = this.getById(id);
+
+        // set Tag
+        List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+        List<Long> idTags = tagRelationEntities.stream().map(TagRelationEntity::getIdTag).collect(Collectors.toList());
+        List<TagEntity> tagEntities = new ArrayList<>();
+        if(idTags != null){
+            for (Long idTag : idTags) {
+                TagEntity tag = this.tagRepository.findById(idTag).orElseThrow(() -> new RuntimeException("Tag not exist !!!"));
+                tagEntities.add(tag);
+            }
+        }
+        taskEntity.setTagList(tagEntities);
+
+        // set devTeam
+        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+        List<Long> idUsers = userProjectEntities.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
+        List<UserEntity> userEntities = new ArrayList<>();
+        if(idUsers != null){
+            for (Long idUser : idUsers) {
+                UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
+                userEntities.add(user);
+            }
+        }
+        taskEntity.setDevTeam(userEntities);
+
+        return TaskDto.toDto(taskEntity);
     }
 
     @Override
@@ -251,9 +278,9 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         // delete old file
-        List<FileEntity> fileEntities = this.fileRepository.getByCategoryAndObjectId(Const.tableName.TAG.name(), model.getId());
-        if(!fileEntities.isEmpty()){
-            fileEntities.forEach(file -> this.fileRepository.deleteById(file.getId()));
+        List<FileEntity> fileEntities = this.fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
+        if (!fileEntities.isEmpty()) {
+            this.fileRepository.deleteAllInBatch(fileEntities);
         }
 
         // save file
@@ -271,7 +298,7 @@ public class TaskServiceImpl implements ITaskService {
         result.setTagName(tagList);
         result.setDevList(devList);
 
-//        iHistoryLogService.logUpdate(taskupdate.getId(),taskExist,taskupdate, Const.tableName.TASK);
+        iHistoryLogService.logUpdate(taskupdate.getId(), taskExist, taskupdate, Const.tableName.TASK);
 
         return result;
     }

@@ -1,5 +1,6 @@
 package cy.dtos.project;
 
+import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.entities.project.TagEntity;
 import cy.entities.project.TaskEntity;
@@ -50,7 +51,10 @@ public class TaskDto {
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .featureId(entity.getFeature().getId())
-                .tagName(entity.getTagList() == null ? null : entity.getTagList().stream().map(TagEntity::getName).collect(Collectors.toList()))
+                .devList(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
+                        .collect(Collectors.toList()) : new ArrayList<>())
+                .tagName(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)
+                        .collect(Collectors.toList()) : new ArrayList<>())
                 .files(lstFile)
                 .build();
 

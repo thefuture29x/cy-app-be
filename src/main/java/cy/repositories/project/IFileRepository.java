@@ -14,7 +14,7 @@ import java.util.List;
 public interface IFileRepository extends JpaRepository<FileEntity, Long>, JpaSpecificationExecutor<FileEntity> {
     FileEntity findByFileNameAndObjectId(String fileName, Long objectId);
 
-    @Query("select tr from FileEntity tr where tr.category LIKE ?1 and tr.objectId = ?2")
+    @Query(value = "select * from tbl_files where category LIKE ?1 and object_id = ?2", nativeQuery = true)
     List<FileEntity> getByCategoryAndObjectId(String category, Long objectId);
     
     List<FileEntity> findByCategoryAndObjectId(String category, Long objectId);
