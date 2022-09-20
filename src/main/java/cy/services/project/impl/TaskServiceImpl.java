@@ -4,6 +4,7 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
+import cy.dtos.project.ProjectDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
@@ -17,12 +18,17 @@ import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
 import org.apache.poi.hssf.record.PageBreakRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,6 +51,8 @@ public class TaskServiceImpl implements ITaskService {
     private final IHistoryLogService iHistoryLogService;
     private final ISubTaskService subTaskService;
     private final ISubTaskRepository subTaskRepository;
+    @Autowired
+    EntityManager manager;
 
     public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository) {
         this.repository = repository;
@@ -357,5 +365,68 @@ public class TaskServiceImpl implements ITaskService {
         this.repository.saveAndFlush(oldTask);
         iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK);
         return true;
+    }
+
+    @Override
+    public Page<TaskDto> findByPage(Integer pageIndex, Integer pageSize, TaskModel taskModel) {
+        Pageable pageable = PageRequest.of(pageIndex,pageSize);
+        String sql="SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
+        String countSQL = "select count(distinct(task)) from TaskEntity task  ";
+        if(taskModel.getTextSearch() != null && taskModel.getTextSearch().charAt(0) == '#'){
+            sql += " inner join TagRelationEntity tr on tr.objectId = task.id inner join TagEntity t on t.id = tr.idTag ";
+            countSQL += " inner join TagRelationEntity tr on tr.objectId = task.id inner join TagEntity t on t.id = tr.idTag ";
+        }
+        sql += " WHERE 1=1 ";
+        countSQL += " WHERE 1=1 ";
+        if(taskModel.getStatus()!= null) {
+            sql+=" AND task.status = :status ";
+            countSQL+=" AND task.status = :status ";
+        }
+        if(taskModel.getStartDate() != null){
+            sql+=" AND task.startDate >= :startDate ";
+            countSQL+="AND task.startDate >= :startDate ";
+        }
+        if(taskModel.getEndDate() != null){
+            sql+=" AND task.endDate <= :endDate ";
+            countSQL+="AND task.endDate <= :endDate ";
+        }
+        if(taskModel.getTextSearch() != null){
+            if(taskModel.getTextSearch().charAt(0) == '#'){
+                sql+=" AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'TASK') ";
+                countSQL+="AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'TASK') ";
+            }
+            else{
+                sql+=" AND (task.name LIKE :textSearch or task.createBy.fullName LIKE :textSearch ) ";
+                countSQL+="AND (task.name LIKE :textSearch or task.createBy.fullName LIKE :textSearch ) ";
+            }
+        }
+        sql+="order by task.createdDate desc";
+
+        Query q = manager.createQuery(sql, TaskDto.class);
+        Query qCount = manager.createQuery(countSQL);
+
+        if(taskModel.getStatus() != null){
+            q.setParameter("status", taskModel.getStatus());
+            qCount.setParameter("status", taskModel.getStatus());
+        }
+        if(taskModel.getStartDate() != null){
+            q.setParameter("startDate", taskModel.getStartDate());
+            qCount.setParameter("startDate", taskModel.getStartDate());
+        }
+        if(taskModel.getEndDate() != null){
+            q.setParameter("endDate", taskModel.getEndDate());
+            qCount.setParameter("endDate", taskModel.getEndDate());
+        }
+        if(taskModel.getTextSearch() != null){
+            q.setParameter("textSearch", "%" + taskModel.getTextSearch() + "%");
+            qCount.setParameter("textSearch", "%" + taskModel.getTextSearch() + "%");
+        }
+
+        q.setFirstResult(pageIndex * pageSize);
+        q.setMaxResults(pageSize);
+
+        Long numberResult = (Long) qCount.getSingleResult();
+        Page<TaskDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
+        return result;
     }
 }
