@@ -18,17 +18,16 @@ public class BugModel {
     private String nameBug;
     private Long subTask;
     private String description;
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private Date startDate;
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    private Date endDate;
     private Boolean isDefault;
     private MultipartFile[] files;
     private List<TagModel> tags;
     private Boolean isDelete;
     private String priority;
     private Long userAssign;
-
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date startDate;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date endDate;
     public static BugEntity modelToEntity(BugModel model) {
        return BugEntity.builder()
                .id(model.getId())
@@ -36,7 +35,7 @@ public class BugModel {
                .name(model.getNameBug())
                .description(model.getDescription())
                .startDate(model.getStartDate())
-               .endDate(model.getEndDate())
+                .endDate(model.getEndDate())
                .isDefault(model.getIsDefault())
                .isDeleted(model.getIsDelete())
                .build();
