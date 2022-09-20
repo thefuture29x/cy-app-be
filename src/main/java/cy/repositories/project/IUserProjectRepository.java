@@ -12,5 +12,5 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
     @Query("select up from UserProjectEntity up where up.category LIKE ?1 and up.objectId = ?2")
     List<UserProjectEntity> getByCategoryAndObjectId(String category, Long objectId);
 
-    void deleteByCategoryAndObjectIdAndIdUser(String category, Long objectId, Long idUser);
+    void deleteByCategoryAndObjectId(String category, Long objectId);
 }

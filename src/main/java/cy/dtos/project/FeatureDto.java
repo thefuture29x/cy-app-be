@@ -25,6 +25,7 @@ public class FeatureDto {
     private Long uid;
     private Date startDate;
     private Date endDate;
+    private String priority;
     private String status;
     private Boolean isDeleted;
     private String name;
@@ -45,6 +46,7 @@ public class FeatureDto {
                 .status(entity.getStatus())
                 .isDeleted(entity.getIsDeleted())
                 .name(entity.getName())
+                .priority(entity.getPriority())
                 .description(entity.getDescription())
                 .project(ProjectDto.toDto(entity.getProject()))
                 .devTeam(entity.getDevTeam()!=null? entity.getDevTeam().stream().map(UserDto::toDto).collect(Collectors.toList()) : new ArrayList<>())

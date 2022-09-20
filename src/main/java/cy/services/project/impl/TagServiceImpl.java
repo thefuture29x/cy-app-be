@@ -55,7 +55,7 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public TagEntity getById(Long id) {
-        return null;
+        return this.iTagRepository.findById(id).orElseThrow(()->new CustomHandleException(23));
     }
 
     @Override
