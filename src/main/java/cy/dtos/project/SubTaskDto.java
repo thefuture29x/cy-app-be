@@ -1,13 +1,9 @@
 package cy.dtos.project;
 
-import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.entities.project.SubTaskEntity;
-import cy.utils.Const;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +29,19 @@ public class SubTaskDto {
     private List<FileDto> attachFileUrls;
     private List<TagDto> tagList;
 
+    public SubTaskDto(SubTaskEntity subTaskEntity) {
+        this.id = subTaskEntity.getId();
+        this.name = subTaskEntity.getName();
+        this.taskDto = TaskDto.toDto(subTaskEntity.getTask());
+        this.description = subTaskEntity.getDescription();
+        this.priority = subTaskEntity.getPriority();
+        this.startDate = subTaskEntity.getStartDate();
+        this.endDate = subTaskEntity.getEndDate();
+        this.assignedUser = new ArrayList<>();
+        this.attachFileUrls = subTaskEntity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList());
+        this.tagList = new ArrayList<>();
+    }
+
     public static SubTaskDto toDto(SubTaskEntity entity){
         return SubTaskDto.builder()
                 .id(entity.getId())
@@ -44,10 +53,10 @@ public class SubTaskDto {
                 .endDate(entity.getEndDate())
                 .attachFileUrls(entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(FileDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
-                .tagList(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto)
-                        .collect(Collectors.toList()) : new ArrayList<>())
-                .assignedUser(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
-                        .collect(Collectors.toList()) : new ArrayList<>())
+//                .tagList(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto)
+//                        .collect(Collectors.toList()) : new ArrayList<>())
+//                .assignedUser(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
+//                        .collect(Collectors.toList()) : new ArrayList<>())
                 .build();
     }
 }

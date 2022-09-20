@@ -18,4 +18,7 @@ public interface IFileRepository extends JpaRepository<FileEntity, Long>, JpaSpe
     List<FileEntity> getByCategoryAndObjectId(String category, Long objectId);
     
     List<FileEntity> findByCategoryAndObjectId(String category, Long objectId);
+
+    @Query(value = "DELETE FROM tbl_files WHERE id = ?1", nativeQuery = true)
+    void deleteByIdNative(Long id);
 }

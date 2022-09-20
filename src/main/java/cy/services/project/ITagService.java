@@ -1,6 +1,6 @@
 package cy.services.project;
 
-import cy.dtos.TagDto;
+import cy.dtos.project.TagDto;
 import cy.entities.project.TagEntity;
 import cy.models.project.TagModel;
 import cy.services.IBaseService;
