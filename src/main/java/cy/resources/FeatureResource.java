@@ -4,7 +4,6 @@ import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
 import cy.models.project.FeatureFilterModel;
 import cy.models.project.FeatureModel;
-import cy.repositories.project.IFeatureRepository;
 import cy.repositories.project.specification.FeatureSpecification;
 import cy.services.project.IFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;

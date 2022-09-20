@@ -1,7 +1,6 @@
 package cy.services.project.impl;
 
 import cy.dtos.UserDto;
-import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;

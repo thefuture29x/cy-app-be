@@ -1,12 +1,16 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
+import cy.dtos.TagDto;
 import cy.dtos.project.DataSearchTag;
 import cy.dtos.project.TagRelationDto;
+import cy.entities.attendance.RequestDeviceEntity;
 import cy.entities.project.*;
+import cy.models.project.TagModel;
 import cy.models.project.TagRelationModel;
 import cy.repositories.project.*;
 import cy.services.project.ITagRelationService;
+import cy.services.project.ITagService;
 import cy.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,7 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TagRelationServiceImpl implements ITagRelationService {
