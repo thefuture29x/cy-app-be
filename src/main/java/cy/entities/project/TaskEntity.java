@@ -2,20 +2,14 @@ package cy.entities.project;
 
 import cy.entities.UserEntity;
 import cy.entities.project.Listener.ProjectListener;
-import cy.utils.Const;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.Parent;
 import org.hibernate.annotations.Where;
-import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 @HistoryLogTitle(title = "task")
 @EntityListeners(ProjectListener.class)
 @AllArgsConstructor
@@ -27,7 +21,6 @@ import java.util.Set;
 public class TaskEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "mức độ ưu tiên")
     private String priority;
-
 
     @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)

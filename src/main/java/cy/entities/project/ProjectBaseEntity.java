@@ -64,7 +64,6 @@ public class ProjectBaseEntity {
     @HistoryLogTitle(title = "trạng thái mặc định")
     private Boolean isDefault = false;
 
-
     @HistoryLogTitle(title = "", isTagFields = true,ignore = true)
     @Transient
     private List<TagEntity> tagList;

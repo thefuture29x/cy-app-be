@@ -59,4 +59,21 @@ public class TaskDto {
                 .build();
 
     }
+
+    public TaskDto(TaskEntity entity){
+        this.id = entity.getId();
+        this.startDate = entity.getStartDate();
+        this.endDate = entity.getEndDate();
+        this.status = entity.getStatus();
+        this.name = entity.getName();
+        this.description = entity.getDescription();
+        this.priority = entity.getPriority();
+        this.featureId = entity.getFeature().getId();
+//        this.devList = entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
+//                .collect(Collectors.toList()) : new ArrayList<>();
+//        this.tagName = entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)
+//                .collect(Collectors.toList()) : new ArrayList<>();
+        this.files = entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(x-> x.getLink())
+                .collect(Collectors.toList()) : new ArrayList<>();
+    }
 }
