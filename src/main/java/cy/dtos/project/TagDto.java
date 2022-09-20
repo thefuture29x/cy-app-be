@@ -1,4 +1,4 @@
-package cy.dtos;
+package cy.dtos.project;
 
 import cy.entities.project.TagEntity;
 import lombok.AllArgsConstructor;
@@ -13,6 +13,11 @@ import lombok.NoArgsConstructor;
 public class TagDto {
     private Long id;
     private String name;
+
+    public TagDto(TagEntity entity) {
+        this.id = entity.getId();
+        this.name = entity.getName();
+    }
 
     public static TagDto toDto(TagEntity entity) {
         return TagDto.builder()

@@ -1,6 +1,5 @@
 package cy.services.project.impl;
 
-import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.attendance.RequestDeviceDto;
 import cy.dtos.project.ProjectDto;

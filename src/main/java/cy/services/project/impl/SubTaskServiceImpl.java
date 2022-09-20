@@ -1,7 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.TagDto;
+import cy.dtos.project.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.SubTaskDto;
 import cy.entities.UserEntity;
@@ -17,16 +17,17 @@ import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,6 +64,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Autowired
     IHistoryLogService iHistoryLogService;
 
+    @Autowired
+    EntityManager entityManager;
+
     @Override
     public List<SubTaskDto> findAll() {
         return null;
@@ -85,7 +89,28 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto findById(Long id) {
-        return this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
+        SubTaskEntity subTaskEntity = this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(197));
+        SubTaskDto subTaskDto = SubTaskDto.toDto(subTaskEntity);
+        this.getTagListAndDevTeam(subTaskDto);
+        return subTaskDto;
+    }
+
+    public void getTagListAndDevTeam(SubTaskDto subTaskDto) {
+        List<Long> tagIds = this.tagRelationRepository.getAllTagIds(Const.tableName.SUBTASK + "",
+                subTaskDto.getId());
+        List<TagDto> tagDtos = new ArrayList<>();
+        for (Long id : tagIds) {
+            this.tagRepository.findById(id).ifPresent(tagEntity -> tagDtos.add(TagDto.toDto(tagEntity)));
+        }
+        subTaskDto.setTagList(tagDtos);
+
+        List<Long> devIds = this.userProjectRepository.getAllDevIds(Const.tableName.SUBTASK + "",
+                subTaskDto.getId());
+        List<UserDto> assignedUsers = new ArrayList<>();
+        for(Long id : devIds) {
+            this.userRepository.findById(id).ifPresent(userEntity -> assignedUsers.add(UserDto.toDto(userEntity)));
+        }
+        subTaskDto.setAssignedUser(assignedUsers);
     }
 
     @Override
@@ -102,14 +127,21 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Validate file type allow
         // Allowed image and video file
         // Allowed document file: .xlxs (Excel), .docx (Word), .pptx (Powerpoint), .pdf, .xml
-        List<MultipartFile> attachFiles = model.getAttachFiles();
-        List<FileEntity> fileEntityList = this.validateFileTypeAllowed(attachFiles);
+        List<MultipartFile> attachFiles = model.getAttachFiles() != null ? model.getAttachFiles() : new ArrayList<>();
+        List<FileEntity> fileEntityList = new ArrayList<>();
+        if(!attachFiles.isEmpty() && attachFiles.get(0).getOriginalFilename() != ""){
+            fileEntityList = this.validateFileTypeAllowed(attachFiles);
+        }
 
         SubTaskEntity subTaskEntity = new SubTaskEntity();
         subTaskEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
         subTaskEntity.setStartDate(model.getStartDate());
         subTaskEntity.setEndDate(model.getEndDate());
-        subTaskEntity.setStatus(Const.status.TO_DO + "");
+        if (model.getStartDate().before(new Date())) {
+            subTaskEntity.setStatus(Const.status.IN_PROGRESS + "");
+        } else {
+            subTaskEntity.setStatus(Const.status.TO_DO + "");
+        }
         subTaskEntity.setName(model.getName());
         subTaskEntity.setDescription(model.getDescription());
         subTaskEntity.setPriority(model.getPriority() + ""); // Default value: MEDIUM
@@ -129,47 +161,45 @@ public class SubTaskServiceImpl implements ISubTaskService {
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
         subTaskDto.setAssignedUser(userEntitiesAssigned.stream().map(UserDto::toDto).collect(Collectors.toList()));
-
-        iHistoryLogService.logCreate(saveSubTask.getId(),saveSubTask, Const.tableName.SUBTASK);
+        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
 
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
-        Optional<SubTaskEntity> subTaskExisted = this.subTaskRepository.findById(modelUpdate.getId());
-        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(this.subTaskRepository.findById(modelUpdate.getId()));
-        if (subTaskExisted.isEmpty()) {
-            throw new CustomHandleException(197);
-        }
+        SubTaskEntity subTaskExisted = this.subTaskRepository.findById(modelUpdate.getId()).orElseThrow(() -> new CustomHandleException(197));
+        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted);
+
         List<Object> objUpdateList = this.checkIdAndDate(modelUpdate);
         List<FileEntity> fileEntityList = new ArrayList<>();
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objUpdateList.get(1);
 
         // Deleted attached file
         if (modelUpdate.getFileNameDeletes() != null && modelUpdate.getFileNameDeletes().size() > 0) {
-            this.deleteAttachFile(modelUpdate.getFileNameDeletes(), subTaskExisted.get().getId());
+            this.deleteAttachFile(modelUpdate.getFileNameDeletes(), subTaskExisted.getId());
         }
 
         // Validate file type allow
         // Allowed image and video file
         // Allowed document file: .xlxs (Excel), .docx (Word), .pptx (Powerpoint), .pdf, .xml
-        List<MultipartFile> attachFiles = modelUpdate.getAttachFiles();
-        if (attachFiles != null && !attachFiles.isEmpty()) {
+        List<MultipartFile> attachFiles = modelUpdate.getAttachFiles() != null ? modelUpdate.getAttachFiles() :
+                new ArrayList<>();
+        if (!attachFiles.isEmpty() && attachFiles.get(0).getOriginalFilename() != "") {
             fileEntityList = this.validateFileTypeAllowed(attachFiles);
         }
 
-        subTaskExisted.get().setName(modelUpdate.getName());
-        subTaskExisted.get().setDescription(modelUpdate.getDescription());
-        subTaskExisted.get().setStartDate(modelUpdate.getStartDate());
-        subTaskExisted.get().setEndDate(modelUpdate.getEndDate());
+        subTaskExisted.setName(modelUpdate.getName());
+        subTaskExisted.setDescription(modelUpdate.getDescription());
+        subTaskExisted.setStartDate(modelUpdate.getStartDate());
+        subTaskExisted.setEndDate(modelUpdate.getEndDate());
 
-        SubTaskEntity saveSubTask = this.subTaskRepository.save(subTaskExisted.get());
+        SubTaskEntity saveSubTask = this.subTaskRepository.save(subTaskExisted);
 
         // Update object id value for file
         this.updateObjectId(fileEntityList, saveSubTask.getId());
 
         // Clear old assigned users in UserProject
-        this.clearAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
+        this.clearAssignedUsers(saveSubTask.getId());
 
         // Save assigned users to UserProject
         this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
@@ -180,19 +210,19 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Split tag list
         List<TagDto> tagListSplit = this.saveTagList(modelUpdate.getTagList(), saveSubTask.getId());
 
-        saveSubTask.setTask(subTaskExisted.get().getTask());
+        saveSubTask.setTask(subTaskExisted.getTask());
         // Join 2 file lists
         saveSubTask.getAttachFiles().addAll(fileEntityList); // If save attach file, it will be null
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
-        subTaskDto.setTagList(tagListSplit);
-
+        //subTaskDto.setTagList(tagListSplit);
+        this.getTagListAndDevTeam(subTaskDto);
         iHistoryLogService.logUpdate(saveSubTask.getId(),subTaskEntityOriginal,saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
 
     public void clearTagList(Long subTaskId) {
         this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId).forEach(tagRelationEntity -> {
-            this.tagRelationRepository.delete(tagRelationEntity);
+            this.tagRelationRepository.deleteByIdNative(tagRelationEntity.getId());
         });
     }
 
@@ -200,7 +230,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         for (String fileNameDelete : fileNameDeletes) {
             FileEntity fileEntityDeleted = this.fileRepository.findByFileNameAndObjectId(fileNameDelete, subTaskId);
             if (fileEntityDeleted != null) {
-                this.fileRepository.delete(fileEntityDeleted);
+                this.fileRepository.deleteByIdNative(fileEntityDeleted.getId());
                 //fileUploadProvider.deleteFile(fileEntityDeleted.getLink());
             } else {
                 throw new CustomHandleException(198);
@@ -209,11 +239,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     }
 
-    public void clearAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
-        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "",
-                subTaskId).forEach(userProjectEntity -> {
-            this.userProjectRepository.delete(userProjectEntity);
-        });
+    public void clearAssignedUsers(Long subTaskId) {
+        List<UserProjectEntity> oldAssignedUsers = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId);
+        for (UserProjectEntity oldUserProject : oldAssignedUsers) {
+            this.userProjectRepository.deleteByIdNative(oldUserProject.getId());
+        }
     }
 
     public void saveAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
@@ -321,6 +351,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public boolean deleteById(Long id) {
+            this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
         try{
             SubTaskEntity sb = this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
 
@@ -341,9 +372,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
             this.subTaskRepository.delete(sb);
 
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
+
     }
 
     @Override
@@ -352,15 +384,140 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     @Override
-    public boolean changIsDeleteById(Long id) {
+    public boolean version2DeleteById(Long id) {
         Optional<SubTaskEntity> subTaskDeleted = this.subTaskRepository.findById(id);
         if (subTaskDeleted.isEmpty()) {
             throw new CustomHandleException(199);
         } else {
             subTaskDeleted.get().setIsDeleted(true);
             this.subTaskRepository.save(subTaskDeleted.get());
-            iHistoryLogService.logDelete(id,subTaskDeleted.get(), Const.tableName.SUBTASK);
+            iHistoryLogService.logDelete(id, subTaskDeleted.get(), Const.tableName.SUBTASK);
         }
         return true;
+    }
+
+    @Override
+    public Page<SubTaskDto> searchAndFilter(SubTaskModel subTaskModel, Pageable pageable) {
+        String sqlQuery = "SELECT DISTINCT NEW cy.dtos.project.SubTaskDto(st) FROM SubTaskEntity st";
+        StringBuilder sb = new StringBuilder(sqlQuery);
+
+        // Search with hashtag
+        if (subTaskModel.getKeyword() != null && subTaskModel.getKeyword().charAt(0) == '#') {
+            sb.append(" INNER JOIN TagRelationEntity tr ON st.id = tr.objectId INNER JOIN TagEntity t ON tr.idTag = t.id");
+        }
+
+        sb.append(" WHERE 1 = 1");
+
+        if(subTaskModel.getId() != null) {
+            sb.append(" AND st.id = :id");
+        }
+
+        if(subTaskModel.getName() != null) {
+            sb.append(" AND st.name LIKE :name");
+        }
+
+        if(subTaskModel.getTaskId() != null) {
+            sb.append(" AND st.task.id = :taskId");
+        }
+
+        if(subTaskModel.getDescription() != null) {
+            sb.append(" AND st.description LIKE :description");
+        }
+
+        if(subTaskModel.getPriority() != null) {
+            sb.append(" AND st.priority = :priority");
+        }
+
+        if(subTaskModel.getStartDate() != null) {
+            sb.append(" AND st.startDate >= :startDate");
+        }
+
+        if(subTaskModel.getEndDate() != null) {
+            sb.append(" AND st.endDate <= :endDate");
+        }
+
+//        if(subTaskModel.getAssignedUserIdList() != null && subTaskModel.getAssignedUserIdList().size() > 0){
+//            sb.append(" AND st.assignedUserId IN :assignedUserIdList ");
+//        }
+
+        if(subTaskModel.getKeyword() != null) {
+            if (subTaskModel.getKeyword().charAt(0) == '#') {
+                sb.append(" AND t.name LIKE :keyword AND tr.category = 'SUBTASK'");
+            } else {
+                sb.append(" AND (st.createBy.fullName LIKE :keyword)");
+            }
+        }
+
+        sb.append(" ORDER BY st.updatedDate DESC");
+
+        Query query = entityManager.createQuery(sb.toString(), SubTaskDto.class);
+
+        if(subTaskModel.getId() != null) {
+            query.setParameter("id", subTaskModel.getId());
+        }
+
+        if(subTaskModel.getName() != null) {
+            query.setParameter("name", "%" + subTaskModel.getName() + "%");
+        }
+
+        if(subTaskModel.getTaskId() != null) {
+            query.setParameter("taskId", subTaskModel.getTaskId());
+        }
+
+        if(subTaskModel.getDescription() != null) {
+            query.setParameter("description", "%" + subTaskModel.getDescription() + "%");
+        }
+
+        if(subTaskModel.getPriority() != null) {
+            query.setParameter("priority", subTaskModel.getPriority().name());
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if(subTaskModel.getStartDate() != null) {
+            query.setParameter("startDate", subTaskModel.getStartDate());
+        }
+
+        if(subTaskModel.getEndDate() != null) {
+            query.setParameter("endDate", subTaskModel.getEndDate());
+        }
+
+        if(subTaskModel.getKeyword() != null) {
+            query.setParameter("keyword", "%" + subTaskModel.getKeyword() + "%");
+        }
+
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+
+        List resultList = query.getResultList();
+
+        for(Object obj : resultList) {
+            SubTaskDto subTaskDto = (SubTaskDto) obj;
+            this.getTagListForSearch(subTaskDto);
+            this.getAssignedUserForSearch(subTaskDto);
+        }
+
+        return new PageImpl<>(resultList, pageable, resultList.size());
+    }
+
+    public void getTagListForSearch(SubTaskDto subTaskDto){
+        String sqlQuery = "SELECT DISTINCT NEW cy.dtos.project.TagDto(t) FROM TagEntity t" +
+                " INNER JOIN TagRelationEntity tr ON t.id = tr.idTag WHERE tr.category = 'SUBTASK' AND tr.objectId = :objectId";
+        List<TagDto> resultList = entityManager.createQuery(sqlQuery, TagDto.class)
+                .setParameter("objectId", subTaskDto.getId())
+                .getResultList();
+        if(resultList != null && resultList.size() > 0){
+            resultList.forEach(tagDto -> subTaskDto.getTagList().add(tagDto));
+        }
+    }
+
+    public void getAssignedUserForSearch(SubTaskDto subTaskDto){
+        String sqlQuery = "SELECT DISTINCT NEW cy.dtos.UserDto(u) FROM UserEntity u" +
+                " INNER JOIN UserProjectEntity up ON u.userId = up.idUser WHERE up.category = 'SUBTASK' AND up.objectId = :objectId";
+        List<UserDto> resultList = entityManager.createQuery(sqlQuery, UserDto.class)
+                .setParameter("objectId", subTaskDto.getId())
+                .getResultList();
+        if(resultList != null && resultList.size() > 0){
+            resultList.forEach(userDto -> subTaskDto.getAssignedUser().add(userDto));
+        }
     }
 }
