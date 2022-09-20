@@ -55,7 +55,8 @@ public class BugDto {
                 .historyLogBug(obj.getHistoryBugList() != null
                         ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
                 .attachFiles(lstFile)
-                .tagList(obj.getTagList()!=null? obj.getTagList().stream().map(TagDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
+                .tagList(obj.getTagList() != null
+                        ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
     }
 }

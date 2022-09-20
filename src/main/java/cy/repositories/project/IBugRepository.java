@@ -1,19 +1,16 @@
 package cy.repositories.project;
 
 import cy.entities.project.BugEntity;
-import cy.entities.project.ProjectEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.util.List;
-
+@Repository
 public interface IBugRepository extends JpaRepository<BugEntity, Long> {
     @Modifying
     @Transactional
