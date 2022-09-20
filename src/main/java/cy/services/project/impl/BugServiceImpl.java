@@ -187,7 +187,7 @@ public class BugServiceImpl implements IRequestBugService {
     public BugDto update(BugModel model) {
         try {
             BugEntity bugEntity = iBugRepository.findById(model.getId()).orElse(null);
-          //  BugEntity bugEntityOriginal = (BugEntity) Const.copy(bugEntity);
+            BugEntity bugEntityOriginal = (BugEntity) Const.copy(bugEntity);
             if(bugEntity == null)
                 return null;
             Long userId = SecurityUtils.getCurrentUserId();
@@ -261,7 +261,7 @@ public class BugServiceImpl implements IRequestBugService {
                 }
             }
             iBugRepository.save(bugEntity);
-          //  iHistoryLogService.logUpdate(bugEntity.getId(),bugEntityOriginal,bugEntity, Const.tableName.BUG);
+            iHistoryLogService.logUpdate(bugEntity.getId(),bugEntityOriginal,bugEntity, Const.tableName.BUG);
             return BugDto.entityToDto(bugEntity);
         }
         catch (Exception e){
