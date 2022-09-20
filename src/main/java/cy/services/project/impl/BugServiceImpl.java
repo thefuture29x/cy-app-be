@@ -76,6 +76,12 @@ public class BugServiceImpl implements IRequestBugService {
     public Page<BugDto> filter(Pageable page, Specification<BugEntity> specs) {
         return null;
     }
+    /*
+    *@author:HieuMM_Cy
+    *@since:9/20/2022-4:45 PM
+    *@description:
+    *@update:
+    **/
 
     @Override
     public BugDto findById(Long id) {
