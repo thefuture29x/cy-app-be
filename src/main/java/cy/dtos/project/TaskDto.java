@@ -1,6 +1,5 @@
 package cy.dtos.project;
 
-import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.entities.project.TagEntity;
 import cy.entities.project.TaskEntity;
