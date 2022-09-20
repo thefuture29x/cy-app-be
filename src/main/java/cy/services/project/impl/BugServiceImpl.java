@@ -24,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -53,7 +52,6 @@ public class BugServiceImpl implements IRequestBugService {
     IUserRepository userRepository;
     @Autowired
     IHistoryLogService iHistoryLogService;
-    Date now = Date.from(Instant.now());
     @Autowired
     IUserProjectRepository userProjectRepository;
 
@@ -80,17 +78,8 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto findById(Long id) {
         BugEntity bugEntity = iBugRepository.findById(id).orElse(null);
-        List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
-        List<TagEntity> tagEntityList = new ArrayList<>();
-        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
-            TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
-            tagEntityList.add(tagEntity);
-        }
-        System.out.println(tagEntityList);
-        bugEntity.setTagList(tagEntityList);
-        ;
-        iBugRepository.save(bugEntity);
-        return BugDto.entityToDto(bugEntity);
+        List<BugHistoryEntity> historyEntityList = iBugHistoryRepository.findAllByBugId(bugEntity);
+        return BugDto.entityToDto(iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11)));
     }
 
     @Override
@@ -98,7 +87,7 @@ public class BugServiceImpl implements IRequestBugService {
         return null;
     }
 
-    public void saveDataInHistoryTable(BugEntity bugEntity, Date startDate, Date endDate) {
+    public void saveDataInHistoryTable(BugEntity bugEntity, Date startDate, Date endDate){
         BugHistoryEntity bugHistoryEntity = new BugHistoryEntity();
         bugHistoryEntity.setBugId(bugEntity);
         bugHistoryEntity.setStartDate(startDate);
@@ -216,21 +205,22 @@ public class BugServiceImpl implements IRequestBugService {
                 iTagRelationRepository.deleteByIdNative(tagRelationEntities.get(0).getId());
                 iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
             }
-            if (model.getTags() != null && model.getTags().size() > 0) {
-                for (TagModel tagModel : model.getTags()) {
+            if(model.getTags() != null && model.getTags().size() > 0){
+                for (TagModel tagModel : model.getTags()){
                     TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
-                    if (tagEntity == null) {
+                    if(tagEntity == null){
                         TagEntity tagEntity1 = new TagEntity();
                         tagEntity1.setName(tagModel.getName());
-                        tagEntity1 = iTagRepository.save(tagEntity1);
+                        tagEntity1 =iTagRepository.save(tagEntity1);
                         TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
                         tagRelationEntity.setIdTag(tagEntity1.getId());
                         tagRelationEntity.setObjectId(bugEntity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
-                    } else if (tagEntity != null) {
+                    }
+                    else if(tagEntity != null){
                         TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
                         tagRelationEntity.setIdTag(tagEntity.getId());
                         tagRelationEntity.setObjectId(bugEntity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
@@ -278,6 +268,7 @@ public class BugServiceImpl implements IRequestBugService {
      **/
     public BugDto updateStatusBugToSubTask(Long id, int status) {
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
+        //chuyển trạng thái Subtask sang inreview
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
         if (bugEntity.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
@@ -304,8 +295,7 @@ public class BugServiceImpl implements IRequestBugService {
         //Lưu dữ liệu vào bảng BugHistory
         return bugDto;
     }
-
-    public BugDto updateStatusSubTaskToBug(Long id, int status) {
+    public BugDto updateStatusSubTaskToBug(Long id,int status){
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
@@ -317,15 +307,15 @@ public class BugServiceImpl implements IRequestBugService {
                     //dev bắt đầu fix bug
                     bugEntity.setStatus(Const.status.IN_PROGRESS.name());
                     subTaskEntity.setStatus(Const.status.FIX_BUG.name());
-                    saveDataInHistoryTable(bugEntity, now, null);
+                    saveDataInHistoryTable(bugEntity,now,null);
                     break;
                 case 2:
                     //dev kết thúc fix bug
                     subTaskEntity.setStatus(Const.status.IN_REVIEW.name());
                     bugEntity.setStatus(Const.status.IN_REVIEW.name());
                     List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity);
-                    for (BugHistoryEntity bugHistoryEntity : bugHistoryEntities) {
-                        if (bugHistoryEntity.getEndDate() == null) {
+                    for (BugHistoryEntity bugHistoryEntity : bugHistoryEntities){
+                        if(bugHistoryEntity.getEndDate() == null){
                             bugHistoryEntity.setEndDate(now);
                             iBugHistoryRepository.save(bugHistoryEntity);
                         }
@@ -358,6 +348,8 @@ public class BugServiceImpl implements IRequestBugService {
         }
     }
 
+
+
     @Override
     public boolean deleteByIds(List<Long> ids) {
         return false;
@@ -365,11 +357,21 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public void deleteBug(Long id) {
-
+        // delete historyBug
+         this.iBugHistoryRepository.findByBugId(id).forEach(bugHistoryEntity -> this.iBugHistoryRepository.delete(bugHistoryEntity));
+        // delete userProject
+        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream()
+                .forEach(userProjectEntity -> this.userProjectRepository.delete(userProjectEntity));
+        // delete tagRalation
+        this.iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream()
+                .forEach(tagRelationEntity -> this.iTagRelationRepository.delete(tagRelationEntity));
+        // delete file
+        iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
+        //delete Bug
+        this.iBugRepository.deleteById(id);
     }
-
-    @Override
+    
     public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
-        return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDto(data));
+        return iBugRepository.findAllBugOfProject(idProject,pageable).map(data -> BugDto.entityToDto(data));
     }
 }

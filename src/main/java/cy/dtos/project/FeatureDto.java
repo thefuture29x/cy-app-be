@@ -1,12 +1,8 @@
 package cy.dtos.project;
 
-import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.entities.project.FeatureEntity;
-import cy.models.project.FeatureModel;
-import cy.models.project.FileModel;
 import lombok.*;
-import org.apache.catalina.User;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -1,7 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.TagDto;
+import cy.dtos.project.TagDto;
 import cy.dtos.project.FeatureDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
