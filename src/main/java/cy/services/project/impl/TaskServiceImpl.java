@@ -1,7 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.project.TagDto;
+import cy.dtos.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
 import cy.dtos.project.TaskDto;

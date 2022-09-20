@@ -11,7 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.*;
-import java.util.Date;
+import java.sql.Date;
 import java.util.List;
 
 @NoArgsConstructor
@@ -59,7 +59,4 @@ public class SubTaskModel {
     private String tagList; // Separate by ','
 
     private List<String> fileNameDeletes;
-
-    // Keyword when searching.
-    private String keyword;
 }
