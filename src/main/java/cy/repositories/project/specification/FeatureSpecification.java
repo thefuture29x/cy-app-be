@@ -7,11 +7,18 @@ import cy.entities.project.FeatureEntity_;
 import cy.models.project.FeatureFilterModel;
 import cy.models.project.FeatureModel;
 import cy.utils.Const;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.jpa.domain.Specification;
 import org.yaml.snakeyaml.util.EnumUtils;
 
 import javax.persistence.criteria.Join;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,19 +50,20 @@ public class FeatureSpecification {
                     .getOn();
         });
     }
-    public static Specification<FeatureEntity> byFeatureDate(Date minDate, Date maxDate){
+    public static Specification<FeatureEntity> byFeatureDate(String minDate, String maxDate){
         return ((root, query, criteriaBuilder) -> {
             if (maxDate != null) {
-                Instant instant = maxDate.toInstant();
-                instant = instant.plus(1, ChronoUnit.DAYS);
-                Instant maxInstant = instant;
-                if (minDate != null)
-                    return criteriaBuilder.between(root.get(FeatureEntity_.START_DATE), minDate, maxDate);
+//                Instant instant = maxDate.toInstant();
+//                instant = instant.plus(1, ChronoUnit.DAYS);
+//                Instant maxInstant = instant;
+//                Timestamp maxTimestamp = new Timestamp(instant.toEpochMilli());
+                if (minDate != null){
+                    return criteriaBuilder.between(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000"), convertDate(maxDate+".000"));
+                }
                 else
-                    return criteriaBuilder.lessThanOrEqualTo(root.get(FeatureEntity_.END_DATE), Date.from(maxInstant));
+                    return criteriaBuilder.lessThanOrEqualTo(root.get(FeatureEntity_.END_DATE), convertDate(maxDate+".000"));
             } else if (minDate != null) {
-                Instant minstant = minDate.toInstant();
-                return criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE),Date.from(minstant));
+                return criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000"));
             } else {
                 return null;
             }
@@ -81,6 +89,23 @@ public class FeatureSpecification {
             }
         }
         return finalSpecs;
+    }
+
+    public static java.sql.Timestamp convertDate(String date) {
+        java.sql.Timestamp result = null;
+        SimpleDateFormat localeIta = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        try {
+            Date parsedDate = localeIta.parse(date);
+            result = new Timestamp(parsedDate.getTime());
+            result.setHours(0);
+            result.setMinutes(0);
+            result.setSeconds(0);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 
 }
