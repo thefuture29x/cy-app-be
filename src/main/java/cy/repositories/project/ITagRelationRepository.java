@@ -33,4 +33,8 @@ public interface ITagRelationRepository extends JpaRepository<TagRelationEntity,
 
     @Query("select distinct new cy.dtos.project.DataSearchTag(p.id,p.name,p.createBy.fullName,p.startDate,p.endDate,p.status,t.category) from TagRelationEntity t inner join ProjectEntity p on t.objectId = p.id inner join TagEntity tag on tag.id = t.idTag where tag.name = ?1")
     Page<DataSearchTag> findAllByTag(String id, Pageable pageable);
+
+    @Query(value = "DELETE FROM tbl_tag_relations WHERE id = ?1", nativeQuery = true)
+    void deleteByIdNative(Long id);
+
 }
