@@ -31,7 +31,7 @@ public class BugDto {
     private UserDto assignTo;
     private Boolean isDefault;
     private Boolean isDelete;
-    private  List<TagDto> tagList;
+    private List<TagDto> tags;
     private List<String> attachFiles;
     private List<BugHistoryDto> historyLogBug;
 
@@ -40,7 +40,6 @@ public class BugDto {
         if(obj.getAttachFiles() != null && obj.getAttachFiles().size() > 0){
             obj.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
         }
-
         return BugDto.builder()
                 .id(obj.getId())
                 .priority(obj.getPriority())
@@ -55,8 +54,7 @@ public class BugDto {
                 .historyLogBug(obj.getHistoryBugList() != null
                         ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
                 .attachFiles(lstFile)
-                .tagList(obj.getTagList() != null
-                        ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
+                .tags(obj.getTagList() != null ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
     }
 }
