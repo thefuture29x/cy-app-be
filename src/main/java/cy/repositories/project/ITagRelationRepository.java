@@ -7,9 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+@Repository
 
 public interface ITagRelationRepository extends JpaRepository<TagRelationEntity,Long> {
     @Query("select tr from TagRelationEntity tr where tr.category LIKE ?1 and tr.objectId = ?2")

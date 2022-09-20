@@ -2,8 +2,9 @@ package cy.resources;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
+import cy.models.project.FeatureFilterModel;
 import cy.models.project.FeatureModel;
-import cy.repositories.project.IFeatureRepository;
+import cy.repositories.project.specification.FeatureSpecification;
 import cy.services.project.IFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +35,11 @@ public class FeatureResource {
     @DeleteMapping("/delete-feature/{id}")
     public ResponseDto deleteFeature(@PathVariable("id") Long id){
         return ResponseDto.of(this.featureService.deleteById(id));
+    }
+
+    @PostMapping("/search-feature")
+    public ResponseDto searchFeature(@RequestBody @Valid FeatureFilterModel model, Pageable pageable){
+        return ResponseDto.of(this.featureService.filter(pageable, FeatureSpecification.filterAndSearch(model)));
     }
 
 

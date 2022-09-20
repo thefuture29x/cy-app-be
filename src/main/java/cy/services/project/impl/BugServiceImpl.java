@@ -7,6 +7,7 @@ import cy.models.project.BugModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
+import cy.services.project.IFileService;
 import cy.services.project.IHistoryLogService;
 import cy.services.project.IRequestBugService;
 import cy.services.project.ITagService;
@@ -46,10 +47,15 @@ public class BugServiceImpl implements IRequestBugService {
     @Autowired
     IFileRepository iFileRepository;
     @Autowired
+    IFileService fileService;
+    @Autowired
     IUserRepository userRepository;
     @Autowired
     IHistoryLogService iHistoryLogService;
     Date now = Date.from(Instant.now());
+    @Autowired
+    IUserProjectRepository userProjectRepository;
+
     @Override
     public List<BugDto> findAll() {
         return null;
@@ -180,8 +186,6 @@ public class BugServiceImpl implements IRequestBugService {
             BugEntity entityOriginal = iBugRepository.findById(model.getId()).get();
             BugEntity bugEntity = model.modelToEntity(model);
             SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(11));
-            bugEntity.setStartDate(now);
-            bugEntity.setEndDate(null);
             bugEntity.setSubTask(subTaskEntity);
             bugEntity.setAssignTo(subTaskEntity.getAssignTo());
             bugEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
@@ -199,30 +203,42 @@ public class BugServiceImpl implements IRequestBugService {
                         tagEntity1.setName(tagModel.getName());
                         tagEntity1 =iTagRepository.save(tagEntity1);
                         TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
                         tagRelationEntity.setIdTag(tagEntity1.getId());
-                        tagRelationEntity.setObjectId(entityOriginal.getId());
+                        tagRelationEntity.setObjectId(model.getId());
                         iTagRelationRepository.save(tagRelationEntity);
                     }
                     else if(tagEntity != null){
                         TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
                         tagRelationEntity.setIdTag(tagEntity.getId());
-                        tagRelationEntity.setObjectId(entityOriginal.getId());
+                        tagRelationEntity.setObjectId(model.getId());
                         iTagRelationRepository.save(tagRelationEntity);
                     }
                 }
-            }
+             }
             //update file
-            if(entityOriginal.getAttachFiles() != null && entityOriginal.getAttachFiles().size() > 0)
-                entityOriginal.getAttachFiles().clear();
-            else{
-                entityOriginal.setAttachFiles(new ArrayList<>());
-            }
             if(model.getFiles() != null && model.getFiles().length > 0){
                 for (MultipartFile m : model.getFiles()){
                     if(!m.isEmpty()){
-                        String urlFile =  fileUploadProvider.uploadFile("bug", m);
+                        String urlFile =  fileUploadProvider.uploadFile("project", m);
+                        FileEntity fileEntity = new FileEntity();
+                        String fileName = m.getOriginalFilename();
+                        fileEntity.setLink(urlFile);
+                        fileEntity.setFileName(fileName);
+                        fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+                        fileEntity.setCategory(Const.tableName.PROJECT.name());
+                        fileEntity.setUploadedBy(SecurityUtils.getCurrentUser().getUser());
+                        fileEntity.setObjectId(entityOriginal.getId());
+                        iFileRepository.save(fileEntity);
+                    }
+                }
+            }
+
+            if (model.getFiles() != null && model.getFiles().length > 0) {
+                for (MultipartFile m : model.getFiles()) {
+                    if (!m.isEmpty()) {
+                        String urlFile = fileUploadProvider.uploadFile("bug", m);
                         FileEntity fileEntity = new FileEntity();
                         String fileName = m.getOriginalFilename();
                         fileEntity.setLink(urlFile);
@@ -231,8 +247,7 @@ public class BugServiceImpl implements IRequestBugService {
                         fileEntity.setCategory(Const.tableName.BUG.name());
                         fileEntity.setUploadedBy(SecurityUtils.getCurrentUser().getUser());
                         fileEntity.setObjectId(bugEntity.getId());
-                        iFileRepository.saveAndFlush(fileEntity);
-                        entityOriginal.getAttachFiles().add(fileEntity);
+                        iFileRepository.save(fileEntity);
                     }
                 }
             }
@@ -265,7 +280,6 @@ public class BugServiceImpl implements IRequestBugService {
                     //reviewer oke xong thì chuyển bug sang done`
                     bugEntity.setStatus(Const.status.DONE.name());
                     subTaskEntity.setStatus(Const.status.DONE.name());
-                    bugEntity.setEndDate(now);
                     break;
 
             }
@@ -284,7 +298,7 @@ public class BugServiceImpl implements IRequestBugService {
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
 
-
+        Date now = Date.from(Instant.now());
         if (bugEntity.getAssignTo().getUserId() == SecurityUtils.getCurrentUserId()) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (status) {
                 case 1:
@@ -335,6 +349,11 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public boolean deleteByIds(List<Long> ids) {
         return false;
+    }
+
+    @Override
+    public void deleteBug(Long id) {
+
     }
 
     @Override

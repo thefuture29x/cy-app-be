@@ -34,11 +34,31 @@ public class ScheduledJobConfig {
     // second(1-59) minute(0-59) hour(1-23) dayOfMonth(1-31) month(1-12) dayOfWeek(0-6, sunday = 0)
     @Scheduled(cron = "0 0/30 * * * *")
     public void checkStatusIsDelete(){
-//        List<SubTaskEntity> subTaskEntities = subTaskRepository.checkSubTasksDelete();
-//        if(!subTaskEntities.isEmpty()){
-//            subTaskEntities.stream().forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
-//        }
-//        taskRepository.deleteTaskEntitiesByIsDeleted();
+        // check Project
+        if(!this.projectRepository.checkProjectDelete().isEmpty()){
+            this.projectRepository.checkProjectDelete().forEach(project -> this.projectService.deleteProject(project.getId()));
+        }
+
+        // check Feature
+        if(!this.featureRepository.checkFeatureDelete().isEmpty()){
+            this.featureRepository.checkFeatureDelete().forEach(feature -> this.featureService.deleteById(feature.getId()));
+        }
+
+        // check Task
+        if(!taskRepository.checkTasksDelete().isEmpty()){
+            taskRepository.checkTasksDelete().forEach(taskEntity -> this.taskService.deleteById(taskEntity.getId()));
+        }
+
+        // check subTask
+        if(!subTaskRepository.checkSubTasksDelete().isEmpty()){
+            subTaskRepository.checkSubTasksDelete().forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
+        }
+
+        //check BUG
+        if(!this.bugRepository.checkBugDelete().isEmpty()){
+            this.bugRepository.checkBugDelete().forEach(bugEntity -> this.bugService.deleteBug(bugEntity.getId()));
+        }
+
     }
 
 }

@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
+
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "project")
 @RestController
 public class ProjectResource {
@@ -36,7 +38,7 @@ public class ProjectResource {
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @DeleteMapping(value = "/delete")
     public ResponseDto delete(@RequestParam(name = "id")Long id) {
-        return ResponseDto.of(iProjectService.deleteProject(id));
+        return ResponseDto.of(iProjectService.changIsDeleteById(id));
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})

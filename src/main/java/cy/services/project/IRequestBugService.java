@@ -8,5 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface IRequestBugService extends IBaseService<BugEntity, BugDto, BugModel,Long> {
+    void deleteBug(Long id);
     Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable);
 }

@@ -9,6 +9,7 @@ public interface IProjectService {
     ProjectDto createProject(ProjectModel projectModel);
     ProjectDto updateProject(ProjectModel projectModel);
     Boolean deleteProject(Long id);
+    Boolean changIsDeleteById(Long id);
     Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel);
 
 }

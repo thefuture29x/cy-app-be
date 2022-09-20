@@ -10,6 +10,7 @@ import cy.models.project.SubTaskModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.services.project.IHistoryLogService;
+import cy.services.project.IRequestBugService;
 import cy.services.project.ISubTaskService;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class SubTaskServiceImpl implements ISubTaskService {
     @Autowired
     IUserRepository userRepository;
@@ -52,6 +55,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Autowired
     FileUploadProvider fileUploadProvider;
+    @Autowired
+    IBugRepository bugRepository;
+    @Autowired
+    IRequestBugService bugService;
 
     @Autowired
     IHistoryLogService iHistoryLogService;
@@ -130,7 +137,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
         Optional<SubTaskEntity> subTaskExisted = this.subTaskRepository.findById(modelUpdate.getId());
-        SubTaskEntity subTaskEntityOriginal = subTaskExisted.get();
+        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(this.subTaskRepository.findById(modelUpdate.getId()));
         if (subTaskExisted.isEmpty()) {
             throw new CustomHandleException(197);
         }
@@ -315,7 +322,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public boolean deleteById(Long id) {
         try{
-            this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
+            SubTaskEntity sb = this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
+
+            // delete bug
+            this.bugRepository.getAllBugBySubTaskId(id).forEach(bugEntity -> this.bugService.deleteBug(bugEntity.getId()));
 
             for (UserProjectEntity userProjectEntity : this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
                 this.userProjectRepository.delete(userProjectEntity);
@@ -325,7 +335,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 this.tagRelationRepository.delete(tagRelationEntity);
             }
 
-            this.subTaskRepository.deleteById(id);
+            // delete file
+            fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id).stream().forEach(fileEntity -> this.fileRepository.deleteById(fileEntity.getId()));
+
+            this.subTaskRepository.delete(sb);
 
             return true;
         }catch (Exception e){

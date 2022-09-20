@@ -5,19 +5,15 @@ import cy.dtos.TagDto;
 import cy.dtos.project.FeatureDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
-import cy.entities.project.Listener.ProjectListener;
 import cy.models.project.FeatureModel;
 import cy.models.project.FileModel;
 import cy.models.project.TagModel;
 import cy.models.project.TagRelationModel;
 import cy.repositories.IUserRepository;
-import cy.repositories.project.IFeatureRepository;
-import cy.repositories.project.IProjectRepository;
-import cy.repositories.project.IUserProjectRepository;
+import cy.repositories.project.*;
 import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
-import org.apache.xmlbeans.impl.xb.xsdschema.Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +34,8 @@ public class FeatureServiceImp implements IFeatureService {
     @Autowired
     IFeatureRepository featureRepository;
     @Autowired
+    IFileRepository fileRepository;
+    @Autowired
     IFileService fileService;
     @Autowired
     IProjectRepository projectRepository;
@@ -50,8 +48,13 @@ public class FeatureServiceImp implements IFeatureService {
     @Autowired
     ITagRelationService tagRelationService;
     @Autowired
+    ITagRelationRepository tagRelationRepository;
+    @Autowired
     IHistoryLogService iHistoryLogService;
-
+    @Autowired
+    ITaskService taskService;
+    @Autowired
+    ITaskRepository taskRepository;
 
 
     @Override
@@ -86,21 +89,21 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto add(FeatureModel model) {
-        ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(()->new CustomHandleException(45354345));
-        Set<Long> currentProjectUIDs = projectEntity.getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toSet());
-        if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
+        ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(() -> new CustomHandleException(45354345));
+        Set<Long> currentProjectUIDs = projectEntity.getDevTeam().stream().map(x -> x.getUserId()).collect(Collectors.toSet());
+        if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
             throw new CustomHandleException(2131231);
         }
-        List<TagEntity> tagList= new ArrayList<>();
-        for (String tag: model.getTagList()
-             ) {
+        List<TagEntity> tagList = new ArrayList<>();
+        for (String tag : model.getTagList()
+        ) {
             TagDto thisTag = this.tagService.add(TagModel.builder().name(tag).build());
             tagList.add(TagEntity.builder().id(thisTag.getId()).name(thisTag.getName()).build());
         }
         //Add Files
         List<MultipartFile> files = model.getFiles();
         List<FileEntity> fileEntities = new ArrayList<>();
-        for (MultipartFile file:files
+        for (MultipartFile file : files
         ) {
             FileModel model1 = new FileModel();
             model1.setFile(file);
@@ -124,13 +127,13 @@ public class FeatureServiceImp implements IFeatureService {
         this.featureRepository.saveAndFlush(entity);
 
         //Add Tags
-        tagList.stream().forEach(x-> this.tagRelationService.add(TagRelationModel.builder().idTag(x.getId()).category(Const.tableName.FEATURE.name()).objectId(entity.getId()).build()));
+        tagList.stream().forEach(x -> this.tagRelationService.add(TagRelationModel.builder().idTag(x.getId()).category(Const.tableName.FEATURE.name()).objectId(entity.getId()).build()));
         //Add Users
-        List<Long> curProjectIds = projectEntity.getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toList());
-        if(new HashSet<>(curProjectIds).containsAll(model.getUids())){
-            model.getUids().stream().forEach(x->this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(entity.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build()));
-            entity.setDevTeam(model.getUids().stream().map(x->this.userRepository.findById(x).orElseThrow(()->new CustomHandleException(2))).collect(Collectors.toList()));
-        }else {
+        List<Long> curProjectIds = projectEntity.getDevTeam().stream().map(x -> x.getUserId()).collect(Collectors.toList());
+        if (new HashSet<>(curProjectIds).containsAll(model.getUids())) {
+            model.getUids().stream().forEach(x -> this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(entity.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build()));
+            entity.setDevTeam(model.getUids().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
+        } else {
             throw new CustomHandleException(2131231);
         }
 //        entity.setProject();
@@ -145,7 +148,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
-        FeatureEntity featureOriginal = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
+        FeatureEntity featureOriginal = (FeatureEntity) Const.copy(this.featureRepository.findById(model.getId()));
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
         Set<Long> currentProjectUIDs = oldFeature.getProject().getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toSet());
         if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
@@ -163,7 +166,7 @@ public class FeatureServiceImp implements IFeatureService {
         //Add new tags
         List<String> newTagList = model.getTagList();
         List<TagEntity> newTagEntityList = new ArrayList<>();
-        newTagList.stream().forEach(x->{
+        newTagList.stream().forEach(x -> {
             TagDto tagDto = this.tagService.add(TagModel.builder().name(x).build());
             newTagEntityList.add(TagEntity.builder().id(tagDto.getId()).name(tagDto.getName()).build());
             this.tagRelationService.add(TagRelationModel.builder().idTag(tagDto.getId()).category(Const.tableName.FEATURE.name()).objectId(oldFeature.getId()).build());
@@ -175,7 +178,7 @@ public class FeatureServiceImp implements IFeatureService {
         //Add new files
         List<MultipartFile> newFileList = model.getFiles();
         List<FileEntity> newFileEntityList = new ArrayList<>();
-        newFileList.stream().forEach(x->{
+        newFileList.stream().forEach(x -> {
             FileModel fileModel = new FileModel();
             fileModel.setFile(x);
             fileModel.setObjectId(oldFeature.getId());
@@ -185,27 +188,47 @@ public class FeatureServiceImp implements IFeatureService {
         oldFeature.setAttachFiles(newFileEntityList);
 
         clearDevTeam(oldFeature);
-        List<Long> currentAvailableDev = projectEntity.getDevTeam().stream().map(x->x.getUserId()).collect(Collectors.toList());
+        List<Long> currentAvailableDev = projectEntity.getDevTeam().stream().map(x -> x.getUserId()).collect(Collectors.toList());
         List<Long> newDevTeam = model.getUids();
         List<UserEntity> newDevTeamEntity = new ArrayList<>();
-        if(new HashSet<>(currentAvailableDev).containsAll(newDevTeam)) {
+        if (new HashSet<>(currentAvailableDev).containsAll(newDevTeam)) {
             newDevTeam.stream().forEach(x -> {
                 newDevTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
                 this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
             });
             oldFeature.setDevTeam(newDevTeamEntity);
-        }else {
+        } else {
             throw new CustomHandleException(2131231);
         }
-        iHistoryLogService.logUpdate(oldFeature.getId(), featureOriginal,oldFeature, Const.tableName.FEATURE);
+        iHistoryLogService.logUpdate(oldFeature.getId(), featureOriginal, oldFeature, Const.tableName.FEATURE);
         return FeatureDto.toDto(this.featureRepository.save(oldFeature));
     }
 
     @Override
     public boolean deleteById(Long id) {
-        FeatureEntity oldEntity = this.getById(id);
-        oldEntity.setIsDeleted(true);
-        iHistoryLogService.logDelete(id,oldEntity, Const.tableName.FEATURE);
+        FeatureEntity feature = this.featureRepository.findById(id).orElseThrow(() -> new RuntimeException("Feature not exist !!!"));
+        // delete Task
+        List<TaskEntity> taskEntities = this.taskRepository.findByFeatureId(id);
+        taskEntities.forEach(taskEntity -> this.taskService.deleteById(taskEntity.getId()));
+
+        // delete userProject
+        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id);
+        for (UserProjectEntity userProjectEntity : userProjectEntities) {
+            this.userProjectRepository.delete(userProjectEntity);
+        }
+
+        //delete tag_relation
+        List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id);
+        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
+            this.tagRelationRepository.delete(tagRelationEntity);
+        }
+
+        // delete file
+        fileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
+
+        // delete Feature
+        this.featureRepository.deleteById(id);
+
         return true;
     }
 
@@ -215,17 +238,25 @@ public class FeatureServiceImp implements IFeatureService {
     }
 
     private void clearTagList(FeatureEntity feature) {
-        this.tagRelationService.findTagByCategoryAndObject(Const.tableName.FEATURE.name(), feature.getId()).stream().forEach(x->this.tagRelationService.deleteById(x.getId()));
+        this.tagRelationService.findTagByCategoryAndObject(Const.tableName.FEATURE.name(), feature.getId()).stream().forEach(x -> this.tagRelationService.deleteById(x.getId()));
     }
+
     private void clearFileList(FeatureEntity feature) {
-        this.fileService.deleteByIds(feature.getAttachFiles().stream().map(x->x.getId()).collect(Collectors.toList()));
+        this.fileService.deleteByIds(feature.getAttachFiles().stream().map(x -> x.getId()).collect(Collectors.toList()));
     }
 
     private void clearDevTeam(FeatureEntity feature) {
-        feature.getDevTeam().stream().forEach(x->{
-            this.userProjectRepository.deleteByCategoryAndObjectIdAndIdUser(Const.tableName.FEATURE.name(),feature.getId(),x.getUserId());
+        feature.getDevTeam().stream().forEach(x -> {
+            this.userProjectRepository.deleteByCategoryAndObjectIdAndIdUser(Const.tableName.FEATURE.name(), feature.getId(), x.getUserId());
         });
     }
 
-
+    @Override
+    public boolean changIsDeleteById(Long id) {
+        FeatureEntity oldFeature = this.getById(id);
+        oldFeature.setIsDeleted(true);
+        this.featureRepository.saveAndFlush(oldFeature);
+        iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE);
+        return true;
+    }
 }

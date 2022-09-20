@@ -8,6 +8,8 @@ import cy.models.project.ProjectModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
+import cy.resources.UserResources;
+import cy.services.project.*;
 import cy.services.project.IHistoryLogService;
 import cy.services.project.IProjectService;
 import cy.services.project.ITagService;
@@ -35,12 +37,17 @@ public class ProjectServiceImpl implements IProjectService {
     @Autowired
     IProjectRepository iProjectRepository;
     @Autowired
+    IFeatureRepository featureRepository;
+    @Autowired
+    IFeatureService featureService;
+    @Autowired
     IUserRepository userRepository;
     @Autowired
     FileUploadProvider fileUploadProvider;
     @Autowired
     IFileRepository iFileRepository;
-
+    @Autowired
+    IFileService fileService;
     @Autowired
     EntityManager manager;
 
@@ -218,7 +225,7 @@ public class ProjectServiceImpl implements IProjectService {
             projectEntity.setUpdatedDate(currentDate);
             List<UserProjectEntity> userProjectEntities = iUserProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
             if(userProjectEntities != null && userProjectEntities.size()> 0){
-                iUserProjectRepository.deleteAll(userProjectEntities);
+                iUserProjectRepository.deleteAllInBatch(userProjectEntities);
             }
             if(projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0){
                 for (Long userDev : projectModel.getUserDev()){
@@ -334,18 +341,35 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public Boolean deleteProject(Long id) {
-        try{
-//            iProjectRepository.deleteById(id);
-            ProjectEntity projectEntity = iProjectRepository.findById(id).orElse(null);
-            if(projectEntity == null)
-                return false;
-            projectEntity.setIsDeleted(true);
-            iProjectRepository.save(projectEntity);
-            return true;
+        // delete Feature
+        List<FeatureEntity> featureEntities = this.featureRepository.findByProjectId(id);
+        featureEntities.forEach(feature -> this.featureService.deleteById(feature.getId()));
+
+        // delete userProject
+        List<UserProjectEntity> userProjectEntities = this.iUserProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), id);
+        for (UserProjectEntity userProjectEntity : userProjectEntities) {
+            this.iUserProjectRepository.delete(userProjectEntity);
         }
-        catch (Exception e){
-            return false;
+        //delete tag_relation
+        List<TagRelationEntity> tagRelationEntities =  this.iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), id);
+        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
+            this.iTagRelationRepository.delete(tagRelationEntity);
         }
+        // delete file
+        iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
+        // delete Project
+        this.iProjectRepository.deleteById(id);
+
+        return true;
+    }
+
+    @Override
+    public Boolean changIsDeleteById(Long id) {
+        ProjectEntity oldProject = this.iProjectRepository.findById(id).orElseThrow(() -> new RuntimeException("Project not exist!!"));
+        oldProject.setIsDeleted(true);
+        this.iProjectRepository.saveAndFlush(oldProject);
+        iHistoryLogService.logDelete(id,oldProject, Const.tableName.PROJECT);
+        return true;
     }
 
     @Override

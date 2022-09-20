@@ -6,37 +6,36 @@ import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
-import cy.entities.project.TagEntity;
-import cy.entities.project.TagRelationEntity;
-import cy.entities.project.TaskEntity;
-import cy.entities.project.UserProjectEntity;
+import cy.entities.project.*;
 import cy.models.project.FileModel;
 import cy.models.project.TagModel;
 import cy.models.project.TagRelationModel;
 import cy.models.project.TaskModel;
 import cy.repositories.IUserRepository;
-import cy.repositories.project.ITagRelationRepository;
-import cy.repositories.project.ITagRepository;
-import cy.repositories.project.ITaskRepository;
-import cy.repositories.project.IUserProjectRepository;
+import cy.repositories.project.*;
 import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
+import org.apache.poi.hssf.record.PageBreakRecord;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class TaskServiceImpl implements ITaskService {
     private final ITaskRepository repository;
     private final IFileService fileService;
-    private final IFeatureService featureService;
+    private final IFileRepository fileRepository;
+    private final IFeatureRepository featureRepository;
     private final IUserProjectRepository userProjectRepository;
     private final IUserRepository userRepository;
     private final ITagRelationService tagRelationService;
@@ -44,11 +43,14 @@ public class TaskServiceImpl implements ITaskService {
     private final ITagService tagService;
     private final ITagRepository tagRepository;
     private final IHistoryLogService iHistoryLogService;
+    private final ISubTaskService subTaskService;
+    private final ISubTaskRepository subTaskRepository;
 
-    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFeatureService featureService, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService) {
+    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository) {
         this.repository = repository;
         this.fileService = fileService;
-        this.featureService = featureService;
+        this.fileRepository = fileRepository;
+        this.featureRepository = featureRepository;
         this.userProjectRepository = userProjectRepository;
         this.userRepository = userRepository;
         this.tagRelationService = tagRelationService;
@@ -56,6 +58,8 @@ public class TaskServiceImpl implements ITaskService {
         this.tagService = tagService;
         this.tagRepository = tagRepository;
         this.iHistoryLogService = iHistoryLogService;
+        this.subTaskService = subTaskService;
+        this.subTaskRepository = subTaskRepository;
     }
 
     @Override
@@ -79,8 +83,34 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public TaskDto findById(Long id) {
-        return TaskDto.toDto(this.getById(id));
+    public TaskDto  findById(Long id) {
+        TaskEntity taskEntity = this.getById(id);
+
+        // set Tag
+        List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+        List<Long> idTags = tagRelationEntities.stream().map(TagRelationEntity::getIdTag).collect(Collectors.toList());
+        List<TagEntity> tagEntities = new ArrayList<>();
+        if(idTags != null){
+            for (Long idTag : idTags) {
+                TagEntity tag = this.tagRepository.findById(idTag).orElseThrow(() -> new RuntimeException("Tag not exist !!!"));
+                tagEntities.add(tag);
+            }
+        }
+        taskEntity.setTagList(tagEntities);
+
+        // set devTeam
+        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+        List<Long> idUsers = userProjectEntities.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
+        List<UserEntity> userEntities = new ArrayList<>();
+        if(idUsers != null){
+            for (Long idUser : idUsers) {
+                UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
+                userEntities.add(user);
+            }
+        }
+        taskEntity.setDevTeam(userEntities);
+
+        return TaskDto.toDto(taskEntity);
     }
 
     @Override
@@ -96,14 +126,13 @@ public class TaskServiceImpl implements ITaskService {
         taskEntity.setCreateBy(userEntity);
 
         // feature save
-        taskEntity.setFeature(this.featureService.getById(model.getFeatureId()));
+        taskEntity.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
 
         // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
         Date currentDate = new Date();
-        if(model.getStartDate().before(currentDate)){
+        if (model.getStartDate().before(currentDate)) {
             taskEntity.setStatus(Const.status.IN_PROGRESS.name());
-        }
-        else {
+        } else {
             taskEntity.setStatus(Const.status.TO_DO.name());
         }
 
@@ -111,10 +140,10 @@ public class TaskServiceImpl implements ITaskService {
 
         // add tag
         List<String> tagList = new ArrayList<>();
-        if(model.getTagNames() != null && model.getTagNames().size() > 0){
-            for (String tagName: model.getTagNames()) {
+        if (model.getTagNames() != null && model.getTagNames().size() > 0) {
+            for (String tagName : model.getTagNames()) {
                 TagEntity tagEntity = this.tagRepository.findByName(tagName);
-                if(tagEntity == null){
+                if (tagEntity == null) {
                     TagModel newTagModel = TagModel.builder().name(tagName).build();
                     TagDto newTagDto = this.tagService.add(newTagModel);
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
@@ -124,7 +153,7 @@ public class TaskServiceImpl implements ITaskService {
                             .build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(newTagDto.getName());
-                }else {
+                } else {
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
                             .idTag(tagEntity.getId())
                             .objectId(taskEntity.getId())
@@ -139,7 +168,7 @@ public class TaskServiceImpl implements ITaskService {
 
         // add dev
         List<UserDto> devList = new ArrayList<>();
-        if(model.getDevIds() != null && model.getDevIds().size() > 0){
+        if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
                 UserProjectEntity userProject = this.addDev(devId);
                 userProject.setObjectId(taskEntity.getId());
@@ -156,14 +185,14 @@ public class TaskServiceImpl implements ITaskService {
             fileModel.setFile(file);
             fileModel.setObjectId(taskEntity.getId());
             fileModel.setCategory(Const.tableName.TASK.name());
-           FileDto fileAfterSaveZ = fileService.add(fileModel);
+            FileDto fileAfterSaveZ = fileService.add(fileModel);
             fileAfterSave.add(fileAfterSaveZ.getLink());
         }
-        TaskDto result =  TaskDto.toDto(this.repository.saveAndFlush(taskEntity));
+        TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskEntity));
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
-        iHistoryLogService.logCreate(taskEntity.getId(),taskEntity, Const.tableName.TASK);
+        iHistoryLogService.logCreate(taskEntity.getId(), taskEntity, Const.tableName.TASK);
         return result;
     }
 
@@ -174,7 +203,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
-        TaskEntity taskExist = this.getById(model.getId());
+        TaskEntity taskExist = (TaskEntity) Const.copy(this.getById(model.getId()));
         TaskEntity taskOld = this.getById(model.getId());
 
         taskOld.setStartDate(model.getStartDate());
@@ -189,14 +218,13 @@ public class TaskServiceImpl implements ITaskService {
         taskOld.setCreateBy(userEntity);
 
         // feature save
-        taskOld.setFeature(this.featureService.getById(model.getFeatureId()));
+        taskOld.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
 
         // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
         Date currentDate = new Date();
-        if(model.getStartDate().before(currentDate)){
+        if (model.getStartDate().before(currentDate)) {
             taskOld.setStatus(Const.status.IN_PROGRESS.name());
-        }
-        else {
+        } else {
             taskOld.setStatus(Const.status.TO_DO.name());
         }
 
@@ -204,16 +232,14 @@ public class TaskServiceImpl implements ITaskService {
 
         // add tag
         List<String> tagList = new ArrayList<>();
-        if(model.getTagNames() != null && model.getTagNames().size() > 0){
+        if (model.getTagNames() != null && model.getTagNames().size() > 0) {
             // delete tag relation old
-            for (TagEntity tagEntity : taskOld.getTagList()) {
-                List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectIdAAndIdTag(Const.tableName.TASK.name(), taskOld.getId(), tagEntity.getId());
-                tagRelationEntities.stream().forEach(tagRelationEntity -> this.tagRelationRepository.delete(tagRelationEntity));
-            }
+            List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
+            tagRelationEntities.stream().forEach(tagRelationEntity -> this.tagRelationRepository.delete(tagRelationEntity));
 
-            for (String tagName: model.getTagNames()) {
+            for (String tagName : model.getTagNames()) {
                 TagEntity tagEntity = this.tagRepository.findByName(tagName);
-                if(tagEntity == null){
+                if (tagEntity == null) {
                     TagModel newTagModel = TagModel.builder().name(tagName).build();
                     TagDto newTagDto = this.tagService.add(newTagModel);
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
@@ -223,7 +249,7 @@ public class TaskServiceImpl implements ITaskService {
                             .build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(newTagDto.getName());
-                }else {
+                } else {
                     TagRelationModel tagRelationModel = TagRelationModel.builder()
                             .idTag(tagEntity.getId())
                             .objectId(taskupdate.getId())
@@ -241,7 +267,7 @@ public class TaskServiceImpl implements ITaskService {
         oldUserProjects.stream().forEach(oldUserProject -> this.userProjectRepository.delete(oldUserProject));
         // add dev
         List<UserDto> devList = new ArrayList<>();
-        if(model.getDevIds() != null && model.getDevIds().size() > 0){
+        if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
                 UserProjectEntity userProject = this.addDev(devId);
                 userProject.setObjectId(taskupdate.getId());
@@ -249,6 +275,12 @@ public class TaskServiceImpl implements ITaskService {
                 UserEntity userEntity1 = this.userRepository.findById(devId).orElseThrow(() -> new CustomHandleException(11));
                 devList.add(UserDto.toDto(userEntity1));
             }
+        }
+
+        // delete old file
+        List<FileEntity> fileEntities = this.fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
+        if (!fileEntities.isEmpty()) {
+            this.fileRepository.deleteAllInBatch(fileEntities);
         }
 
         // save file
@@ -261,37 +293,43 @@ public class TaskServiceImpl implements ITaskService {
             FileDto fileAfterSaveZ = fileService.add(fileModel);
             fileAfterSave.add(fileAfterSaveZ.getLink());
         }
-        TaskDto result =  TaskDto.toDto(this.repository.saveAndFlush(taskupdate));
+        TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskupdate));
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
 
-        iHistoryLogService.logUpdate(taskupdate.getId(),taskExist,taskupdate, Const.tableName.TASK);
+        iHistoryLogService.logUpdate(taskupdate.getId(), taskExist, taskupdate, Const.tableName.TASK);
 
         return result;
     }
 
     @Override
     public boolean deleteById(Long id) {
-        TaskEntity oldTask = this.getById(id);
+        try {
+            // delete subTask
+            List<SubTaskEntity> subTaskEntities = this.subTaskRepository.findByTaskId(id);
+            subTaskEntities.forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
 
-        // trong bang subtag co id nao lien quan den id do se bi xoa
-        // goi den ham xoa trong service cua Manh ne
+            // delete userProject
+            List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+            for (UserProjectEntity userProjectEntity : userProjectEntities) {
+                this.userProjectRepository.delete(userProjectEntity);
+            }
+            //delete tag_relation
+            List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
+            for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
+                this.tagRelationRepository.delete(tagRelationEntity);
+            }
+            // delete file
+            fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
 
-        // trong bang userproject xoa nhung data co id do + categori = 'TASK'
-        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId("TASK", id);
-        for (UserProjectEntity userProjectEntity : userProjectEntities) {
-            this.userProjectRepository.delete(userProjectEntity);
+            // delete Task
+            this.repository.deleteById(id);
+
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-        //trong bang tag_relation xoa nhung data co id do + category = 'TASK'
-        List<TagRelationEntity> tagRelationEntities =  this.tagRelationRepository.getByCategoryAndObjectId("TASK", id);
-        for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
-            this.tagRelationRepository.delete(tagRelationEntity);
-        }
-        // xoa trong bang task id do
-        this.repository.deleteById(id);
-
-        return true;
     }
 
     @Override
@@ -300,7 +338,7 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     // add dev
-    public UserProjectEntity addDev(Long id){
+    public UserProjectEntity addDev(Long id) {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         UserProjectEntity userProject = UserProjectEntity.builder()
@@ -312,22 +350,12 @@ public class TaskServiceImpl implements ITaskService {
         return this.userProjectRepository.saveAndFlush(userProject);
     }
 
-    // delete dev
-    public Boolean deleteDev(Long id){
-        UserProjectEntity userProject = this.userProjectRepository.findById(id).orElse(null);
-        if(userProject != null){
-            this.userProjectRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public boolean changIsDeleteById(Long id) {
         TaskEntity oldTask = this.getById(id);
         oldTask.setIsDeleted(true);
         this.repository.saveAndFlush(oldTask);
-        iHistoryLogService.logDelete(id,oldTask, Const.tableName.TASK);
+        iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK);
         return true;
     }
 }
