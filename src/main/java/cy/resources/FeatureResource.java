@@ -22,6 +22,11 @@ public class FeatureResource {
         return ResponseDto.of(featureService.findAll(pageable));
     }
 
+    @GetMapping("/get-by-id/{id}")
+    public ResponseDto getAllFeature(@PathVariable("id") Long id){
+        return ResponseDto.of(featureService.findById(id));
+    }
+
     @PostMapping("/add-feature")
     public ResponseDto addNewFeature(@Valid FeatureModel model){
         return ResponseDto.of(this.featureService.add(model));
