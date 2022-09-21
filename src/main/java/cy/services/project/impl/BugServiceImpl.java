@@ -2,7 +2,6 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.BugDto;
-import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.BugModel;
@@ -403,8 +402,8 @@ public class BugServiceImpl implements IRequestBugService {
         }
         if(bugModel.getTextSearch() != null){
             if(bugModel.getTextSearch().charAt(0) == '#'){
-                sql+=" AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'PROJECT') ";
-                countSQL+="AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+                sql+=" AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'BUG') ";
+                countSQL+="AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'BUG') ";
             }
             else{
                 sql+=" AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
@@ -413,7 +412,7 @@ public class BugServiceImpl implements IRequestBugService {
         }
         sql+="order by p.createdDate desc";
 
-         Query q = manager.createQuery(sql, ProjectDto.class);
+         Query q = manager.createQuery(sql, BugDto.class);
         Query qCount = manager.createQuery(countSQL);
 
         if(bugModel.getStatus() != null){
@@ -435,6 +434,10 @@ public class BugServiceImpl implements IRequestBugService {
 
         q.setFirstResult(pageIndex * pageSize);
         q.setMaxResults(pageSize);
+
+
+
+
 
         Long numberResult = (Long) qCount.getSingleResult();
         Page<BugDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
