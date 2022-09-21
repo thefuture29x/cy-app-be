@@ -28,6 +28,8 @@ public class BugModel {
     private Date startDate;
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
+    private String textSearch;
+    private String status;
     public static BugEntity modelToEntity(BugModel model) {
        return BugEntity.builder()
                .id(model.getId())

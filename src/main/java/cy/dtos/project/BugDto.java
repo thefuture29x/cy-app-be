@@ -28,12 +28,17 @@ public class BugDto {
     private Date startDate;
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date createdDate;
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date updatedDate;
     private UserDto assignTo;
     private Boolean isDefault;
     private Boolean isDelete;
     private  List<TagDto> tagList;
     private List<String> attachFiles;
     private List<BugHistoryDto> historyLogBug;
+    private String status;
 
     public static BugDto entityToDto(BugEntity obj) {
         List<String> lstFile = new ArrayList<>();
@@ -58,5 +63,23 @@ public class BugDto {
                 .tagList(obj.getTagList() != null
                         ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();
+    }
+    public BugDto(BugEntity entity){
+        if(entity != null){
+            List<String> lstFile = new ArrayList<>();
+            if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
+                entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+            }
+            this.setId(entity.getId());
+            this.setCreatedDate(entity.getCreatedDate());
+            this.setAttachFiles(lstFile);
+            this.setDescription(entity.getDescription());
+            this.setNameBug(entity.getName());
+            this.setIsDefault(entity.getIsDefault());
+            this.setIsDelete(entity.getIsDeleted());
+            this.setStatus(entity.getStatus());
+            this.setUpdatedDate(entity.getUpdatedDate());
+            this.setStartDate(entity.getStartDate());
+        }
     }
 }

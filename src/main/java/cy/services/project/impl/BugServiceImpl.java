@@ -2,6 +2,7 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.BugDto;
+import cy.dtos.project.ProjectDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.BugModel;
@@ -17,11 +18,15 @@ import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -371,5 +376,68 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
         return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDto(data));
+    }
+    @Autowired
+    EntityManager manager;
+    public Page<BugDto> findByPage(Integer pageIndex, Integer pageSize, BugModel bugModel) {
+        Pageable pageable = PageRequest.of(pageIndex,pageSize);
+        String sql="SELECT distinct new cy.dtos.project.BugDto(p) FROM BugEntity p";
+        String countSQL = "select count(distinct(p)) from BugEntity p  ";
+        if(bugModel.getTextSearch() != null && bugModel.getTextSearch().charAt(0) == '#'){
+            sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+            countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+        }
+        sql += " WHERE 1=1 ";
+        countSQL += " WHERE 1=1 ";
+        if(bugModel.getStatus()!= null) {
+            sql+=" AND p.status = :status ";
+            countSQL+=" AND p.status = :status ";
+        }
+        if(bugModel.getStartDate() != null){
+            sql+=" AND p.startDate >= :startDate ";
+            countSQL+="AND p.startDate >= :startDate ";
+        }
+        if(bugModel.getEndDate() != null){
+            sql+=" AND p.endDate <= :endDate ";
+            countSQL+="AND p.endDate <= :endDate ";
+        }
+        if(bugModel.getTextSearch() != null){
+            if(bugModel.getTextSearch().charAt(0) == '#'){
+                sql+=" AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+                countSQL+="AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+            }
+            else{
+                sql+=" AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
+                countSQL+="AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
+            }
+        }
+        sql+="order by p.createdDate desc";
+
+         Query q = manager.createQuery(sql, ProjectDto.class);
+        Query qCount = manager.createQuery(countSQL);
+
+        if(bugModel.getStatus() != null){
+            q.setParameter("status", bugModel.getStatus());
+            qCount.setParameter("status", bugModel.getStatus());
+        }
+        if(bugModel.getStartDate() != null){
+            q.setParameter("startDate", bugModel.getStartDate());
+            qCount.setParameter("startDate", bugModel.getStartDate());
+        }
+        if(bugModel.getEndDate() != null){
+            q.setParameter("endDate", bugModel.getEndDate());
+            qCount.setParameter("endDate", bugModel.getEndDate());
+        }
+        if(bugModel.getTextSearch() != null){
+            q.setParameter("textSearch", "%" + bugModel.getTextSearch() + "%");
+            qCount.setParameter("textSearch", "%" + bugModel.getTextSearch() + "%");
+        }
+
+        q.setFirstResult(pageIndex * pageSize);
+        q.setMaxResults(pageSize);
+
+        Long numberResult = (Long) qCount.getSingleResult();
+        Page<BugDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
+        return result;
     }
 }
