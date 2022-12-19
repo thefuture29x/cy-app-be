@@ -39,6 +39,7 @@ public class WebSecurityConfiguration {
             new AntPathRequestMatcher("/users/login"),
             new AntPathRequestMatcher("/api/v1/test/**"),
             new AntPathRequestMatcher("/api/v1/users/login"),
+            new AntPathRequestMatcher("/api/v1/users/register"),
 
 
             new AntPathRequestMatcher("/swagger-resources/**"),
