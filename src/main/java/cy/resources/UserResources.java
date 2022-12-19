@@ -70,6 +70,12 @@ public class UserResources {
         return ResponseDto.of(this.userService.add(model));
     }
 
+    @PostMapping("/register")
+    public ResponseDto registerUser(@RequestBody @Valid UserModel model) throws IOException {
+        model.setId(null);
+        return ResponseDto.of(this.userService.add(model));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMINISTRATOR', 'ROLE_ADMIN')")
     @PutMapping("{id}")
     public ResponseDto updateUser(@PathVariable Long id, @RequestBody @Valid UserModel model) throws IOException {

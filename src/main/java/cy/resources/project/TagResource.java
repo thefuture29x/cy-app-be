@@ -1,4 +1,4 @@
-package cy.resources;
+package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;

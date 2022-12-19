@@ -171,7 +171,7 @@ public class UserServiceImp implements IUserService {
 
     @Override
     public UserDto add(UserModel model) {
-        logger.info("{} is adding user", SecurityUtils.getCurrentUsername());
+//        logger.info("{} is adding user", SecurityUtils.getCurrentUsername());
         // check user has existed with email
         UserEntity checkUser = this.userRepository.findByEmail(model.getEmail());
         if (checkUser != null)

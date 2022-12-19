@@ -1,4 +1,4 @@
-package cy.resources;
+package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.attendance.HistoryRequestDto;

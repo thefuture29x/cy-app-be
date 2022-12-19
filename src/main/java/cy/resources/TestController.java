@@ -2,10 +2,13 @@ package cy.resources;
 
 import cy.configs.FrontendConfiguration;
 import cy.configs.excel.PayRollExcelExporter;
+import cy.configs.jwt.JwtLoginResponse;
+import cy.configs.jwt.JwtUserLoginModel;
 import cy.dtos.attendance.PayRollDto;
 import cy.dtos.attendance.RequestAttendDto;
 import cy.dtos.ResponseDto;
 import cy.entities.project.*;
+import cy.models.UserModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.repositories.IUserRepository;
 import cy.services.attendance.IPayRollService;
@@ -18,6 +21,7 @@ import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -39,6 +43,12 @@ public class TestController {
     IUserService iUserService;
     @Autowired
     private RequestAttendServiceImpl requestAttendService;
+
+    @PostMapping("/register")
+    public ResponseDto registerUser(@RequestBody @Valid UserModel model) throws IOException {
+        model.setId(null);
+        return ResponseDto.of(this.iUserService.add(model));
+    }
 
     @GetMapping
     public ResponseDto getCurrentTime() {
