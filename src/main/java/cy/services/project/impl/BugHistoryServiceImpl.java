@@ -78,7 +78,7 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
     public BugHistoryDto update(BugHistoryModel model) {
 
         // delete old file
-        List<FileEntity> fileEntities = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG_HISTORY.name(), model.getBugId());
+        List<FileEntity> fileEntities = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG_HISTORY.name(), model.getId());
         if (!fileEntities.isEmpty()) {
             iFileRepository.deleteAllInBatch(fileEntities);
         }
@@ -87,7 +87,7 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         for (MultipartFile file : model.getFiles()) {
             FileModel fileModel = new FileModel();
             fileModel.setFile(file);
-            fileModel.setObjectId(model.getBugId());
+            fileModel.setObjectId(model.getId());
             fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
             iFileService.add(fileModel);
         }

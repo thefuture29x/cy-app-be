@@ -20,7 +20,6 @@ public class BugHistoryResource {
 
     @PostMapping
     public ResponseDto updateBug(BugHistoryModel bugHistoryModel) {
-//        bugHistoryService.update(bugHistoryModel);
         return ResponseDto.of(bugHistoryService.update(bugHistoryModel));
     }
 
