@@ -2,9 +2,11 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.BugDto;
+import cy.dtos.project.FileDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.BugModel;
+import cy.models.project.FileModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
@@ -31,6 +33,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -102,12 +105,13 @@ public class BugServiceImpl implements IRequestBugService {
         return null;
     }
 
-    public void saveDataInHistoryTable(BugEntity bugEntity, Date startDate, Date endDate) {
+    public void saveDataInHistoryTable(Long bugEntity, Date startDate, Date endDate, List<FileEntity> files) {
         BugHistoryEntity bugHistoryEntity = new BugHistoryEntity();
         bugHistoryEntity.setBugId(bugEntity);
         bugHistoryEntity.setStartDate(startDate);
         bugHistoryEntity.setEndDate(endDate);
-        iBugHistoryRepository.save(bugHistoryEntity);
+        bugHistoryEntity.setAttachFiles(files);
+        iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
     }
 
     @Override
@@ -192,10 +196,10 @@ public class BugServiceImpl implements IRequestBugService {
         try {
             BugEntity bugEntity = iBugRepository.findById(model.getId()).orElse(null);
             BugEntity bugEntityOriginal = (BugEntity) Const.copy(bugEntity);
-            if(bugEntity == null)
+            if (bugEntity == null)
                 return null;
             Long userId = SecurityUtils.getCurrentUserId();
-            if(userId == null)
+            if (userId == null)
                 return null;
             UserEntity userEntity = userRepository.findById(userId).orElse(null);
             bugEntity.setCreateBy(userEntity);
@@ -216,7 +220,7 @@ public class BugServiceImpl implements IRequestBugService {
 
 
             List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
-            if(tagRelationEntities != null && tagRelationEntities.size() > 0){
+            if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
                 iTagRelationRepository.deleteByIdNative(tagRelationEntities.get(0).getId());
                 iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
             }
@@ -242,15 +246,15 @@ public class BugServiceImpl implements IRequestBugService {
                 }
             }
 
-            if(bugEntity.getAttachFiles() != null && bugEntity.getAttachFiles().size() > 0)
+            if (bugEntity.getAttachFiles() != null && bugEntity.getAttachFiles().size() > 0)
                 bugEntity.getAttachFiles().clear();
-            else{
+            else {
                 bugEntity.setAttachFiles(new ArrayList<>());
             }
-            if(model.getFiles() != null && model.getFiles().length > 0){
-                for (MultipartFile m : model.getFiles()){
-                    if(!m.isEmpty()){
-                        String urlFile =  fileUploadProvider.uploadFile("bug", m);
+            if (model.getFiles() != null && model.getFiles().length > 0) {
+                for (MultipartFile m : model.getFiles()) {
+                    if (!m.isEmpty()) {
+                        String urlFile = fileUploadProvider.uploadFile("bug", m);
                         FileEntity fileEntity = new FileEntity();
                         String fileName = m.getOriginalFilename();
                         fileEntity.setLink(urlFile);
@@ -265,10 +269,9 @@ public class BugServiceImpl implements IRequestBugService {
                 }
             }
             iBugRepository.save(bugEntity);
-            iHistoryLogService.logUpdate(bugEntity.getId(),bugEntityOriginal,bugEntity, Const.tableName.BUG);
+            iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
             return BugDto.entityToDto(bugEntity);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
             return null;
         }
@@ -314,20 +317,33 @@ public class BugServiceImpl implements IRequestBugService {
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
 
+
         Date now = Date.from(Instant.now());
         if (bugEntity.getAssignTo().getUserId() == SecurityUtils.getCurrentUserId()) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (status) {
                 case 1:
                     //dev bắt đầu fix bug
                     bugEntity.setStatus(Const.status.IN_PROGRESS.name());
-                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
-                    saveDataInHistoryTable(bugEntity, now, null);
+                    subTaskRepository.updateStatusSubTask(id, Const.status.FIX_BUG.name());
+//                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
+                    List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
+                        return FileEntity.builder()
+//                                .id(f.getId())
+                                .fileName(f.getFileName())
+                                .fileType(f.getFileType())
+                                .link(f.getLink())
+                                .uploadedBy(f.getUploadedBy())
+                                .category("BUG_HISTORY")
+                                .build();
+                    }).collect(Collectors.toList());
+                    iBugRepository.flush();
+                    saveDataInHistoryTable(bugEntity.getId(), now, null, files);
                     break;
                 case 2:
                     //dev kết thúc fix bug
-                    subTaskEntity.setStatus(Const.status.IN_REVIEW.name());
+                    subTaskRepository.updateStatusSubTask(id, Const.status.IN_REVIEW.name());
                     bugEntity.setStatus(Const.status.IN_REVIEW.name());
-                    List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity);
+                    List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity.getId());
                     for (BugHistoryEntity bugHistoryEntity : bugHistoryEntities) {
                         if (bugHistoryEntity.getEndDate() == null) {
                             bugHistoryEntity.setEndDate(now);
@@ -337,10 +353,11 @@ public class BugServiceImpl implements IRequestBugService {
                     break;
 
             }
+        } else {
+            throw new CustomHandleException(311);
         }
 
-        subTaskRepository.saveAndFlush(subTaskEntity);
-        iBugRepository.saveAndFlush(bugEntity);
+        iBugRepository.save(bugEntity);
         //Lưu dữ liệu vào bảng BugHistory
 
 
@@ -376,67 +393,65 @@ public class BugServiceImpl implements IRequestBugService {
     public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
         return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDto(data));
     }
+
     @Autowired
     EntityManager manager;
+
     public Page<BugDto> findByPage(Integer pageIndex, Integer pageSize, BugModel bugModel) {
-        Pageable pageable = PageRequest.of(pageIndex,pageSize);
-        String sql="SELECT distinct new cy.dtos.project.BugDto(p) FROM BugEntity p";
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        String sql = "SELECT distinct new cy.dtos.project.BugDto(p) FROM BugEntity p";
         String countSQL = "select count(distinct(p)) from BugEntity p  ";
-        if(bugModel.getTextSearch() != null && bugModel.getTextSearch().charAt(0) == '#'){
+        if (bugModel.getTextSearch() != null && bugModel.getTextSearch().charAt(0) == '#') {
             sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
             countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
         }
         sql += " WHERE 1=1 ";
         countSQL += " WHERE 1=1 ";
-        if(bugModel.getStatus()!= null) {
-            sql+=" AND p.status = :status ";
-            countSQL+=" AND p.status = :status ";
+        if (bugModel.getStatus() != null) {
+            sql += " AND p.status = :status ";
+            countSQL += " AND p.status = :status ";
         }
-        if(bugModel.getStartDate() != null){
-            sql+=" AND p.startDate >= :startDate ";
-            countSQL+="AND p.startDate >= :startDate ";
+        if (bugModel.getStartDate() != null) {
+            sql += " AND p.startDate >= :startDate ";
+            countSQL += "AND p.startDate >= :startDate ";
         }
-        if(bugModel.getEndDate() != null){
-            sql+=" AND p.endDate <= :endDate ";
-            countSQL+="AND p.endDate <= :endDate ";
+        if (bugModel.getEndDate() != null) {
+            sql += " AND p.endDate <= :endDate ";
+            countSQL += "AND p.endDate <= :endDate ";
         }
-        if(bugModel.getTextSearch() != null){
-            if(bugModel.getTextSearch().charAt(0) == '#'){
-                sql+=" AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'BUG') ";
-                countSQL+="AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'BUG') ";
+        if (bugModel.getTextSearch() != null) {
+            if (bugModel.getTextSearch().charAt(0) == '#') {
+                sql += " AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'BUG') ";
+                countSQL += "AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'BUG') ";
+            } else {
+                sql += " AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
+                countSQL += "AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
             }
-            else{
-                sql+=" AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
-                countSQL+="AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
-            }
         }
-        sql+="order by p.createdDate desc";
+        sql += "order by p.createdDate desc";
 
-         Query q = manager.createQuery(sql, BugDto.class);
+        Query q = manager.createQuery(sql, BugDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        if(bugModel.getStatus() != null){
+        if (bugModel.getStatus() != null) {
             q.setParameter("status", bugModel.getStatus());
             qCount.setParameter("status", bugModel.getStatus());
         }
-        if(bugModel.getStartDate() != null){
+        if (bugModel.getStartDate() != null) {
             q.setParameter("startDate", bugModel.getStartDate());
             qCount.setParameter("startDate", bugModel.getStartDate());
         }
-        if(bugModel.getEndDate() != null){
+        if (bugModel.getEndDate() != null) {
             q.setParameter("endDate", bugModel.getEndDate());
             qCount.setParameter("endDate", bugModel.getEndDate());
         }
-        if(bugModel.getTextSearch() != null){
+        if (bugModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + bugModel.getTextSearch() + "%");
             qCount.setParameter("textSearch", "%" + bugModel.getTextSearch() + "%");
         }
 
         q.setFirstResult(pageIndex * pageSize);
         q.setMaxResults(pageSize);
-
-
-
 
 
         Long numberResult = (Long) qCount.getSingleResult();

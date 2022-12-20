@@ -1,20 +1,39 @@
 package cy.services.project.impl;
 
 import cy.dtos.project.BugHistoryDto;
+import cy.dtos.project.FileDto;
 import cy.entities.project.BugHistoryEntity;
+import cy.entities.project.FileEntity;
 import cy.models.project.BugHistoryModel;
+import cy.models.project.FileModel;
 import cy.repositories.project.IBugHistoryRepository;
+import cy.repositories.project.IBugRepository;
+import cy.repositories.project.IFileRepository;
 import cy.services.project.IBugHistoryService;
+import cy.services.project.IFileService;
+import cy.utils.Const;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Service
 public class BugHistoryServiceImpl implements IBugHistoryService {
     @Autowired
-    IBugHistoryRepository IBugHistoryRepository;
+    IBugHistoryRepository iBugHistoryRepository;
+    @Autowired
+    IBugRepository iBugRepository;
+    @Autowired
+    IFileRepository iFileRepository;
+    @Autowired
+    IFileService iFileService;
+
     @Override
     public List<BugHistoryDto> findAll() {
         return null;
@@ -57,6 +76,24 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
 
     @Override
     public BugHistoryDto update(BugHistoryModel model) {
+
+        // delete old file
+        List<FileEntity> fileEntities = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG_HISTORY.name(), model.getBugId());
+        if (!fileEntities.isEmpty()) {
+            iFileRepository.deleteAllInBatch(fileEntities);
+        }
+
+        // save file
+        for (MultipartFile file : model.getFiles()) {
+            FileModel fileModel = new FileModel();
+            fileModel.setFile(file);
+            fileModel.setObjectId(model.getBugId());
+            fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
+            iFileService.add(fileModel);
+        }
+        iBugHistoryRepository.flush();
+//        BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findById(model.getId()).get();
+//        return BugHistoryDto.entityToDto(bugHistoryEntity);
         return null;
     }
 
