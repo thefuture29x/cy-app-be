@@ -19,7 +19,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,7 +68,26 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
 
     @Override
     public BugHistoryDto add(BugHistoryModel model) {
-        return null;
+
+        Date now = Date.from(Instant.now());
+
+        BugHistoryEntity bugHistoryEntity = new BugHistoryEntity();
+        bugHistoryEntity.setBugId(model.getBugId());
+        bugHistoryEntity.setStartDate(now);
+        bugHistoryEntity.setEndDate(null);
+
+        BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
+        List<String> fileAfterSave = new ArrayList<>();
+        for (MultipartFile file : model.getFiles()) {
+            FileModel fileModel = new FileModel();
+            fileModel.setFile(file);
+            fileModel.setObjectId(bugHistoryEntityAfterSave.getId());
+            fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
+            FileDto fileAfterSaveZ = iFileService.add(fileModel);
+            fileAfterSave.add(fileAfterSaveZ.getLink());
+        }
+        bugHistoryEntityAfterSave.setAttachFiles(fileAfterSave);
+        return bugHistoryEntityAfterSave;
     }
 
     @Override
@@ -92,8 +113,6 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
             iFileService.add(fileModel);
         }
         iBugHistoryRepository.flush();
-//        BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findById(model.getId()).get();
-//        return BugHistoryDto.entityToDto(bugHistoryEntity);
         return null;
     }
 

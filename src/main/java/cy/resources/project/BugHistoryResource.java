@@ -18,8 +18,12 @@ public class BugHistoryResource {
     @Autowired
     BugHistoryServiceImpl bugHistoryService;
 
-    @PostMapping
-    public ResponseDto updateBug(BugHistoryModel bugHistoryModel) {
+    @PostMapping("/create")
+    public ResponseDto createBugHisotry(BugHistoryModel bugHistoryModel) {
+        return ResponseDto.of(bugHistoryService.add(bugHistoryModel));
+    }
+    @PostMapping("/update")
+    public ResponseDto updateBugHisotry(BugHistoryModel bugHistoryModel) {
         return ResponseDto.of(bugHistoryService.update(bugHistoryModel));
     }
 
