@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface IBugHistoryRepository extends JpaRepository<BugHistoryEntity, Long> {
-List<BugHistoryEntity> findAllByBugId(BugEntity bugId);
+    List<BugHistoryEntity> findAllByBugId(Long bugId);
 
     @Query(value = "select * from tbl_bug_historys where bug_id = ?1", nativeQuery = true)
     List<BugHistoryEntity> findByBugId(Long bugId);

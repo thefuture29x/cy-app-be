@@ -1,4 +1,4 @@
-package cy.dtos;
+package cy.dtos.project;
 
 import cy.entities.project.TagEntity;
 import lombok.AllArgsConstructor;
