@@ -182,7 +182,7 @@ public class BugServiceImpl implements IRequestBugService {
             iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.BUG);
             return bugDto;
         } catch (Exception e) {
-            return null;
+            throw new CustomHandleException(312);
         }
     }
 
