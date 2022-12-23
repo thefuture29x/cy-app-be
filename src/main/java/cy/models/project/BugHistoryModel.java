@@ -4,6 +4,7 @@ import cy.entities.project.BugHistoryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -19,6 +20,8 @@ public class BugHistoryModel {
     private Date startDate;
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
+    private MultipartFile[] files;
+
     public static BugHistoryEntity modelToEntity(BugHistoryModel model) {
         return BugHistoryEntity.builder()
                 .id(model.getId())

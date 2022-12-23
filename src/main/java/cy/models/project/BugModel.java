@@ -37,7 +37,7 @@ public class BugModel {
                .name(model.getNameBug())
                .description(model.getDescription())
                .startDate(model.getStartDate())
-                .endDate(model.getEndDate())
+               .endDate(model.getEndDate())
                .isDefault(model.getIsDefault())
                .isDeleted(model.getIsDelete())
                .build();

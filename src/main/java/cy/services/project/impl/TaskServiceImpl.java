@@ -1,10 +1,9 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.TagDto;
+import cy.dtos.project.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
-import cy.dtos.project.ProjectDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
@@ -17,7 +16,6 @@ import cy.repositories.project.*;
 import cy.services.project.*;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
-import org.apache.poi.hssf.record.PageBreakRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

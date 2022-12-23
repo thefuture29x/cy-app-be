@@ -2,7 +2,7 @@ package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
-import cy.dtos.TagDto;
+import cy.dtos.project.TagDto;
 import cy.models.project.TagModel;
 import cy.services.project.ITagService;
 import org.springframework.beans.factory.annotation.Autowired;

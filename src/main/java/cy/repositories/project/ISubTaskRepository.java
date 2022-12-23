@@ -17,4 +17,8 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
 
     @Query(value = "select * from tbl_sub_tasks where task_id = ?1", nativeQuery = true)
     List<SubTaskEntity> findByTaskId(Long id);
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE tbl_sub_tasks SET `status` = ?2 WHERE id = ?1",nativeQuery = true)
+    void updateStatusSubTask(Long id,String status);
 }
