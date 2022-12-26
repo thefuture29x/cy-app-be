@@ -2,11 +2,9 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.BugDto;
-import cy.dtos.project.FileDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.BugModel;
-import cy.models.project.FileModel;
 import cy.models.project.TagModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
@@ -152,7 +150,8 @@ public class BugServiceImpl implements IRequestBugService {
                 }
             }
             //create tag
-            if (model.getTags() != null && model.getTags().size() > 0) {
+            List<TagEntity> tagEntityList = new ArrayList<>();
+            if (model.getTags() != null&& model.getTags().size() > 0 ) {
                 for (TagModel tagModel : model.getTags()) {
                     TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
                     if (tagEntity == null) {
@@ -171,10 +170,10 @@ public class BugServiceImpl implements IRequestBugService {
                         tagRelationEntity.setObjectId(entity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
                     }
+                    tagEntityList.add(TagModel.toEntity(tagModel));
                 }
             }
-
-
+            bugEntity.setTagList(tagEntityList);
             BugDto bugDto = BugDto.entityToDto(bugEntity);
             //chuyển trạng thái Subtask sang fixBug
             subTaskEntity.setStatus(Const.status.FIX_BUG.name());
