@@ -1,6 +1,8 @@
 package cy.repositories.project;
 
 import cy.entities.project.TaskEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +21,6 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
 
     @Query(value = "select * from tbl_tasks where feature_id = ?1", nativeQuery = true)
     List<TaskEntity> findByFeatureId(Long id);
+
+    Page<TaskEntity> findAllByFeature_Id(Long id, Pageable pageable);
 }

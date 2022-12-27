@@ -380,6 +380,10 @@ public class TaskServiceImpl implements ITaskService {
             sql+=" AND task.status = :status ";
             countSQL+=" AND task.status = :status ";
         }
+        if(taskModel.getFeatureId()!= null) {
+            sql+=" AND task.feature.id = :featureId ";
+            countSQL+=" AND task.feature.id = :featureId ";
+        }
         if(taskModel.getStartDate() != null){
             sql+=" AND task.startDate >= :startDate ";
             countSQL+="AND task.startDate >= :startDate ";
@@ -407,6 +411,10 @@ public class TaskServiceImpl implements ITaskService {
             q.setParameter("status", taskModel.getStatus());
             qCount.setParameter("status", taskModel.getStatus());
         }
+        if(taskModel.getFeatureId() != null){
+            q.setParameter("featureId", taskModel.getFeatureId());
+            qCount.setParameter("featureId", taskModel.getFeatureId());
+        }
         if(taskModel.getStartDate() != null){
             q.setParameter("startDate", taskModel.getStartDate());
             qCount.setParameter("startDate", taskModel.getStartDate());
@@ -426,5 +434,10 @@ public class TaskServiceImpl implements ITaskService {
         Long numberResult = (Long) qCount.getSingleResult();
         Page<TaskDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
         return result;
+    }
+
+    @Override
+    public Page<TaskDto> findAllByProjectId(Long id, Pageable pageable) {
+        return this.repository.findAllByFeature_Id(id,pageable).map(task -> TaskDto.toDto(task));
     }
 }

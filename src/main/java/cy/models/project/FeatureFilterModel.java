@@ -22,4 +22,5 @@ public class FeatureFilterModel {
     private Const.priority priority;
     private String minDate;
     private String maxDate;
+    private Long projectId;
 }

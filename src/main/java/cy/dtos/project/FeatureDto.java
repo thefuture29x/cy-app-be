@@ -19,6 +19,7 @@ public class FeatureDto {
     private Date createdDate;
     private Date updatedDate;
     private Long uid;
+    private String createBy;
     private Date startDate;
     private Date endDate;
     private String priority;
@@ -37,6 +38,7 @@ public class FeatureDto {
                 .createdDate(entity.getCreatedDate())
                 .updatedDate(entity.getUpdatedDate())
                 .uid(entity.getCreateBy().getUserId())
+                .createBy(entity.getCreateBy().getFullName())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .status(entity.getStatus())
