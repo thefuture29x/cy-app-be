@@ -28,6 +28,7 @@ public class TaskDto {
     private String description;
     private String priority;
     private Long featureId;
+    private String createBy;
     private List<UserDto> devList;
     private List<String> tagName;
     private List<String> files;
@@ -49,6 +50,7 @@ public class TaskDto {
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .featureId(entity.getFeature().getId())
+                .createBy(entity.getCreateBy().getFullName())
                 .devList(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagName(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)

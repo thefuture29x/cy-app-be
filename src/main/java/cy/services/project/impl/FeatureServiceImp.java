@@ -260,4 +260,9 @@ public class FeatureServiceImp implements IFeatureService {
         iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE);
         return true;
     }
+
+    @Override
+    public Page<FeatureDto> findAllByProjectId(Long id, Pageable pageable) {
+        return this.featureRepository.findAllByProject_Id(id,pageable).map(FeatureDto::toDto);
+    }
 }

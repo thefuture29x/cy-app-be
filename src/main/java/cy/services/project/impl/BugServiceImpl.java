@@ -411,6 +411,10 @@ public class BugServiceImpl implements IRequestBugService {
             sql += " AND p.status = :status ";
             countSQL += " AND p.status = :status ";
         }
+        if (bugModel.getSubTask() != null) {
+            sql += " AND p.subTask.id = :subtaskId ";
+            countSQL += " AND p.subTask.id = :subtaskId ";
+        }
         if (bugModel.getStartDate() != null) {
             sql += " AND p.startDate >= :startDate ";
             countSQL += "AND p.startDate >= :startDate ";
@@ -436,6 +440,10 @@ public class BugServiceImpl implements IRequestBugService {
         if (bugModel.getStatus() != null) {
             q.setParameter("status", bugModel.getStatus());
             qCount.setParameter("status", bugModel.getStatus());
+        }
+        if (bugModel.getSubTask() != null) {
+            q.setParameter("subtaskId", bugModel.getSubTask());
+            qCount.setParameter("subtaskId", bugModel.getSubTask());
         }
         if (bugModel.getStartDate() != null) {
             q.setParameter("startDate", bugModel.getStartDate());

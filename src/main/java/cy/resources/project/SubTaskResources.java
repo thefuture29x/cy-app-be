@@ -6,6 +6,7 @@ import cy.models.project.SubTaskModel;
 import cy.services.project.ISubTaskService;
 import cy.services.project.impl.SubTaskServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,5 +38,11 @@ public class SubTaskResources {
     @GetMapping(value = "/find-by-id/{id}")
     public Object findById(@PathVariable Long id) {
         return ResponseDto.of(iSubTaskService.findById(id));
+    }
+
+
+    @GetMapping("/find-all-by-task-id")
+    public ResponseDto getAllSubTaskByProjectId(@RequestParam("id") Long id, Pageable pageable){
+        return ResponseDto.of(iSubTaskService.findAllByProjectId(id,pageable));
     }
 }

@@ -1,6 +1,8 @@
 package cy.repositories.project;
 
 import cy.entities.project.SubTaskEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,4 +23,6 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     @Transactional
     @Query(value = "UPDATE tbl_sub_tasks SET `status` = ?2 WHERE id = ?1",nativeQuery = true)
     void updateStatusSubTask(Long id,String status);
+
+    Page<SubTaskEntity> findAllByTask_Id(Long id,Pageable pageable);
 }

@@ -61,4 +61,10 @@ public class TaskResouce {
     public ResponseDto findBypage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody TaskModel taskModel) {
         return ResponseDto.of(taskService.findByPage(pageIndex,pageSize,taskModel));
     }
+
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @GetMapping("/find-all-by-feature-id")
+    public ResponseDto getAllTaskByProjectId(@RequestParam("id") Long id,Pageable pageable){
+        return ResponseDto.of(taskService.findAllByProjectId(id,pageable));
+    }
 }

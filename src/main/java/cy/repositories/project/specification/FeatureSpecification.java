@@ -4,6 +4,8 @@ import cy.entities.UserEntity;
 import cy.entities.UserEntity_;
 import cy.entities.project.FeatureEntity;
 import cy.entities.project.FeatureEntity_;
+import cy.entities.project.ProjectEntity;
+import cy.entities.project.ProjectEntity_;
 import cy.models.project.FeatureFilterModel;
 import cy.models.project.FeatureModel;
 import cy.utils.Const;
@@ -31,6 +33,13 @@ public class FeatureSpecification {
 
     public static Specification<FeatureEntity> byName(String name) {
         return (root, query, cb) -> cb.like(root.get(FeatureEntity_.NAME), "%" + name + "%");
+    }
+
+    public static Specification<FeatureEntity> byProjectId(Long id) {
+        return ((root, query, cb) -> {
+            Join<FeatureEntity, ProjectEntity> createByRoot =root.join(FeatureEntity_.PROJECT);
+            return cb.equal(createByRoot.get(ProjectEntity_.ID),id);
+        });
     }
 
     public static Specification<FeatureEntity> byDescription(String description) {
@@ -77,9 +86,13 @@ public class FeatureSpecification {
             specificationList.add(byName(filterModel.getSearchField()));
             specificationList.add(byDescription(filterModel.getSearchField()));
             specificationList.add(byCreatorName(filterModel.getSearchField()));
+
         }
         if(filterModel.getMaxDate()!= null || filterModel.getMinDate()!=null){
             specificationList.add(byFeatureDate(filterModel.getMinDate(),filterModel.getMaxDate()));
+        }
+        if (filterModel.getProjectId() != null){
+            specificationList.add(byProjectId(filterModel.getProjectId()));
         }
         for (Specification<FeatureEntity> spec : specificationList) {
             if(finalSpecs == null) {

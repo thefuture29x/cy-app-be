@@ -25,5 +25,7 @@ public interface IFeatureRepository extends JpaRepository<FeatureEntity,Long>, J
 
     Page<FeatureEntity> findAll(Specification<FeatureEntity> specification, Pageable pageable);
 
+    Page<FeatureEntity> findAllByProject_Id(Long id, Pageable pageable);
+
 
 }
