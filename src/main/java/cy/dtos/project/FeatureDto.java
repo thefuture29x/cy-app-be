@@ -46,7 +46,7 @@ public class FeatureDto {
                 .name(entity.getName())
                 .priority(entity.getPriority())
                 .description(entity.getDescription())
-                .project(ProjectDto.toDto(entity.getProject()))
+//                .project(ProjectDto.toDto(entity.getProject()))
                 .devTeam(entity.getDevTeam()!=null? entity.getDevTeam().stream().map(UserDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
                 .files(entity.getAttachFiles()!=null ? entity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
                 .tagList(entity.getTagList()!=null? entity.getTagList().stream().map(TagDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
