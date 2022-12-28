@@ -21,6 +21,8 @@ public class BugModel {
     private Boolean isDefault;
     private MultipartFile[] files;
     private List<TagModel> tags;
+    private List<UserProjectModel> reviewerList;
+    private List<UserProjectModel> responsibleList;
     private Boolean isDelete;
     private String priority;
     private Long userAssign;

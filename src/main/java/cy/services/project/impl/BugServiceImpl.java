@@ -1,13 +1,14 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
+import cy.dtos.UserDto;
 import cy.dtos.project.BugDto;
-import cy.dtos.project.FileDto;
+import cy.dtos.project.TagDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.BugModel;
-import cy.models.project.FileModel;
 import cy.models.project.TagModel;
+import cy.models.project.UserProjectModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.services.project.IFileService;
@@ -86,18 +87,19 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto findById(Long id) {
-        BugEntity bugEntity = iBugRepository.findById(id).orElse(null);
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
-        List<TagEntity> tagEntityList = new ArrayList<>();
+        List<UserDto> reviewerList = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
+        List<UserDto> responsibleList = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.BUG.name(), Const.type.TYPE_RESPONSIBLE.name(), id);
+        List<TagDto> tagEntityList = new ArrayList<>();
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
-            tagEntityList.add(tagEntity);
+            tagEntityList.add(TagDto.toDto(tagEntity));
         }
-        System.out.println(tagEntityList);
-        bugEntity.setTagList(tagEntityList);
-        ;
-        iBugRepository.save(bugEntity);
-        return BugDto.entityToDto(bugEntity);
+        BugDto bugDto= BugDto.entityToDto(iBugRepository.findById(id).get());
+        bugDto.setReviewerList(reviewerList);
+        bugDto.setResponsibleList(responsibleList);
+        bugDto.setTagList(tagEntityList);
+        return bugDto;
     }
 
     @Override
@@ -152,6 +154,7 @@ public class BugServiceImpl implements IRequestBugService {
                 }
             }
             //create tag
+            List<TagEntity> tagEntityList = new ArrayList<>();
             if (model.getTags() != null && model.getTags().size() > 0) {
                 for (TagModel tagModel : model.getTags()) {
                     TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
@@ -171,10 +174,38 @@ public class BugServiceImpl implements IRequestBugService {
                         tagRelationEntity.setObjectId(entity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
                     }
+                    tagEntityList.add(TagModel.toEntity(tagModel));
                 }
             }
-
-
+            //create reviewer list
+            List<UserProjectEntity> reviewerList = new ArrayList<>();
+            if (model.getReviewerList() != null && model.getReviewerList().size() >= 0) {
+                for (UserProjectModel user : model.getReviewerList()) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setIdUser(user.getIdUser());
+                    userProjectEntity.setCategory(Const.tableName.BUG.name());
+                    userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                    userProjectEntity.setObjectId(entity.getId());
+                    userProjectRepository.save(userProjectEntity);
+                    reviewerList.add(UserProjectModel.toEntity(user));
+                }
+            }
+            //create responsible list
+            List<UserProjectEntity> responsibleList = new ArrayList<>();
+            if (model.getResponsibleList() != null && model.getResponsibleList().size() >= 0) {
+                for (UserProjectModel user : model.getResponsibleList()) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setIdUser(user.getIdUser());
+                    userProjectEntity.setCategory(Const.tableName.BUG.name());
+                    userProjectEntity.setType(Const.type.TYPE_RESPONSIBLE.name());
+                    userProjectEntity.setObjectId(entity.getId());
+                    userProjectRepository.save(userProjectEntity);
+                    responsibleList.add(UserProjectModel.toEntity(user));
+                }
+            }
+            bugEntity.setReviewerList(null);
+            bugEntity.setResponsibleList(null);
+            bugEntity.setTagList(tagEntityList);
             BugDto bugDto = BugDto.entityToDto(bugEntity);
             //chuyển trạng thái Subtask sang fixBug
             subTaskEntity.setStatus(Const.status.FIX_BUG.name());
@@ -217,7 +248,34 @@ public class BugServiceImpl implements IRequestBugService {
                 bugEntity.setStatus(Const.status.TO_DO.name());
             }*/
             bugEntity.setUpdatedDate(currentDate);
-
+            //create reviewer list
+            List<UserProjectEntity> reviewerList = new ArrayList<>();
+            if (model.getReviewerList() != null && model.getReviewerList().size() >= 0) {
+                for (UserProjectModel user : model.getReviewerList()) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setIdUser(user.getIdUser());
+                    userProjectEntity.setCategory(Const.tableName.BUG.name());
+                    userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                    userProjectEntity.setObjectId(bugEntity.getId());
+                    userProjectRepository.save(userProjectEntity);
+                    reviewerList.add(UserProjectModel.toEntity(user));
+                }
+            }
+            //create responsible list
+            List<UserProjectEntity> responsibleList = new ArrayList<>();
+            if (model.getResponsibleList() != null && model.getResponsibleList().size() >= 0) {
+                for (UserProjectModel user : model.getResponsibleList()) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setIdUser(user.getIdUser());
+                    userProjectEntity.setCategory(Const.tableName.BUG.name());
+                    userProjectEntity.setType(Const.type.TYPE_RESPONSIBLE.name());
+                    userProjectEntity.setObjectId(bugEntity.getId());
+                    userProjectRepository.save(userProjectEntity);
+                    responsibleList.add(UserProjectModel.toEntity(user));
+                }
+            }
+            bugEntity.setReviewerList(null);
+            bugEntity.setResponsibleList(null);
 
             List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
             if (tagRelationEntities != null && tagRelationEntities.size() > 0) {

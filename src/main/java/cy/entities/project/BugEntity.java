@@ -37,12 +37,20 @@ public class BugEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "assign to")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")
-    private UserEntity assignTo;
+    private UserEntity assignTo;//người chịu trách nhiệm chính trong fixbug
 
 
     @HistoryLogTitle(title = "", ignore = true)
     @Transient
     private List<TagEntity> tagList;
+
+    @HistoryLogTitle(title = "", ignore = true)
+    @Transient
+    private List<UserEntity> responsibleList;//danh sách người phụ trách
+
+    @HistoryLogTitle(title = "", ignore = true)
+    @Transient
+    private List<UserEntity> reviewerList;//danh sách người review
 
     @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(mappedBy = "bugId")
