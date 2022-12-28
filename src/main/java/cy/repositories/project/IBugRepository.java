@@ -17,11 +17,11 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
     @Query(value = "select * from tbl_bugs where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 12 HOUR)))",nativeQuery = true)
     List<BugEntity> checkBugDelete();
 
-    @Query(value = "SELECT bg.* FROM tbl_bugs bg \n" +
-            "JOIN tbl_sub_tasks sts ON bg.sub_task_id = sts.id \n" +
-            "JOIN tbl_tasks ts ON sts.task_id = ts.id \n" +
-            "JOIN tbl_features ft ON ts.feature_id = ft.id \n" +
-            "JOIN tbl_projects pr ON ft.project_id = pr.id \n" +
+    @Query(value = "SELECT bg.* FROM `tbl_bugs` bg \n" +
+            "JOIN `tbl_sub_tasks` sts ON bg.sub_task_id = sts.id \n" +
+            "JOIN `tbl_tasks` ts ON sts.task_id = ts.id \n" +
+            "JOIN `tbl_features` ft ON ts.feature_id = ft.id \n" +
+            "JOIN `tbl_projects` pr ON ft.project_id = pr.id \n" +
             "WHERE pr.id = ?1",nativeQuery = true)
     Page<BugEntity> findAllBugOfProject(Long idProject, Pageable pageable);
 
