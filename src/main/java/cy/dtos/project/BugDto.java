@@ -32,12 +32,16 @@ public class BugDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedDate;
     private UserDto assignTo;
+
     private Boolean isDefault;
     private Boolean isDelete;
     private List<TagDto> tagList;
     private List<String> attachFiles;
     private List<BugHistoryDto> historyLogBug;
     private String status;
+
+    private List<UserDto> reviewerList;
+    private List<UserDto> responsibleList;
 
     public static BugDto entityToDto(BugEntity obj) {
         List<String> lstFile = new ArrayList<>();
@@ -61,6 +65,8 @@ public class BugDto {
                 .attachFiles(lstFile)
                 .tagList(obj.getTagList() != null
                         ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
+                .reviewerList(obj.getReviewerList() != null ? obj.getReviewerList().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
+                .responsibleList(obj.getResponsibleList() != null ? obj.getResponsibleList().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
                 .build();
     }
 

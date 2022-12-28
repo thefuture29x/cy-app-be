@@ -2,7 +2,6 @@ package cy.utils;
 
 import cy.dtos.CustomHandleException;
 import cy.entities.project.FileEntity;
-import cy.entities.project.ProjectBaseEntity;
 import cy.entities.project.ProjectEntity;
 import org.springframework.beans.BeanUtils;
 
@@ -36,6 +35,9 @@ public class Const {
         TYPE_DEV,
         TYPE_FOLLOWER,
         TYPE_VIEWER,
+        TYPE_REVIEWER,
+        TYPE_RESPONSIBLE,
+
     }
 
     public enum status {
