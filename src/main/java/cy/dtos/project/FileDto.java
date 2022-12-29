@@ -30,7 +30,7 @@ public class FileDto {
                 .fileName(fileEntity.getFileName())
                 .objectId(fileEntity.getObjectId())
                 .category(fileEntity.getCategory())
-                .uploadedBy(UserDto.toDto(fileEntity.getUploadedBy()))
+//                .uploadedBy(UserDto.toDto(fileEntity.getUploadedBy()))
                 .build();
     }
 }

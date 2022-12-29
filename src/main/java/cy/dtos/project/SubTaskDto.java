@@ -34,7 +34,7 @@ public class SubTaskDto {
         return SubTaskDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
-                .taskDto(TaskDto.toDto(entity.getTask()))
+//                .taskDto(TaskDto.toDto(entity.getTask()))
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .createBy(entity.getCreateBy().getFullName())

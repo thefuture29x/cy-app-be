@@ -1,6 +1,7 @@
 package cy.repositories.project;
 
 import cy.entities.project.SubTaskEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,5 +25,34 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     @Query(value = "UPDATE tbl_sub_tasks SET `status` = ?2 WHERE id = ?1",nativeQuery = true)
     void updateStatusSubTask(Long id,String status);
 
-    Page<SubTaskEntity> findAllByTask_Id(Long id,Pageable pageable);
+    @Query(value = "SELECT sub.* FROM `tbl_projects` pro \n" +
+            "JOIN `tbl_features` fea ON pro.id = fea.project_id\n" +
+            "JOIN `tbl_tasks` tas ON fea.id = tas.feature_id\n" +
+            "JOIN `tbl_sub_tasks` sub ON tas.id = sub.task_id\n" +
+            "WHERE pro.id = ?1",nativeQuery = true)
+    Page<SubTaskEntity> findAllByProjectId(Long id,Pageable pageable);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE `tbl_sub_tasks` sub\n" +
+            "JOIN tbl_bugs bug ON sub.id = bug.sub_task_id\n" +
+            "SET sub.status = 'DONE' \n" +
+            "WHERE sub.id = ?1 \n" +
+            "AND 'TO_DO' NOT IN (\n" +
+            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tWHERE sub_task_id = ?1\n" +
+            ")\n" +
+            "AND'IN_PROGRESS' NOT IN (\n" +
+            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tWHERE sub_task_id = ?1\n" +
+            ")\n" +
+            "AND'IN_REVIEW' NOT IN (\n" +
+            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tWHERE sub_task_id = ?1\n" +
+            ")\n" +
+            "AND'FIX_BUG' NOT IN (\n" +
+            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tWHERE sub_task_id = ?1\n" +
+            ")",nativeQuery = true)
+    void updateStatusSubTaskAfterAllBugDone(Long id);
 }

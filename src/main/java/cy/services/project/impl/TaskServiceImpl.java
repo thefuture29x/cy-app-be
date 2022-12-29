@@ -1,6 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
+import cy.dtos.project.BugDto;
 import cy.dtos.project.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
@@ -438,6 +439,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public Page<TaskDto> findAllByProjectId(Long id, Pageable pageable) {
-        return this.repository.findAllByFeature_Id(id,pageable).map(task -> TaskDto.toDto(task));
+        return this.repository.findAllByProjectId(id,pageable).map(task -> TaskDto.toDto(task));
     }
+
 }

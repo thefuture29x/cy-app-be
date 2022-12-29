@@ -22,6 +22,7 @@ public class BugDto {
     private String nameBug;
     private String priority;
     private Long subTask;
+    private Long task;
     private String description;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
@@ -53,16 +54,18 @@ public class BugDto {
                 .id(obj.getId())
                 .priority(obj.getPriority())
                 .nameBug(obj.getName())
-                .subTask((obj.getCreateBy() != null ? obj.getCreateBy().getUserId() : null))
+                .subTask(obj.getSubTask() != null ? obj.getSubTask().getId() : null)
+                .task(obj.getTask() != null ? obj.getTask().getId() : null)
                 .description(obj.getDescription())
                 .startDate(obj.getStartDate())
                 .endDate(obj.getEndDate())
                 .isDefault(obj.getIsDefault())
                 .isDelete(obj.getIsDeleted())
-                .assignTo(obj.getCreateBy() != null ? UserDto.toDto(obj.getCreateBy()) : null)
+                .assignTo(obj.getCreateBy() != null ? UserDto.toDto(obj.getAssignTo()) : null)
                 .historyLogBug(obj.getHistoryBugList() != null
                         ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
                 .attachFiles(lstFile)
+                .status(obj.getStatus())
                 .tagList(obj.getTagList() != null
                         ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .reviewerList(obj.getReviewerList() != null ? obj.getReviewerList().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)

@@ -17,6 +17,7 @@ public class BugModel {
     private Long id;
     private String nameBug;
     private Long subTask;
+    private Long task;
     private String description;
     private Boolean isDefault;
     private MultipartFile[] files;
