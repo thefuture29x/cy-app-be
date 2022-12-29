@@ -139,12 +139,13 @@ public class ProjectServiceImpl implements IProjectService {
                   }
               }
           }
-          if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
-              for (TagModel tagModel : projectModel.getTags()){
-                  TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
+//          if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
+          if(projectModel.getTagArray() != null && projectModel.getTagArray().length > 0){
+              for (String tagModel : projectModel.getTagArray()){
+                  TagEntity tagEntity = iTagRepository.findByName(tagModel);
                   if(tagEntity == null){
                       TagEntity tagEntity1 = new TagEntity();
-                      tagEntity1.setName(tagModel.getName());
+                      tagEntity1.setName(tagModel);
                       tagEntity1 =iTagRepository.save(tagEntity1);
                       TagRelationEntity tagRelationEntity = new TagRelationEntity();
                       tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
@@ -271,12 +272,13 @@ public class ProjectServiceImpl implements IProjectService {
             if(tagRelationEntities != null && tagRelationEntities.size() > 0){
                 iTagRelationRepository.deleteAll(tagRelationEntities);
             }
-            if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
-                for (TagModel tagModel : projectModel.getTags()){
-                    TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
+//            if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
+            if(projectModel.getTagArray() != null && projectModel.getTagArray().length > 0){
+                for (String tagModel : projectModel.getTagArray()){
+                    TagEntity tagEntity = iTagRepository.findByName(tagModel);
                     if(tagEntity == null){
                         TagEntity tagEntity1 = new TagEntity();
-                        tagEntity1.setName(tagModel.getName());
+                        tagEntity1.setName(tagModel);
                         tagEntity1 =iTagRepository.save(tagEntity1);
                         TagRelationEntity tagRelationEntity = new TagRelationEntity();
                         tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
