@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,6 +65,8 @@ public class BugServiceImpl implements IRequestBugService {
     Date now = Date.from(Instant.now());
     @Autowired
     IUserProjectRepository userProjectRepository;
+    @Autowired
+    ITaskRepository iTaskRepository;
 
     @Override
     public List<BugDto> findAll() {
@@ -89,7 +92,7 @@ public class BugServiceImpl implements IRequestBugService {
     public BugDto findById(Long id) {
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
         List<UserDto> reviewerList = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
-        List<UserDto> responsibleList = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.BUG.name(), Const.type.TYPE_RESPONSIBLE.name(), id);
+        List<UserDto> responsibleList = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
         List<TagDto> tagEntityList = new ArrayList<>();
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
@@ -120,9 +123,6 @@ public class BugServiceImpl implements IRequestBugService {
     public BugDto add(BugModel model) {
         try {
             BugEntity bugEntity = model.modelToEntity(model);
-            SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(11));
-            bugEntity.setSubTask(subTaskEntity);
-            bugEntity.setAssignTo(subTaskEntity.getAssignTo());
             bugEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
             bugEntity.setIsDeleted(false);
             //  if (bugEntity.getStartDate().compareTo(bugEntity.getCreatedDate()) != 0) {
@@ -132,7 +132,23 @@ public class BugServiceImpl implements IRequestBugService {
                 //nếu ngày bắt đầu cũng là ngày tạo bug
                 bugEntity.setStatus(Const.status.IN_PROGRESS.name());
             }*/
+            if (model.getSubTask() != null) {
+                SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(281));
+                bugEntity.setSubTask(subTaskEntity);
+//                chuyển trạng thái Subtask sang fixBug
+                subTaskEntity.setStatus(Const.status.FIX_BUG.name());
+                subTaskRepository.saveAndFlush(subTaskEntity);
+            }
 
+            if (model.getTask() != null) {
+                TaskEntity taskEntity = iTaskRepository.findById(model.getTask()).orElseThrow(() -> new CustomHandleException(251));
+                bugEntity.setTask(taskEntity);
+                //chuyển trạng thái Task sang fixBug
+                taskEntity.setStatus(Const.status.FIX_BUG.name());
+                iTaskRepository.saveAndFlush(taskEntity);
+            }
+
+            bugEntity.setAssignTo(userRepository.findById(model.getUserAssign()).orElseThrow(() -> new CustomHandleException(11)));
             BugEntity entity = iBugRepository.saveAndFlush(bugEntity);
 
 
@@ -140,7 +156,12 @@ public class BugServiceImpl implements IRequestBugService {
             if (model.getFiles() != null && model.getFiles().length > 0) {
                 for (MultipartFile m : model.getFiles()) {
                     if (!m.isEmpty()) {
-                        String urlFile = fileUploadProvider.uploadFile("bug", m);
+                        String urlFile = null;
+                        try {
+                            urlFile = fileUploadProvider.uploadFile("bug", m);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         FileEntity fileEntity = new FileEntity();
                         String fileName = m.getOriginalFilename();
                         fileEntity.setLink(urlFile);
@@ -197,7 +218,7 @@ public class BugServiceImpl implements IRequestBugService {
                     UserProjectEntity userProjectEntity = new UserProjectEntity();
                     userProjectEntity.setIdUser(user.getIdUser());
                     userProjectEntity.setCategory(Const.tableName.BUG.name());
-                    userProjectEntity.setType(Const.type.TYPE_RESPONSIBLE.name());
+                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
                     userProjectEntity.setObjectId(entity.getId());
                     userProjectRepository.save(userProjectEntity);
                     responsibleList.add(UserProjectModel.toEntity(user));
@@ -207,9 +228,6 @@ public class BugServiceImpl implements IRequestBugService {
             bugEntity.setResponsibleList(null);
             bugEntity.setTagList(tagEntityList);
             BugDto bugDto = BugDto.entityToDto(bugEntity);
-            //chuyển trạng thái Subtask sang fixBug
-            subTaskEntity.setStatus(Const.status.FIX_BUG.name());
-            subTaskRepository.saveAndFlush(subTaskEntity);
             iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.BUG);
             return bugDto;
         } catch (Exception e) {
@@ -268,7 +286,7 @@ public class BugServiceImpl implements IRequestBugService {
                     UserProjectEntity userProjectEntity = new UserProjectEntity();
                     userProjectEntity.setIdUser(user.getIdUser());
                     userProjectEntity.setCategory(Const.tableName.BUG.name());
-                    userProjectEntity.setType(Const.type.TYPE_RESPONSIBLE.name());
+                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
                     userProjectEntity.setObjectId(bugEntity.getId());
                     userProjectRepository.save(userProjectEntity);
                     responsibleList.add(UserProjectModel.toEntity(user));
@@ -341,6 +359,7 @@ public class BugServiceImpl implements IRequestBugService {
      *@description:Bug Done
      *@update:
      **/
+    @Override
     public BugDto updateStatusBugToSubTask(Long id, int status) {
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
@@ -359,6 +378,8 @@ public class BugServiceImpl implements IRequestBugService {
                     break;
 
             }
+        }else {
+            throw new CustomHandleException(311);
         }
 
         subTaskRepository.saveAndFlush(subTaskEntity);
@@ -370,11 +391,11 @@ public class BugServiceImpl implements IRequestBugService {
         return bugDto;
     }
 
+    @Override
     public BugDto updateStatusSubTaskToBug(Long id, int status) {
-        BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
+         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
-
 
         Date now = Date.from(Instant.now());
         if (bugEntity.getAssignTo().getUserId() == SecurityUtils.getCurrentUserId()) {//dev fix bug mới có thể đổi trạng thái bug để start
@@ -408,6 +429,100 @@ public class BugServiceImpl implements IRequestBugService {
                             iBugHistoryRepository.save(bugHistoryEntity);
                         }
                     }
+                    break;
+                case 3:
+                    //reviewer oke xong thì chuyển bug sang done
+                    bugEntity.setStatus(Const.status.DONE.name());
+                    subTaskRepository.updateStatusSubTaskAfterAllBugDone(bugEntity.getSubTask().getId());
+//                    subTaskEntity.setStatus(Const.status.DONE.name());
+                    break;
+
+            }
+        } else {
+            throw new CustomHandleException(311);
+        }
+
+        iBugRepository.save(bugEntity);
+        //Lưu dữ liệu vào bảng BugHistory
+
+
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
+        //Lưu dữ liệu vào bảng BugHistory
+        return bugDto;
+    }
+    @Override
+    public BugDto updateStatusBugToTask(Long id, int status) {
+        BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
+        TaskEntity taskEntity = iTaskRepository.findById(bugEntity.getTask().getId()).orElseThrow(() -> new CustomHandleException(251));
+        //chuyển trạng thái Subtask
+        if (bugEntity.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
+            switch (status) {
+                case 1:
+                    //reviewer fail xong thì
+                    taskEntity.setStatus(Const.status.FIX_BUG.name());
+                    bugEntity.setStatus(Const.status.IN_PROGRESS.name());
+                    break;
+                case 2:
+                    //reviewer oke xong thì chuyển bug sang done`
+                    bugEntity.setStatus(Const.status.DONE.name());
+                    taskEntity.setStatus(Const.status.DONE.name());
+                    break;
+
+            }
+        }
+
+        iTaskRepository.saveAndFlush(taskEntity);
+        iBugRepository.saveAndFlush(bugEntity);
+
+
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
+        //Lưu dữ liệu vào bảng BugHistory
+        return bugDto;
+    }
+    @Override
+    public BugDto updateStatusTaskToBug(Long id, int status) {
+        BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
+        TaskEntity taskEntity = iTaskRepository.findById(bugEntity.getTask().getId()).orElseThrow(() -> new CustomHandleException(251));
+        //chuyển trạng thái Subtask
+
+        Date now = Date.from(Instant.now());
+        if (bugEntity.getAssignTo().getUserId() == SecurityUtils.getCurrentUserId()) {//dev fix bug mới có thể đổi trạng thái bug để start
+            switch (status) {
+                case 1:
+                    //dev bắt đầu fix bug
+                    bugEntity.setStatus(Const.status.IN_PROGRESS.name());
+                    iTaskRepository.updateStatusTask(id, Const.status.FIX_BUG.name());
+//                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
+                    List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
+                        return FileEntity.builder()
+//                                .id(f.getId())
+                                .fileName(f.getFileName())
+                                .fileType(f.getFileType())
+                                .link(f.getLink())
+                                .uploadedBy(f.getUploadedBy())
+                                .category("BUG_HISTORY")
+                                .build();
+                    }).collect(Collectors.toList());
+                    iBugRepository.flush();
+                    saveDataInHistoryTable(bugEntity.getId(), now, null, files);
+                    break;
+                case 2:
+                    //dev kết thúc fix bug
+                    iTaskRepository.updateStatusTask(id, Const.status.IN_REVIEW.name());
+                    bugEntity.setStatus(Const.status.IN_REVIEW.name());
+                    List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity.getId());
+                    for (BugHistoryEntity bugHistoryEntity : bugHistoryEntities) {
+                        if (bugHistoryEntity.getEndDate() == null) {
+                            bugHistoryEntity.setEndDate(now);
+                            iBugHistoryRepository.save(bugHistoryEntity);
+                        }
+                    }
+                    break;
+                case 3:
+                    //reviewer oke xong thì chuyển bug sang done`
+                    bugEntity.setStatus(Const.status.DONE.name());
+                    iTaskRepository.updateStatusTaskAfterAllBugDone(bugEntity.getTask().getId());
+//                    taskEntity.setStatus(Const.status.DONE.name());
                     break;
 
             }

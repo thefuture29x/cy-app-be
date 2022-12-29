@@ -36,7 +36,6 @@ public class Const {
         TYPE_FOLLOWER,
         TYPE_VIEWER,
         TYPE_REVIEWER,
-        TYPE_RESPONSIBLE,
 
     }
 

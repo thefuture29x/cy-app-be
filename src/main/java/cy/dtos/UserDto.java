@@ -55,7 +55,7 @@ public class UserDto {
                                 .roleName(r.getRoleName())
                                 .build())
                         .collect(Collectors.toList()))
-                .manager(getManager(userEntity.getManager()))
+//                .manager(getManager(userEntity.getManager()))
                 .build();
     }
 
