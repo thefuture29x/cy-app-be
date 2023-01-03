@@ -22,8 +22,8 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
             "JOIN `tbl_tasks` ts ON sts.task_id = ts.id \n" +
             "JOIN `tbl_features` ft ON ts.feature_id = ft.id \n" +
             "JOIN `tbl_projects` pr ON ft.project_id = pr.id \n" +
-            "WHERE pr.id = ?1 AND bg.is_deleted=0 \n" +
-            "ORDER BY bg.updated_date DESC",nativeQuery = true)
+            "WHERE pr.id = ?1 AND bg.is_deleted=0"
+           ,nativeQuery = true)
     Page<BugEntity> findAllBugOfProject(Long idProject, Pageable pageable);
     @Query(value = "select * from tbl_bugs where sub_task_id = ?1", nativeQuery = true)
     List<BugEntity> getAllBugBySubTaskId(Long subtaskId);
