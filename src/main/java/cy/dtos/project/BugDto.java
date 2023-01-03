@@ -58,6 +58,8 @@ public class BugDto {
                 .task(obj.getTask() != null ? obj.getTask().getId() : null)
                 .description(obj.getDescription())
                 .startDate(obj.getStartDate())
+                .createdDate(obj.getCreatedDate())
+                .updatedDate(obj.getUpdatedDate())
                 .endDate(obj.getEndDate())
                 .isDefault(obj.getIsDefault())
                 .isDelete(obj.getIsDeleted())
