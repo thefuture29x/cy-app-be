@@ -29,10 +29,7 @@ public class BugResource {
     public ResponseDto delete(@RequestParam(name = "id")Long id) {
         return ResponseDto.of(bugService.deleteById(id));
     }
-    @PutMapping(value = "/updateStatusBugToSubTask")
-    public ResponseDto updateStatusBugToSubTask(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
-        return ResponseDto.of(bugService.updateStatusBugToSubTask(id,status));
-    }
+
     @PutMapping(value = "/updateStatusSubTaskToBug")
     public ResponseDto updateStatusSubTaskToBug(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
         return ResponseDto.of(bugService.updateStatusSubTaskToBug(id,status));
@@ -40,6 +37,10 @@ public class BugResource {
     @PutMapping(value = "/updateStatusTaskToBug")
     public ResponseDto updateStatusTaskToBug(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
         return ResponseDto.of(bugService.updateStatusTaskToBug(id,status));
+    }
+    @GetMapping(value = "findAllBugOfProject")
+    public ResponseDto findAllBugOfProject(@RequestParam(name = "id")Long idProject ,Pageable pageable){
+        return ResponseDto.of(bugService.findAllBugOfProject(idProject,pageable));
     }
     @PostMapping(value = "/findBypage")
     public ResponseDto findBypage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody BugModel bugModel) {
