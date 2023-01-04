@@ -242,115 +242,147 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto update(BugModel model) {
-        try {
-            BugEntity bugEntity = iBugRepository.findById(model.getId()).orElse(null);
-            BugEntity bugEntityOriginal = (BugEntity) Const.copy(bugEntity);
-            if (bugEntity == null)
-                return null;
-            Long userId = SecurityUtils.getCurrentUserId();
-            if (userId == null)
-                return null;
-            UserEntity userEntity = userRepository.findById(userId).orElse(null);
-            bugEntity.setCreateBy(userEntity);
-            Date currentDate = new Date();
-            bugEntity.setCreatedDate(currentDate);
-            bugEntity.setStartDate(model.getStartDate());
-            bugEntity.setEndDate(model.getEndDate());
-            bugEntity.setDescription(model.getDescription());
-            bugEntity.setName(model.getNameBug());
-            bugEntity.setIsDefault(model.getIsDefault());
-          /*  if(model.getStartDate().before(currentDate)){
-                bugEntity.setStatus(Const.status.IN_PROGRESS.name());
-            }
-            else {
-                bugEntity.setStatus(Const.status.TO_DO.name());
-            }*/
-            bugEntity.setUpdatedDate(currentDate);
-            //create reviewer list
-            List<UserProjectEntity> reviewerList = new ArrayList<>();
-            if (model.getReviewerList() != null && model.getReviewerList().size() >= 0) {
-                for (UserProjectModel user : model.getReviewerList()) {
-                    UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setIdUser(user.getIdUser());
-                    userProjectEntity.setCategory(Const.tableName.BUG.name());
-                    userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
-                    userProjectEntity.setObjectId(bugEntity.getId());
-                    userProjectRepository.save(userProjectEntity);
-                    reviewerList.add(UserProjectModel.toEntity(user));
+        BugEntity bug = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
+        if (bug.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
+            try {
+                BugEntity bugEntity = iBugRepository.findById(model.getId()).orElse(null);
+                BugEntity bugEntityOriginal = (BugEntity) Const.copy(bugEntity);
+                if (bugEntity == null)
+                    return null;
+                Long userId = SecurityUtils.getCurrentUserId();
+                if (userId == null)
+                    return null;
+                UserEntity userEntity = userRepository.findById(userId).orElse(null);
+                bugEntity.setCreateBy(userEntity);
+                Date currentDate = new Date();
+                bugEntity.setCreatedDate(currentDate);
+                bugEntity.setStartDate(model.getStartDate());
+                bugEntity.setEndDate(model.getEndDate());
+                bugEntity.setDescription(model.getDescription());
+                bugEntity.setName(model.getNameBug());
+                bugEntity.setIsDefault(model.getIsDefault());
+                if (model.getSubTask() != null) {
+                    SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(281));
+                    bugEntity.setSubTask(subTaskEntity);
+//                chuyển trạng thái Subtask sang fixBug
+                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
+                    subTaskRepository.saveAndFlush(subTaskEntity);
                 }
-            }
-            //create responsible list
-            List<UserProjectEntity> responsibleList = new ArrayList<>();
-            if (model.getResponsibleList() != null && model.getResponsibleList().size() >= 0) {
-                for (UserProjectModel user : model.getResponsibleList()) {
-                    UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setIdUser(user.getIdUser());
-                    userProjectEntity.setCategory(Const.tableName.BUG.name());
-                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                    userProjectEntity.setObjectId(bugEntity.getId());
-                    userProjectRepository.save(userProjectEntity);
-                    responsibleList.add(UserProjectModel.toEntity(user));
-                }
-            }
-            bugEntity.setReviewerList(null);
-            bugEntity.setResponsibleList(null);
 
-            List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
-            if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
-                iTagRelationRepository.deleteByIdNative(tagRelationEntities.get(0).getId());
-                iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
-            }
-            if (model.getTags() != null && model.getTags().size() > 0) {
-                for (TagModel tagModel : model.getTags()) {
-                    TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
-                    if (tagEntity == null) {
-                        TagEntity tagEntity1 = new TagEntity();
-                        tagEntity1.setName(tagModel.getName());
-                        tagEntity1 = iTagRepository.save(tagEntity1);
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
-                        tagRelationEntity.setIdTag(tagEntity1.getId());
-                        tagRelationEntity.setObjectId(bugEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
-                    } else if (tagEntity != null) {
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.BUG.name());
-                        tagRelationEntity.setIdTag(tagEntity.getId());
-                        tagRelationEntity.setObjectId(bugEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
+                if (model.getTask() != null) {
+                    TaskEntity taskEntity = iTaskRepository.findById(model.getTask()).orElseThrow(() -> new CustomHandleException(251));
+                    bugEntity.setTask(taskEntity);
+                    //chuyển trạng thái Task sang fixBug
+                    taskEntity.setStatus(Const.status.FIX_BUG.name());
+                    iTaskRepository.saveAndFlush(taskEntity);
+                }
+                bugEntity.setUpdatedDate(currentDate);
+                //clear data in table relation user project
+                List<UserProjectEntity>listReviewOld=userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), model.getId(),Const.type.TYPE_REVIEWER.name());
+                for (UserProjectEntity user:listReviewOld) {
+                    userProjectRepository.deleteById( user.getId());
+                    userProjectRepository.flush();
+                }
+                //create reviewer list
+                if (model.getReviewerList() != null && model.getReviewerList().size() >= 0) {
+                    for (UserProjectModel user : model.getReviewerList()) {
+                        UserProjectEntity userProjectEntity = new UserProjectEntity();
+                        userProjectEntity.setIdUser(user.getIdUser());
+                        userProjectEntity.setCategory(Const.tableName.BUG.name());
+                        userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                        userProjectEntity.setObjectId(bugEntity.getId());
+                        userProjectRepository.save(userProjectEntity);
                     }
                 }
-            }
-
-            if (bugEntity.getAttachFiles() != null && bugEntity.getAttachFiles().size() > 0)
-                bugEntity.getAttachFiles().clear();
-            else {
-                bugEntity.setAttachFiles(new ArrayList<>());
-            }
-            if (model.getFiles() != null && model.getFiles().length > 0) {
-                for (MultipartFile m : model.getFiles()) {
-                    if (!m.isEmpty()) {
-                        String urlFile = fileUploadProvider.uploadFile("bug", m);
-                        FileEntity fileEntity = new FileEntity();
-                        String fileName = m.getOriginalFilename();
-                        fileEntity.setLink(urlFile);
-                        fileEntity.setFileName(fileName);
-                        fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
-                        fileEntity.setCategory(Const.tableName.BUG.name());
-                        fileEntity.setUploadedBy(userEntity);
-                        fileEntity.setObjectId(bugEntity.getId());
-                        iFileRepository.saveAndFlush(fileEntity);
-                        bugEntity.getAttachFiles().add(fileEntity);
+                //clear data in table relation user project
+                List<UserProjectEntity>listDevOld=userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), model.getId(),Const.type.TYPE_DEV.name());
+                for (UserProjectEntity user:listDevOld) {
+                    userProjectRepository.deleteById(user.getId());
+                    userProjectRepository.flush();
+                }
+                //create responsible list
+                if (model.getResponsibleList() != null && model.getResponsibleList().size() >= 0) {
+                    for (UserProjectModel user : model.getResponsibleList()) {
+                        UserProjectEntity userProjectEntity = new UserProjectEntity();
+                        userProjectEntity.setIdUser(user.getIdUser());
+                        userProjectEntity.setCategory(Const.tableName.BUG.name());
+                        userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                        userProjectEntity.setObjectId(bugEntity.getId());
+                        userProjectRepository.save(userProjectEntity);
                     }
                 }
+
+
+                List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
+                System.out.println(tagRelationEntities);
+
+                if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
+                    for (TagRelationEntity tagRelation:tagRelationEntities) {
+                        iTagRelationRepository.deleteByIdNative(tagRelation.getId());
+                        iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
+                    }
+
+                }
+                if (model.getTags() != null && model.getTags().size() > 0) {
+                    for (TagModel tagModel : model.getTags()) {
+                        TagEntity tagEntity = iTagRepository.findByName(tagModel.getName());
+                        if (tagEntity == null) {
+                            TagEntity tagEntity1 = new TagEntity();
+                            tagEntity1.setName(tagModel.getName());
+                            tagEntity1 = iTagRepository.save(tagEntity1);
+                            TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                            tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                            tagRelationEntity.setIdTag(tagEntity1.getId());
+                            tagRelationEntity.setObjectId(bugEntity.getId());
+                            iTagRelationRepository.save(tagRelationEntity);
+                        } else if (tagEntity != null) {
+                            TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                            tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                            tagRelationEntity.setIdTag(tagEntity.getId());
+                            tagRelationEntity.setObjectId(bugEntity.getId());
+                            iTagRelationRepository.save(tagRelationEntity);
+                        }
+                    }
+                }
+
+                if (bugEntity.getAttachFiles() != null && bugEntity.getAttachFiles().size() > 0)
+                    bugEntity.getAttachFiles().clear();
+                else {
+                    bugEntity.setAttachFiles(new ArrayList<>());
+                }
+                if (model.getFiles() != null && model.getFiles().length > 0) {
+                    for (MultipartFile m : model.getFiles()) {
+                        if (!m.isEmpty()) {
+                            String urlFile = fileUploadProvider.uploadFile("bug", m);
+                            FileEntity fileEntity = new FileEntity();
+                            String fileName = m.getOriginalFilename();
+                            fileEntity.setLink(urlFile);
+                            fileEntity.setFileName(fileName);
+                            fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+                            fileEntity.setCategory(Const.tableName.BUG.name());
+                            fileEntity.setUploadedBy(userEntity);
+                            fileEntity.setObjectId(bugEntity.getId());
+                            iFileRepository.saveAndFlush(fileEntity);
+                            bugEntity.getAttachFiles().add(fileEntity);
+                        }
+                    }
+                }
+
+                bugEntity.setReviewerList(null);
+                bugEntity.setResponsibleList(null);
+                bugEntity.setTagList(null);
+
+                iBugRepository.save(bugEntity);
+                iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
+                return BugDto.entityToDto(bugEntity);
+            } catch (Exception e) {
+                System.out.println(e);
+                return null;
             }
-            iBugRepository.save(bugEntity);
-            iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
-            return BugDto.entityToDto(bugEntity);
-        } catch (Exception e) {
-            System.out.println(e);
-            return null;
+        }else {
+            throw new CustomHandleException(311);
         }
+
     }
 
     /*
