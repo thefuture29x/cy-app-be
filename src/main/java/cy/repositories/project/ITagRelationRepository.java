@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 
 public interface ITagRelationRepository extends JpaRepository<TagRelationEntity,Long> {
-    @Query("select tr from TagRelationEntity tr where tr.category LIKE ?1 and tr.objectId = ?2")
+    @Query("select tr from TagRelationEntity tr where tr.category = ?1 and tr.objectId = ?2")
     List<TagRelationEntity> getByCategoryAndObjectId(String category, Long objectId);
 
     @Query(value = "select * from tbl_tag_relations where category LIKE ?1 and object_id = ?2 and tag_id = ?3", nativeQuery = true)
