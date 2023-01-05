@@ -95,7 +95,7 @@ public class FeatureServiceImp implements IFeatureService {
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(()->new CustomHandleException(45354345));
         Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId()).stream().map(x->x.getIdUser()).collect(Collectors.toSet());
         if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
-            throw new CustomHandleException(2131231);
+            throw new CustomHandleException(11);
         }
         List<TagEntity> tagList = new ArrayList<>();
         for (String tag : model.getTagList()
@@ -126,7 +126,7 @@ public class FeatureServiceImp implements IFeatureService {
                 .tagList(tagList)
                 .isDeleted(false)
                 .isDefault(model.getIsDefault())
-                .priority(model.getPriority().name())
+//                .priority(model.getPriority().name())
                 .build();
         this.featureRepository.saveAndFlush(entity);
 
