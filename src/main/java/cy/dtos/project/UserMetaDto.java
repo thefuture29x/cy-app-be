@@ -15,6 +15,7 @@ public class UserMetaDto {
     private Long id;
     private String userName;
     private String fullName;
+    private String avatar;
 
     public static UserMetaDto toDto(UserEntity userEntity) {
         if (userEntity == null) return null;
@@ -22,6 +23,7 @@ public class UserMetaDto {
                 .id(userEntity.getUserId())
                 .userName(userEntity.getUserName())
                 .fullName(userEntity.getFullName())
+                .avatar(userEntity.getAvatar())
                 .build();
 
     }
