@@ -16,7 +16,7 @@ public class CommentSpecification {
     }
 
     public static Specification<CommentEntity> byParentId(Long parentId) {
-        return (root, query, cb) -> cb.equal(root.get(CommentEntity_.ID_PARENT), parentId);
+        return (root, query, cb) -> parentId == null ? cb.isNull(root.get(CommentEntity_.ID_PARENT)) :cb.equal(root.get(CommentEntity_.ID_PARENT), parentId);
     }
 
     public static Specification<CommentEntity> byCategoryAndObjectId(Const.tableName category, Long objectId) {
