@@ -3,7 +3,10 @@ package cy.services.project.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.HistoryLogDto;
 import cy.entities.UserEntity;
-import cy.entities.project.*;
+import cy.entities.project.FileEntity;
+import cy.entities.project.HistoryEntity;
+import cy.entities.project.HistoryLogTitle;
+import cy.entities.project.ProjectBaseEntity;
 import cy.models.attendance.NotificationModel;
 import cy.repositories.project.IHistoryLogRepository;
 import cy.services.attendance.INotificationService;
@@ -18,8 +21,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -323,6 +324,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         }
 
         StringBuilder content = new StringBuilder()
+                .append(user.getFullName())
                 .append(" đã xóa ")
                 .append(category.name().toLowerCase())
                 .append(".");
