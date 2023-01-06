@@ -33,6 +33,7 @@ public class BugDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedDate;
     private UserDto assignTo;
+    private UserDto createBy;
 
     private Boolean isDefault;
     private Boolean isDelete;
@@ -52,6 +53,7 @@ public class BugDto {
 
         return BugDto.builder()
                 .id(obj.getId())
+                .createBy(obj.getCreateBy() != null ? UserDto.toDto(obj.getCreateBy()) : null)
                 .priority(obj.getPriority())
                 .nameBug(obj.getName())
                 .subTask(obj.getSubTask() != null ? obj.getSubTask().getId() : null)
@@ -63,7 +65,7 @@ public class BugDto {
                 .endDate(obj.getEndDate())
                 .isDefault(obj.getIsDefault())
                 .isDelete(obj.getIsDeleted())
-                .assignTo(obj.getCreateBy() != null ? UserDto.toDto(obj.getAssignTo()) : null)
+                .assignTo(obj.getAssignTo() != null ? UserDto.toDto(obj.getAssignTo()) : null)
                 .historyLogBug(obj.getHistoryBugList() != null
                         ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
                 .attachFiles(lstFile)
