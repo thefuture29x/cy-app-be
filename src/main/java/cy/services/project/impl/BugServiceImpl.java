@@ -1,9 +1,9 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.UserDto;
 import cy.dtos.project.BugDto;
 import cy.dtos.project.TagDto;
+import cy.dtos.project.UserMetaDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.BugModel;
@@ -91,8 +91,8 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto findById(Long id) {
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
-        List<UserDto> reviewerList = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
-        List<UserDto> responsibleList = userRepository.getByCategoryAndTypeAndObjectid(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
+        List<UserMetaDto> reviewerList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
+        List<UserMetaDto> responsibleList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
         List<TagDto> tagEntityList = new ArrayList<>();
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);

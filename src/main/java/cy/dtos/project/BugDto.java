@@ -1,6 +1,5 @@
 package cy.dtos.project;
 
-import cy.dtos.UserDto;
 import cy.entities.project.BugEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,8 +31,7 @@ public class BugDto {
     private Date createdDate;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedDate;
-    private UserDto assignTo;
-    private UserDto createBy;
+
 
     private Boolean isDefault;
     private Boolean isDelete;
@@ -42,8 +40,10 @@ public class BugDto {
     private List<BugHistoryDto> historyLogBug;
     private String status;
 
-    private List<UserDto> reviewerList;
-    private List<UserDto> responsibleList;
+    private List<UserMetaDto> reviewerList;
+    private List<UserMetaDto> responsibleList;
+    private UserMetaDto assignTo;
+    private UserMetaDto createBy;
 
     public static BugDto entityToDto(BugEntity obj) {
         List<String> lstFile = new ArrayList<>();
@@ -53,7 +53,7 @@ public class BugDto {
 
         return BugDto.builder()
                 .id(obj.getId())
-                .createBy(obj.getCreateBy() != null ? UserDto.toDto(obj.getCreateBy()) : null)
+                .createBy(obj.getCreateBy() != null ? UserMetaDto.toDto(obj.getCreateBy()) : null)
                 .priority(obj.getPriority())
                 .nameBug(obj.getName())
                 .subTask(obj.getSubTask() != null ? obj.getSubTask().getId() : null)
@@ -65,15 +65,15 @@ public class BugDto {
                 .endDate(obj.getEndDate())
                 .isDefault(obj.getIsDefault())
                 .isDelete(obj.getIsDeleted())
-                .assignTo(obj.getAssignTo() != null ? UserDto.toDto(obj.getAssignTo()) : null)
+                .assignTo(obj.getAssignTo() != null ? UserMetaDto.toDto(obj.getAssignTo()) : null)
                 .historyLogBug(obj.getHistoryBugList() != null
                         ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
                 .attachFiles(lstFile)
                 .status(obj.getStatus())
                 .tagList(obj.getTagList() != null
                         ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
-                .reviewerList(obj.getReviewerList() != null ? obj.getReviewerList().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
-                .responsibleList(obj.getResponsibleList() != null ? obj.getResponsibleList().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
+                .reviewerList(obj.getReviewerList() != null ? obj.getReviewerList().stream().map(x-> UserMetaDto.toDto(x)).collect(Collectors.toList()) : null)
+                .responsibleList(obj.getResponsibleList() != null ? obj.getResponsibleList().stream().map(x-> UserMetaDto.toDto(x)).collect(Collectors.toList()) : null)
                 .build();
     }
 
