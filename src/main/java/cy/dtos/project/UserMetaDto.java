@@ -27,4 +27,12 @@ public class UserMetaDto {
                 .build();
 
     }
+    public UserMetaDto(UserEntity userEntity){
+        if (userEntity != null) {
+            this.id = userEntity.getUserId();
+            this.avatar = userEntity.getAddress();
+            this.userName = userEntity.getUserName();
+            this.fullName = userEntity.getFullName();
+        }
+    }
 }
