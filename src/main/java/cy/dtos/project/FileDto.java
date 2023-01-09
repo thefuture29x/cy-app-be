@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -19,6 +21,7 @@ public class FileDto {
     private Long objectId;
     private String category;
     private UserDto uploadedBy;
+    private Date createdDate;
 
     public static FileDto toDto(FileEntity fileEntity){
         if (fileEntity == null)
@@ -30,6 +33,7 @@ public class FileDto {
                 .fileName(fileEntity.getFileName())
                 .objectId(fileEntity.getObjectId())
                 .category(fileEntity.getCategory())
+                .createdDate(fileEntity.getCreatedDate())
 //                .uploadedBy(UserDto.toDto(fileEntity.getUploadedBy()))
                 .build();
     }

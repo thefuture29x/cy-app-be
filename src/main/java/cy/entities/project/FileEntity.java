@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Data
 @Builder
@@ -35,4 +37,10 @@ public class FileEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="user_upload_id")
     private UserEntity uploadedBy;
+
+    @HistoryLogTitle(title = "", ignore = true)
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
 }
