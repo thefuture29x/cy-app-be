@@ -60,5 +60,6 @@ public class BugEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(mappedBy = "bugId")
     private List<BugHistoryEntity> historyBugList;
+    private String reason;
 
 }
