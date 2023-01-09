@@ -121,6 +121,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto add(BugModel model) {
+        Date now = Date.from(Instant.now());
         try {
             BugEntity bugEntity = model.modelToEntity(model);
             bugEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
@@ -170,6 +171,7 @@ public class BugServiceImpl implements IRequestBugService {
                         fileEntity.setCategory(Const.tableName.BUG.name());
                         fileEntity.setUploadedBy(SecurityUtils.getCurrentUser().getUser());
                         fileEntity.setObjectId(entity.getId());
+//                        fileEntity.setCreatedDate(now);
                         iFileRepository.save(fileEntity);
                     }
                 }
@@ -354,6 +356,7 @@ public class BugServiceImpl implements IRequestBugService {
                     for (MultipartFile m : model.getFiles()) {
                         if (!m.isEmpty()) {
                             String urlFile = fileUploadProvider.uploadFile("bug", m);
+
                             FileEntity fileEntity = new FileEntity();
                             String fileName = m.getOriginalFilename();
                             fileEntity.setLink(urlFile);
@@ -371,8 +374,9 @@ public class BugServiceImpl implements IRequestBugService {
                 bugEntity.setReviewerList(null);
                 bugEntity.setResponsibleList(null);
                 bugEntity.setTagList(null);
+                bugEntity.setReason(model.getReason());
 
-                iBugRepository.save(bugEntity);
+                iBugRepository.saveAndFlush(bugEntity);
                 iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
                 return BugDto.entityToDto(bugEntity);
             } catch (Exception e) {

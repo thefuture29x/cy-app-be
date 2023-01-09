@@ -75,7 +75,7 @@ public class BugDto {
                         ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .reviewerList(obj.getReviewerList() != null ? obj.getReviewerList().stream().map(x-> UserMetaDto.toDto(x)).collect(Collectors.toList()) : null)
                 .responsibleList(obj.getResponsibleList() != null ? obj.getResponsibleList().stream().map(x-> UserMetaDto.toDto(x)).collect(Collectors.toList()) : null)
-                .reason(obj.getReason())
+                .reason(obj.getReason()!=null ? obj.getReason() : null)
                 .build();
     }
 

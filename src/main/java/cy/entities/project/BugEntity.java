@@ -60,6 +60,8 @@ public class BugEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(mappedBy = "bugId")
     private List<BugHistoryEntity> historyBugList;
+    @HistoryLogTitle(title = "lý do", ignore = true)
+    @Transient
     private String reason;
 
 }
