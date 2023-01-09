@@ -33,6 +33,7 @@ public class BugModel {
     private Date endDate;
     private String textSearch;
     private String status;
+    private String reason;
     public static BugEntity modelToEntity(BugModel model) {
        return BugEntity.builder()
                .id(model.getId())
@@ -43,6 +44,7 @@ public class BugModel {
                .endDate(model.getEndDate())
                .isDefault(model.getIsDefault())
                .isDeleted(model.getIsDelete())
+               .reason(model.getReason())
                .build();
     }
 
