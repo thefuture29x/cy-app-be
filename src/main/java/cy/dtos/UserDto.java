@@ -42,7 +42,7 @@ public class UserDto {
                 .phone(userEntity.getPhone())
                 .sex(userEntity.getSex())
                 .fullName(userEntity.getFullName())
-                .avatar(userEntity.getAvatar() == null ? UserEntity.USER_NO_AVATAR : userEntity.getAvatar())
+                .avatar(userEntity.getAvatar())
                 .birthDate(userEntity.getBirthDate())
                 .status(userEntity.getStatus())
                 .createdDate(userEntity.getCreatedDate())
@@ -87,7 +87,7 @@ public class UserDto {
         if (userEntity != null) {
             this.id = userEntity.getUserId();
             this.address = userEntity.getAddress();
-            this.avatar = userEntity.getAddress();
+            this.avatar = userEntity.getAvatar();
             this.birthDate = userEntity.getBirthDate();
             this.createdDate = userEntity.getCreatedDate();
             this.phone = userEntity.getPhone();
