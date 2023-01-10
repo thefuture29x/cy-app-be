@@ -27,6 +27,7 @@ public class ProjectModel {
     private String description;
     private MultipartFile[] files;
     private MultipartFile avatar;
+    private String avatarUrl;
     private Boolean isDefault;
     private String textSearch;
     private List<TagModel> tags;
