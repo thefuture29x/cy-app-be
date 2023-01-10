@@ -6,6 +6,7 @@ import cy.entities.project.BugHistoryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Temporal;
@@ -18,12 +19,12 @@ import java.util.Date;
 public class BugHistoryModel {
     private Long id;
     private Long bugId;
-    @JsonSerialize(as = java.sql.Date.class)
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    private java.sql.Date startDate;
-    @JsonSerialize(as = java.sql.Date.class)
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    private java.sql.Date endDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date startDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date endDate;
 
     private MultipartFile[] files;
 
