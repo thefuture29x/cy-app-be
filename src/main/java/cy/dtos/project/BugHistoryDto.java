@@ -11,6 +11,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,13 +29,12 @@ public class BugHistoryDto {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     private BugDto bugDto;
-    private List<String> attachFiles;
+    private HashMap<String,Date> attachFiles;
 
     public static BugHistoryDto entityToDto(BugHistoryEntity obj) {
-
-        List<String> lstFile = new ArrayList<>();
-        if(obj.getAttachFiles() != null && obj.getAttachFiles().size() > 0){
-            obj.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+        HashMap<String,Date> lstFile = new HashMap<>();
+        if (obj.getAttachFiles() != null && obj.getAttachFiles().size() > 0) {
+            obj.getAttachFiles().stream().forEach(x -> lstFile.put(x.getLink(),x.getCreatedDate() != null ? x.getCreatedDate() : null));
         }
         return BugHistoryDto.builder()
                 .id(obj.getId())
