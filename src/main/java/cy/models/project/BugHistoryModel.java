@@ -1,5 +1,7 @@
 package cy.models.project;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cy.entities.project.BugHistoryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,10 +18,13 @@ import java.util.Date;
 public class BugHistoryModel {
     private Long id;
     private Long bugId;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date startDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date endDate;
+    @JsonSerialize(as = java.sql.Date.class)
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    private java.sql.Date startDate;
+    @JsonSerialize(as = java.sql.Date.class)
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    private java.sql.Date endDate;
+
     private MultipartFile[] files;
 
     public static BugHistoryEntity modelToEntity(BugHistoryModel model) {

@@ -16,7 +16,7 @@ public class BugHistoryResource {
     BugHistoryServiceImpl bugHistoryService;
 
     @PostMapping("/create")
-    public ResponseDto createBugHisotry(BugHistoryModel bugHistoryModel) {
+    public ResponseDto createBugHistory(BugHistoryModel bugHistoryModel) {
         return ResponseDto.of(bugHistoryService.add(bugHistoryModel));
     }
     @PostMapping("/update")
