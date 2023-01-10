@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,14 +78,15 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setEndDate(null);
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
-        List<String> fileAfterSave = new ArrayList<>();
+//        List<String> fileAfterSave = new ArrayList<>();
+        HashMap<String,Date> fileAfterSave = new HashMap<>();
         for (MultipartFile file : model.getFiles()) {
             FileModel fileModel = new FileModel();
             fileModel.setFile(file);
             fileModel.setObjectId(bugHistoryEntityAfterSave.getId());
             fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
             FileDto fileAfterSaveZ = iFileService.add(fileModel);
-            fileAfterSave.add(fileAfterSaveZ.getLink());
+            fileAfterSave.put(fileAfterSaveZ.getLink(),fileAfterSaveZ.getCreatedDate());
         }
         bugHistoryEntityAfterSave.setAttachFiles(fileAfterSave);
         return bugHistoryEntityAfterSave;
