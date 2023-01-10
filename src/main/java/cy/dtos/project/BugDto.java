@@ -49,7 +49,7 @@ public class BugDto {
     public static BugDto entityToDto(BugEntity obj) {
         HashMap<String,Date> lstFile = new HashMap<>();
         if (obj.getAttachFiles() != null && obj.getAttachFiles().size() > 0) {
-            obj.getAttachFiles().stregam().forEach(x -> lstFile.put(x.getLink(),x.getCreatedDate() != null ? x.getCreatedDate() : null));
+            obj.getAttachFiles().stream().forEach(x -> lstFile.put(x.getLink(),x.getCreatedDate() != null ? x.getCreatedDate() : null));
         }
 
         return BugDto.builder()
