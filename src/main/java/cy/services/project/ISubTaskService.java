@@ -11,4 +11,5 @@ public interface ISubTaskService extends IBaseService<SubTaskEntity, SubTaskDto,
     boolean changIsDeleteById(Long id);
     Page<SubTaskDto> findAllByProjectId(Long id, Pageable pageable);
     Page<SubTaskDto> findAllByTaskId(Long id, String keyword, Pageable pageable);
+    Page<SubTaskDto> filter(SubTaskModel subTaskModel, Pageable pageable);
 }

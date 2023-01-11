@@ -1,9 +1,9 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.project.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.SubTaskDto;
+import cy.dtos.project.TagDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
@@ -23,10 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -130,7 +127,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskDto.setTagList(tagListSplit);
         subTaskDto.setAssignedUser(userEntitiesAssigned.stream().map(UserDto::toDto).collect(Collectors.toList()));
 
-        iHistoryLogService.logCreate(saveSubTask.getId(),saveSubTask, Const.tableName.SUBTASK);
+        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
 
@@ -186,7 +183,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
 
-        iHistoryLogService.logUpdate(saveSubTask.getId(),subTaskEntityOriginal,saveSubTask, Const.tableName.SUBTASK);
+        iHistoryLogService.logUpdate(saveSubTask.getId(), subTaskEntityOriginal, saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
 
@@ -321,7 +318,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public boolean deleteById(Long id) {
-        try{
+        try {
             SubTaskEntity sb = this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
 
             // delete bug
@@ -341,7 +338,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             this.subTaskRepository.delete(sb);
 
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }
@@ -359,18 +356,40 @@ public class SubTaskServiceImpl implements ISubTaskService {
         } else {
             subTaskDeleted.get().setIsDeleted(true);
             this.subTaskRepository.save(subTaskDeleted.get());
-            iHistoryLogService.logDelete(id,subTaskDeleted.get(), Const.tableName.SUBTASK);
+            iHistoryLogService.logDelete(id, subTaskDeleted.get(), Const.tableName.SUBTASK);
         }
         return true;
     }
 
     @Override
     public Page<SubTaskDto> findAllByProjectId(Long id, Pageable pageable) {
-        return subTaskRepository.findAllByProjectId(id,pageable).map(data -> SubTaskDto.toDto(data));
+        return subTaskRepository.findAllByProjectId(id, pageable).map(data -> SubTaskDto.toDto(data));
     }
 
     @Override
     public Page<SubTaskDto> findAllByTaskId(Long id, String keyword, Pageable pageable) {
         return subTaskRepository.findByTaskIdWithPaging(id, keyword, pageable).map(data -> SubTaskDto.toDto(data));
+    }
+
+    @Override
+    public Page<SubTaskDto> filter(SubTaskModel subTaskModel, Pageable pageable) {
+        if (subTaskModel.getTaskId() == null) {
+            throw new CustomHandleException(200);
+        }
+        Long taskId = subTaskModel.getTaskId();
+        Date startDate = subTaskModel.getStartDate();
+        Date endDate = subTaskModel.getEndDate();
+        String status = subTaskModel.getStatus().name();
+        boolean isTaskExist = taskRepository.existsById(taskId);
+        if (!isTaskExist) {
+            throw new CustomHandleException(192);
+        }
+        if (startDate != null) {
+            if (endDate == null) {
+                endDate = new Date();
+            }
+        }
+        subTaskRepository.filter(taskId, status, startDate, endDate, pageable).map(data -> SubTaskDto.toDto(data));
+        return null;
     }
 }

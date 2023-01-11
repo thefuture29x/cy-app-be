@@ -55,8 +55,12 @@ public class SubTaskModel {
     @NotNull
     @Size(min = 1, message = "Subtask must have at least 1 user assigned.")
     private List<Long> assignedUserIdList;
+    // Attachment list is optional.
     private List<MultipartFile> attachFiles;
-    private String tagList; // Separate by ','
-
+    // Tag list separated by comma (,).
+    private String tagList;
+    // File name delete list is optional.
     private List<String> fileNameDeletes;
+    // Status for filter.
+    private Const.status status;
 }
