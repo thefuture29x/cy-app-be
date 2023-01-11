@@ -1,7 +1,5 @@
 package cy.models.project;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cy.utils.Const;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
