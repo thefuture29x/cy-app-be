@@ -30,7 +30,7 @@ public class UserMetaDto {
     public UserMetaDto(UserEntity userEntity){
         if (userEntity != null) {
             this.id = userEntity.getUserId();
-            this.avatar = userEntity.getAddress();
+            this.avatar = userEntity.getAvatar();
             this.userName = userEntity.getUserName();
             this.fullName = userEntity.getFullName();
         }
