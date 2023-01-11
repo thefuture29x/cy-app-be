@@ -79,20 +79,16 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setEndDate(null);
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
-//        List<String> fileAfterSave = new ArrayList<>();
-        HashMap<String,Date> fileAfterSave = new HashMap<>();
         for (MultipartFile file : model.getFiles()) {
             FileModel fileModel = new FileModel();
             fileModel.setFile(file);
             fileModel.setObjectId(bugHistoryEntityAfterSave.getId());
             fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
-            FileDto fileAfterSaveZ = iFileService.add(fileModel);
-            fileAfterSave.put(fileAfterSaveZ.getLink(),fileAfterSaveZ.getCreatedDate());
+            iFileService.add(fileModel);
         }
         BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
         bugEntity.setStatus(Const.status.TO_DO.name());
         iBugRepository.save(bugEntity);
-        bugHistoryEntityAfterSave.setAttachFiles(fileAfterSave);
         return bugHistoryEntityAfterSave;
     }
 

@@ -34,6 +34,7 @@ public class BugHistoryEntity {
     @HistoryLogTitle(title = "ngày kết thúc")
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
+    private Boolean isPending = false;
 
     @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
