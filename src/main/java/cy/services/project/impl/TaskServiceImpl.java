@@ -106,16 +106,40 @@ public class TaskServiceImpl implements ITaskService {
         taskEntity.setTagList(tagEntities);
 
         // set devTeam
-        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
-        List<Long> idUsers = userProjectEntities.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
-        List<UserEntity> userEntities = new ArrayList<>();
-        if(idUsers != null){
-            for (Long idUser : idUsers) {
+        List<UserProjectEntity> userProjectEntitiesDev = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_DEV.name());
+        List<Long> idUsersDev = userProjectEntitiesDev.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
+        List<UserEntity> userEntitiesDev = new ArrayList<>();
+        if(idUsersDev != null){
+            for (Long idUser : idUsersDev) {
                 UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
-                userEntities.add(user);
+                userEntitiesDev.add(user);
             }
         }
-        taskEntity.setDevTeam(userEntities);
+        taskEntity.setDevTeam(userEntitiesDev);
+
+        // set followerTeam
+        List<UserProjectEntity> userProjectEntitiesFollower = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_FOLLOWER.name());
+        List<Long> idUsersFollower = userProjectEntitiesFollower.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
+        List<UserEntity> userEntitiesFollower = new ArrayList<>();
+        if(idUsersFollower != null){
+            for (Long idUser : idUsersFollower) {
+                UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
+                userEntitiesFollower.add(user);
+            }
+        }
+        taskEntity.setFollowerTeam(userEntitiesFollower);
+
+        // set viewerTeam
+        List<UserProjectEntity> userProjectEntitiesViewer = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_VIEWER.name());
+        List<Long> idUsersViewer = userProjectEntitiesViewer.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
+        List<UserEntity> userEntitiesViewer = new ArrayList<>();
+        if(idUsersViewer != null){
+            for (Long idUser : idUsersViewer) {
+                UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
+                userEntitiesViewer.add(user);
+            }
+        }
+        taskEntity.setViewerTeam(userEntitiesViewer);
 
         return TaskDto.toDto(taskEntity);
     }
@@ -185,6 +209,30 @@ public class TaskServiceImpl implements ITaskService {
             }
         }
 
+        // add follower
+        List<UserDto> followerList = new ArrayList<>();
+        if (model.getFollowerIds() != null && model.getFollowerIds().size() > 0) {
+            for (Long followerId : model.getFollowerIds()) {
+                UserProjectEntity userProject = this.addFollower(followerId);
+                userProject.setObjectId(taskEntity.getId());
+                this.userProjectRepository.saveAndFlush(userProject);
+                UserEntity userEntity2 = this.userRepository.findById(followerId).orElseThrow(() -> new CustomHandleException(11));
+                followerList.add(UserDto.toDto(userEntity2));
+            }
+        }
+
+        // add viewer
+        List<UserDto> viewerList = new ArrayList<>();
+        if (model.getViewerIds() != null && model.getViewerIds().size() > 0) {
+            for (Long viewerId : model.getViewerIds()) {
+                UserProjectEntity userProject = this.addViewer(viewerId);
+                userProject.setObjectId(taskEntity.getId());
+                this.userProjectRepository.saveAndFlush(userProject);
+                UserEntity userEntity3 = this.userRepository.findById(viewerId).orElseThrow(() -> new CustomHandleException(11));
+                viewerList.add(UserDto.toDto(userEntity3));
+            }
+        }
+
         // save file
         List<String> fileAfterSave = new ArrayList<>();
         for (MultipartFile file : model.getFiles()) {
@@ -199,6 +247,8 @@ public class TaskServiceImpl implements ITaskService {
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
+        result.setFollowerList(followerList);
+        result.setViewerList(viewerList);
         iHistoryLogService.logCreate(taskEntity.getId(), taskEntity, Const.tableName.TASK);
         return result;
     }
@@ -351,6 +401,30 @@ public class TaskServiceImpl implements ITaskService {
         UserProjectEntity userProject = UserProjectEntity.builder()
                 .idUser(userEntity.getUserId())
                 .type(Const.type.TYPE_DEV.name())
+                .category(Const.tableName.TASK.name())
+                .build();
+
+        return this.userProjectRepository.saveAndFlush(userProject);
+    }
+
+    public UserProjectEntity addFollower(Long id) {
+        // objectId not save yet => be will add task
+        UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
+        UserProjectEntity userProject = UserProjectEntity.builder()
+                .idUser(userEntity.getUserId())
+                .type(Const.type.TYPE_FOLLOWER.name())
+                .category(Const.tableName.TASK.name())
+                .build();
+
+        return this.userProjectRepository.saveAndFlush(userProject);
+    }
+
+    public UserProjectEntity addViewer(Long id) {
+        // objectId not save yet => be will add task
+        UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
+        UserProjectEntity userProject = UserProjectEntity.builder()
+                .idUser(userEntity.getUserId())
+                .type(Const.type.TYPE_VIEWER.name())
                 .category(Const.tableName.TASK.name())
                 .build();
 

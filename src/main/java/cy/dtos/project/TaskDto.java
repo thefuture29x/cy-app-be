@@ -30,6 +30,8 @@ public class TaskDto {
     private Long featureId;
     private String createBy;
     private List<UserDto> devList;
+    private List<UserDto> followerList;
+    private List<UserDto> viewerList;
     private List<String> tagName;
     private List<String> files;
 
@@ -52,6 +54,10 @@ public class TaskDto {
                 .featureId(entity.getFeature().getId())
                 .createBy(entity.getCreateBy().getFullName())
                 .devList(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
+                        .collect(Collectors.toList()) : new ArrayList<>())
+                .followerList(entity.getFollowerTeam() != null ? entity.getFollowerTeam().stream().map(UserDto::toDto)
+                        .collect(Collectors.toList()) : new ArrayList<>())
+                .viewerList(entity.getViewerTeam() != null ? entity.getViewerTeam().stream().map(UserDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagName(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)
                         .collect(Collectors.toList()) : new ArrayList<>())
