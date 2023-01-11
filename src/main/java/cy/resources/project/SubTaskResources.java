@@ -45,4 +45,10 @@ public class SubTaskResources {
     public ResponseDto getAllSubTaskByProjectId(@RequestParam("id") Long id, Pageable pageable){
         return ResponseDto.of(iSubTaskService.findAllByProjectId(id,pageable));
     }
+
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @GetMapping(value = "/find-all-by-task-id/{id}")
+    public ResponseDto findAllByTaskId(@PathVariable Long id, Pageable pageable) {
+        return ResponseDto.of(iSubTaskService.findAllByTaskId(id, pageable));
+    }
 }
