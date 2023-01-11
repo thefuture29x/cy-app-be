@@ -2,6 +2,7 @@ package cy.services.project.impl;
 
 import cy.dtos.project.BugHistoryDto;
 import cy.dtos.project.FileDto;
+import cy.entities.project.BugEntity;
 import cy.entities.project.BugHistoryEntity;
 import cy.entities.project.FileEntity;
 import cy.models.project.BugHistoryModel;
@@ -88,6 +89,9 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
             FileDto fileAfterSaveZ = iFileService.add(fileModel);
             fileAfterSave.put(fileAfterSaveZ.getLink(),fileAfterSaveZ.getCreatedDate());
         }
+        BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
+        bugEntity.setStatus(Const.status.TO_DO.name());
+        iBugRepository.save(bugEntity);
         bugHistoryEntityAfterSave.setAttachFiles(fileAfterSave);
         return bugHistoryEntityAfterSave;
     }
