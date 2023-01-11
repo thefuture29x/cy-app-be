@@ -30,6 +30,8 @@ public class TaskModel {
     private String priority;
     private Long featureId;
     private List<Long> devIds;
+    private List<Long> followerIds;
+    private List<Long> viewerIds;
     private List<String> tagNames;
     private List<MultipartFile> files;
     private String textSearch;
