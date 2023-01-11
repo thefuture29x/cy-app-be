@@ -22,6 +22,7 @@ public class SubTaskDto {
     private String description;
     private String priority;
     private String createBy;
+    private String status;
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -38,6 +39,7 @@ public class SubTaskDto {
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .createBy(entity.getCreateBy().getFullName())
+                .status(entity.getStatus())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .attachFileUrls(entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(FileDto::toDto)
