@@ -9,7 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.*;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor

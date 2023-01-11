@@ -35,7 +35,8 @@ public class SubTaskResources {
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PutMapping(value = "/update")
     public Object update(@ModelAttribute SubTaskModel subTaskModel) {
-        return ResponseDto.of(iSubTaskService.update(subTaskModel));
+        SubTaskDto updateResult = iSubTaskService.update(subTaskModel);
+        return ResponseDto.of(updateResult);
     }
 
     @ApiOperation(value = "Xóa subtask.")
@@ -73,7 +74,7 @@ public class SubTaskResources {
                     notes = "Nếu truyền tham số thời gian bắt đầu nhưng KHÔNG truyền tham số thời gian kết thúc thì thời gian kết thúc là thời gian hiện tại.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/filter")
-    public ResponseDto filter(@ModelAttribute SubTaskModel subTaskModel,
+    public ResponseDto filter(@RequestBody SubTaskModel subTaskModel,
                               Pageable pageable) {
         Page<SubTaskDto> result = iSubTaskService.filter(subTaskModel, pageable);
         return ResponseDto.of(result);

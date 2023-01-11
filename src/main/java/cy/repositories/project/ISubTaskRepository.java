@@ -64,9 +64,4 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
             "\tWHERE sub_task_id = ?1\n" +
             ")",nativeQuery = true)
     void updateStatusSubTaskAfterAllBugDone(Long id);
-
-    @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.task.id = :taskId AND st.status = :status " +
-            "AND st.startDate >= :startDateFilter AND st.endDate <= :endDateFilter")
-    Page<SubTaskEntity> filter(@Param("taskId") Long taskId, @Param("status") String status,
-                               @Param("startDateFilter") Date startDateFilter, @Param("endDateFilter") Date endDateFilter, Pageable pageable);
 }

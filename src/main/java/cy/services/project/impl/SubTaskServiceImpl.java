@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Autowired
     IHistoryLogService iHistoryLogService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public List<SubTaskDto> findAll() {
@@ -134,17 +138,18 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
         Optional<SubTaskEntity> subTaskExisted = this.subTaskRepository.findById(modelUpdate.getId());
-        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(this.subTaskRepository.findById(modelUpdate.getId()));
         if (subTaskExisted.isEmpty()) {
             throw new CustomHandleException(197);
         }
+        // Copy current subTask to compare with new subTask
+        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted.get());
         List<Object> objUpdateList = this.checkIdAndDate(modelUpdate);
         List<FileEntity> fileEntityList = new ArrayList<>();
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objUpdateList.get(1);
 
         // Deleted attached file
         if (modelUpdate.getFileNameDeletes() != null && modelUpdate.getFileNameDeletes().size() > 0) {
-            this.deleteAttachFile(modelUpdate.getFileNameDeletes(), subTaskExisted.get().getId());
+            this.deleteAttachFile(modelUpdate.getFileNameDeletes(), subTaskExisted.get().getId(), subTaskExisted.get().getAttachFiles());
         }
 
         // Validate file type allow
@@ -160,13 +165,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.get().setStartDate(modelUpdate.getStartDate());
         subTaskExisted.get().setEndDate(modelUpdate.getEndDate());
 
-        SubTaskEntity saveSubTask = this.subTaskRepository.save(subTaskExisted.get());
+        SubTaskEntity saveSubTask = this.subTaskRepository.saveAndFlush(subTaskExisted.get());
 
         // Update object id value for file
         this.updateObjectId(fileEntityList, saveSubTask.getId());
 
         // Clear old assigned users in UserProject
-        this.clearAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
+        this.clearAssignedUsers(saveSubTask.getId());
 
         // Save assigned users to UserProject
         this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
@@ -180,6 +185,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         saveSubTask.setTask(subTaskExisted.get().getTask());
         // Join 2 file lists
         saveSubTask.getAttachFiles().addAll(fileEntityList); // If save attach file, it will be null
+
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
 
@@ -189,27 +195,27 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     public void clearTagList(Long subTaskId) {
         this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId).forEach(tagRelationEntity -> {
-            this.tagRelationRepository.delete(tagRelationEntity);
+            this.tagRelationRepository.deleteByIdNative(tagRelationEntity.getId());
         });
     }
 
-    public void deleteAttachFile(List<String> fileNameDeletes, Long subTaskId) {
+    public void deleteAttachFile(List<String> fileNameDeletes, Long subTaskId, List<FileEntity> currentFileList) {
+        Set<Long> fileIdDeleted = new HashSet<>();
         for (String fileNameDelete : fileNameDeletes) {
             FileEntity fileEntityDeleted = this.fileRepository.findByFileNameAndObjectId(fileNameDelete, subTaskId);
             if (fileEntityDeleted != null) {
-                this.fileRepository.delete(fileEntityDeleted);
+                this.fileRepository.deleteByIdNative(fileEntityDeleted.getId());
+                fileIdDeleted.add(fileEntityDeleted.getId());
                 //fileUploadProvider.deleteFile(fileEntityDeleted.getLink());
             } else {
                 throw new CustomHandleException(198);
             }
         }
-
     }
 
-    public void clearAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
-        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "",
-                subTaskId).forEach(userProjectEntity -> {
-            this.userProjectRepository.delete(userProjectEntity);
+    public void clearAssignedUsers(Long subTaskId) {
+        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId).forEach(userProjectEntity -> {
+            userProjectRepository.deleteByIdNative(userProjectEntity.getId());
         });
     }
 
@@ -228,13 +234,17 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<Object> objectList = new ArrayList<>();
         List<UserEntity> userEntitiesAssigned = new ArrayList<>();
         Optional<TaskEntity> taskEntityOptional = taskRepository.findById(model.getTaskId());
+        // If task do not exist -> throw exception
         if (taskEntityOptional.isEmpty()) {
             throw new CustomHandleException(192);
         }
         objectList.add(taskEntityOptional.get());
+
+        // End date can not be earlier than start date
         if (model.getEndDate().before(model.getStartDate())) {
             throw new CustomHandleException(193);
         }
+
         for (Long userId : model.getAssignedUserIdList()) {
             UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomHandleException(194));
             userEntitiesAssigned.add(userEntity);
@@ -291,6 +301,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 tagId = tagEntitySaved.getId();
             } else {
                 tagId = isTagExist.getId();
+                tagDtoList.add(TagDto.toDto(isTagExist));
             }
             // Then save tag relation
             TagRelationEntity tagRelationEntity = new TagRelationEntity();
@@ -389,7 +400,28 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 endDate = new Date();
             }
         }
-        subTaskRepository.filter(taskId, status, startDate, endDate, pageable).map(data -> SubTaskDto.toDto(data));
+
+        // Create sql query
+        String sql = "SELECT * FROM tbl_sub_tasks WHERE task_id = " + taskId;
+        if (startDate != null) {
+            sql += " AND start_date >= '" + startDate + "'";
+        }
+        if (endDate != null) {
+            sql += " AND end_date <= '" + endDate + "'";
+        }
+        if (status != null) {
+            sql += " AND status = '" + status + "'";
+        }
+        sql += " ORDER BY id DESC";
+
+        // Paging
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        int start = page * size;
+        sql += " LIMIT " + start + ", " + size;
+
+        Query nativeQuery = entityManager.createNativeQuery(sql, SubTaskEntity.class);
+        List<SubTaskEntity> subTaskEntityList = nativeQuery.getResultList();
         return null;
     }
 }

@@ -34,7 +34,7 @@ public class FileDto {
                 .objectId(fileEntity.getObjectId())
                 .category(fileEntity.getCategory())
                 .createdDate(fileEntity.getCreatedDate())
-//                .uploadedBy(UserDto.toDto(fileEntity.getUploadedBy()))
+//                .uploadedBy(fileEntity.getUploadedBy() != null ? UserDto.toDto(fileEntity.getUploadedBy()) : null)
                 .build();
     }
 }
