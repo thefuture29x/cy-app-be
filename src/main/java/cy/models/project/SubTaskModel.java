@@ -57,5 +57,6 @@ public class SubTaskModel {
     private List<Long> assignedUserIdList;
     private List<MultipartFile> attachFiles;
     private String tagList; // Separate by ','
+
     private List<String> fileNameDeletes;
 }
