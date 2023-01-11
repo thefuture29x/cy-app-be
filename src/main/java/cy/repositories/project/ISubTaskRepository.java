@@ -24,8 +24,8 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     @Query(value = "select * from tbl_sub_tasks where task_id = ?1", nativeQuery = true)
     List<SubTaskEntity> findByTaskId(Long id);
 
-    @Query(value = "SELECT t FROM SubTaskEntity t WHERE t.task.id = :taskId")
-    Page<SubTaskEntity> findByTaskIdWithPaging(@Param("taskId") Long taskId, Pageable pageable);
+    @Query(value = "SELECT t FROM SubTaskEntity t WHERE t.task.id = :taskId AND t.name LIKE CONCAT('%',:keyword,'%')")
+    Page<SubTaskEntity> findByTaskIdWithPaging(@Param("taskId") Long taskId, @Param("keyword") String keyword, Pageable pageable);
 
     @Modifying
     @Transactional
