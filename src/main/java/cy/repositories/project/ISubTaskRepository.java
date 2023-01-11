@@ -35,23 +35,23 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     @Modifying
     @Transactional
     @Query(value = "UPDATE `tbl_sub_tasks` sub\n" +
-            "JOIN tbl_bugs bug ON sub.id = bug.sub_task_id\n" +
+            "JOIN `tbl_bugs` bug ON sub.id = bug.sub_task_id\n" +
             "SET sub.status = 'DONE' \n" +
             "WHERE sub.id = ?1 \n" +
             "AND 'TO_DO' NOT IN (\n" +
-            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
             "AND'IN_PROGRESS' NOT IN (\n" +
-            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
             "AND'IN_REVIEW' NOT IN (\n" +
-            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
             "AND'FIX_BUG' NOT IN (\n" +
-            "\tSELECT `status` FROM tbl_bugs\n" +
+            "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")",nativeQuery = true)
     void updateStatusSubTaskAfterAllBugDone(Long id);
