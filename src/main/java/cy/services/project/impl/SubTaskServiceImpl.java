@@ -368,4 +368,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
     public Page<SubTaskDto> findAllByProjectId(Long id, Pageable pageable) {
         return subTaskRepository.findAllByProjectId(id,pageable).map(data -> SubTaskDto.toDto(data));
     }
+
+    @Override
+    public Page<SubTaskDto> findAllByTaskId(Long id, Pageable pageable) {
+        return subTaskRepository.findByTaskIdWithPaging(id, pageable).map(data -> SubTaskDto.toDto(data));
+    }
 }

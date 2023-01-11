@@ -1,12 +1,15 @@
 package cy.repositories.project;
 
+import cy.dtos.project.SubTaskDto;
 import cy.entities.project.SubTaskEntity;
+import cy.entities.project.TaskEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -20,6 +23,10 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
 
     @Query(value = "select * from tbl_sub_tasks where task_id = ?1", nativeQuery = true)
     List<SubTaskEntity> findByTaskId(Long id);
+
+    @Query(value = "SELECT t FROM SubTaskEntity t WHERE t.task.id = :taskId")
+    Page<SubTaskEntity> findByTaskIdWithPaging(@Param("taskId") Long taskId, Pageable pageable);
+
     @Modifying
     @Transactional
     @Query(value = "UPDATE tbl_sub_tasks SET `status` = ?2 WHERE id = ?1",nativeQuery = true)
