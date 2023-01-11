@@ -2,10 +2,12 @@ package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
+import cy.dtos.project.SubTaskDto;
 import cy.models.project.SubTaskModel;
 import cy.services.project.ISubTaskService;
 import cy.services.project.impl.SubTaskServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import javax.transaction.Transactional;
 public class SubTaskResources {
     @Autowired
     ISubTaskService iSubTaskService;
+
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/add")
     public Object add(@ModelAttribute SubTaskModel subTaskModel) {
@@ -48,7 +51,10 @@ public class SubTaskResources {
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping(value = "/find-all-by-task-id/{id}")
-    public ResponseDto findAllByTaskId(@PathVariable Long id, Pageable pageable) {
-        return ResponseDto.of(iSubTaskService.findAllByTaskId(id, pageable));
+    public ResponseDto findAllByTaskId(@PathVariable Long id,
+                                       @RequestParam(value = "keyword", defaultValue = "", required = false) String keyword,
+                                       Pageable pageable) {
+        Page<SubTaskDto> result = iSubTaskService.findAllByTaskId(id, keyword, pageable);
+        return ResponseDto.of(result);
     }
 }
