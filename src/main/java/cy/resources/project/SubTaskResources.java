@@ -71,7 +71,9 @@ public class SubTaskResources {
     }
 
     @ApiOperation(value = "Lọc subtask theo trạng thái và/hoặc khoảng thời gian (có phân trang).",
-                    notes = "Nếu truyền tham số thời gian bắt đầu nhưng KHÔNG truyền tham số thời gian kết thúc thì thời gian kết thúc là thời gian hiện tại.")
+                    notes = "- Có thể không gửi 1 trong 2 thuộc tính thời gian bắt đầu, thời gian kết thúc.\n" +
+                            "- Thời gian phải được gửi theo định dạng yyyy-MM-dd HH:mm:ss.\n" +
+                            "- Bắt buộc phải gửi thuộc tính taskId.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/filter")
     public ResponseDto filter(@RequestBody SubTaskModel subTaskModel,

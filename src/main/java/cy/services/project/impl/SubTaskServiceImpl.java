@@ -17,6 +17,7 @@ import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -211,6 +213,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 throw new CustomHandleException(198);
             }
         }
+
+        // Remove deleted file from current file list
+        currentFileList.removeIf(fileEntity -> fileIdDeleted.contains(fileEntity.getId()));
     }
 
     public void clearAssignedUsers(Long subTaskId) {
@@ -395,24 +400,21 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (!isTaskExist) {
             throw new CustomHandleException(192);
         }
-        if (startDate != null) {
-            if (endDate == null) {
-                endDate = new Date();
-            }
-        }
 
+        // Format date
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // Create sql query
         String sql = "SELECT * FROM tbl_sub_tasks WHERE task_id = " + taskId;
         if (startDate != null) {
-            sql += " AND start_date >= '" + startDate + "'";
+            sql += " AND start_date >= '" + sdf.format(startDate) + "'";
         }
         if (endDate != null) {
-            sql += " AND end_date <= '" + endDate + "'";
+            sql += " AND end_date <= '" + sdf.format(endDate) + "'";
         }
         if (status != null) {
             sql += " AND status = '" + status + "'";
         }
-        sql += " ORDER BY id DESC";
+        sql += " ORDER BY created_date DESC";
 
         // Paging
         int page = pageable.getPageNumber();
@@ -420,8 +422,17 @@ public class SubTaskServiceImpl implements ISubTaskService {
         int start = page * size;
         sql += " LIMIT " + start + ", " + size;
 
+        // Execute query
         Query nativeQuery = entityManager.createNativeQuery(sql, SubTaskEntity.class);
+
+        // Get result
         List<SubTaskEntity> subTaskEntityList = nativeQuery.getResultList();
-        return null;
+
+        // Convert to dto
+        List<SubTaskDto> subTaskDtoList = new ArrayList<>();
+        for (SubTaskEntity subTaskEntity : subTaskEntityList) {
+            subTaskDtoList.add(SubTaskDto.toDto(subTaskEntity));
+        }
+        return new PageImpl<>(subTaskDtoList, pageable, subTaskDtoList.size());
     }
 }
