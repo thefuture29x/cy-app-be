@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 
@@ -40,13 +42,13 @@ public class SubTaskModel {
     // Start date must be in the future or present.
     @NotNull
     @FutureOrPresent(message = "Start date must be in the future or present.")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
     // End date must not be null or empty.
     // End date must be in the future or present.
     @NotNull
     @FutureOrPresent(message = "End date must be in the future or present.")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     // User id assign to list should not be null or empty.
     // Subtask must have at least 1 user assigned.
