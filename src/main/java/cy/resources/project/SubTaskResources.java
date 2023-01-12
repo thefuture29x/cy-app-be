@@ -31,7 +31,7 @@ public class SubTaskResources {
         return ResponseDto.of(iSubTaskService.add(subTaskModel));
     }
 
-    @ApiOperation(value = "Cập nhật subtask.", notes = "Lưu ý khi xoá tập tin đính kèm: \n - Nếu như")
+    @ApiOperation(value = "Cập nhật subtask.", notes = "Muốn xoá tập tin đính kèm thì gửi tên tập tin (API trả về, kèm thêm đoạn số ngẫu nhiên) chứ không phải tên tập tin thực tế.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PutMapping(value = "/update")
     public Object update(@ModelAttribute SubTaskModel subTaskModel) {
