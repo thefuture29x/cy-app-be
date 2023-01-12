@@ -46,7 +46,6 @@ public class BugDto {
     private String reason;
 
     public static BugDto entityToDto(BugEntity obj) {
-
         return BugDto.builder()
                 .id(obj.getId())
                 .createBy(obj.getCreateBy() != null ? UserMetaDto.toDto(obj.getCreateBy()) : null)
