@@ -59,6 +59,7 @@ public class ProjectBaseEntity {
     private String name;
 
     @HistoryLogTitle(title = "mô tả")
+    @Column(columnDefinition="TEXT")
     private String description;
 
     @HistoryLogTitle(title = "trạng thái mặc định")

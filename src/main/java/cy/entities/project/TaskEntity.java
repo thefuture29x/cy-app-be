@@ -36,4 +36,12 @@ public class TaskEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "", ignore = true)
     @Transient
     private List<UserEntity> devTeam;
+
+    @HistoryLogTitle(title = "", ignore = true)
+    @Transient
+    private List<UserEntity> followerTeam;
+
+    @HistoryLogTitle(title = "", ignore = true)
+    @Transient
+    private List<UserEntity> viewerTeam;
 }

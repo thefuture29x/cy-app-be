@@ -16,9 +16,11 @@ import cy.services.attendance.IRequestAttendService;
 import cy.services.IUserService;
 import cy.services.attendance.impl.RequestAttendServiceImpl;
 import cy.utils.Const;
+import cy.utils.FileUploadProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -91,8 +93,11 @@ public class TestController {
     public String testenum(@RequestParam Const.status status){
         return Const.type.TYPE_DEV.name();
     }
-    @GetMapping("test-no-enum")
-    public void testenumo(@RequestParam String status){
 
+    @Autowired
+    FileUploadProvider fileUploadProvider;
+    @PostMapping ("test-upload")
+    public String testUpLoadFile(MultipartFile file) throws IOException {
+        return fileUploadProvider.uploadFile("project",file);
     }
 }

@@ -38,4 +38,6 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
     Page<BugEntity> findAllBugOfProject(Long idProject, Pageable pageable);
     @Query(value = "select * from tbl_bugs where sub_task_id = ?1", nativeQuery = true)
     List<BugEntity> getAllBugBySubTaskId(Long subtaskId);
+
+
 }

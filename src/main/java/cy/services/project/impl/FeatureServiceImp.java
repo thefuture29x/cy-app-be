@@ -152,8 +152,8 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
-        FeatureEntity featureOriginal = (FeatureEntity) Const.copy(this.featureRepository.findById(model.getId()));
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(()->new CustomHandleException(232));
+        FeatureEntity featureOriginal = (FeatureEntity) Const.copy(oldFeature);
         Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), oldFeature.getProject().getId()).stream().map(x->x.getIdUser()).collect(Collectors.toSet());
         if(Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)){
             throw new CustomHandleException(2131231);
@@ -164,17 +164,19 @@ public class FeatureServiceImp implements IFeatureService {
         oldFeature.setStartDate(model.getStartDate());
         oldFeature.setEndDate(model.getEndDate());
         oldFeature.setIsDefault(model.getIsDefault());
-        oldFeature.setPriority(model.getPriority().name());
+//        oldFeature.setPriority(model.getPriority().name());
         //Clear old tags
         clearTagList(oldFeature);
         //Add new tags
         List<String> newTagList = model.getTagList();
         List<TagEntity> newTagEntityList = new ArrayList<>();
-        newTagList.stream().forEach(x -> {
-            TagDto tagDto = this.tagService.add(TagModel.builder().name(x).build());
-            newTagEntityList.add(TagEntity.builder().id(tagDto.getId()).name(tagDto.getName()).build());
-            this.tagRelationService.add(TagRelationModel.builder().idTag(tagDto.getId()).category(Const.tableName.FEATURE.name()).objectId(oldFeature.getId()).build());
-        });
+        if (newTagList != null){
+            newTagList.stream().forEach(x -> {
+                TagDto tagDto = this.tagService.add(TagModel.builder().name(x).build());
+                newTagEntityList.add(TagEntity.builder().id(tagDto.getId()).name(tagDto.getName()).build());
+                this.tagRelationService.add(TagRelationModel.builder().idTag(tagDto.getId()).category(Const.tableName.FEATURE.name()).objectId(oldFeature.getId()).build());
+            });
+        }
         oldFeature.setTagList(newTagEntityList);
 
         //Clear old files

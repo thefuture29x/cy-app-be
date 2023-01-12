@@ -1,5 +1,6 @@
 package cy.utils;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -47,7 +48,7 @@ public class FileUploadProvider {
             while (true) {
                 checkFileName.setLength(0);
                 checkFileName.append(folder).append(i++).append(file.getOriginalFilename());
-                if (!isFileExist(file.toString()))
+                if (!isFileExist(checkFileName.toString()))
                     break;
             }
         }
@@ -126,6 +127,7 @@ public class FileUploadProvider {
     public AmazonS3ClientBuilder amazonS3ClientBuilder() {
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(credentialsProvider())
+                .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(25000).withMaxConnections(200))
                 .withRegion(this.region);
     }
 

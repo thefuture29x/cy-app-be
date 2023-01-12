@@ -308,7 +308,14 @@ public class ProjectServiceImpl implements IProjectService {
                 fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                 projectEntity.setAvatar(fileEntity);
                 projectEntity = iProjectRepository.save(projectEntity);
+            }else {
+                if (projectModel.getAvatarUrl() != null){
+                    FileEntity fileEntity =  iFileRepository.findByLinkAndObjectId(projectModel.getAvatarUrl(), projectModel.getId());
+                    projectEntity.setAvatar(fileEntity);
+                }
             }
+
+
             if(projectEntity.getAttachFiles() != null && projectEntity.getAttachFiles().size() > 0)
                 projectEntity.getAttachFiles().clear();
             else{
@@ -376,15 +383,18 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel) {
+        Long userIdd = SecurityUtils.getCurrentUserId();
         Pageable pageable = PageRequest.of(pageIndex,pageSize);
-        String sql="SELECT distinct new cy.dtos.project.ProjectDto(p) FROM ProjectEntity p ";
-        String countSQL = "select count(distinct(p)) from ProjectEntity p  ";
+        String sql="SELECT distinct new cy.dtos.project.ProjectDto(p) FROM ProjectEntity p " +
+                "inner join UserProjectEntity up on up.objectId = p.id " ;
+        String countSQL = "select count(distinct(p)) from ProjectEntity p  " +
+                "inner join UserProjectEntity up on up.objectId = p.id " ;
         if(projectModel.getTextSearch() != null && projectModel.getTextSearch().charAt(0) == '#'){
             sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
             countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
         }
-        sql += " WHERE 1=1 ";
-        countSQL += " WHERE 1=1 ";
+        sql += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) ";
+        countSQL += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) ";
         if(projectModel.getStatus()!= null) {
             sql+=" AND p.status = :status ";
             countSQL+=" AND p.status = :status ";
@@ -411,6 +421,9 @@ public class ProjectServiceImpl implements IProjectService {
 
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
+
+        q.setParameter("currentUserId",userIdd);
+        qCount.setParameter("currentUserId",userIdd);
 
         if(projectModel.getStatus() != null){
             q.setParameter("status", projectModel.getStatus());

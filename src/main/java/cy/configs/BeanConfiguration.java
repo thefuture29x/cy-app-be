@@ -56,7 +56,10 @@ public class BeanConfiguration {
                                 "http://localhost:19000",
                                 "http://localhost:5173",
                                 "http://192.168.56.1:5173",
-                                "http://192.168.1.236:5173")
+                                "http://192.168.1.236:5173",
+                                "http://43.200.3.80",
+                                "http://43.200.3.80:3000"
+                                )
                         .allowedOriginPatterns("*.*.*.*:*")
                         .allowCredentials(true)
                         .allowedMethods("GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS");
