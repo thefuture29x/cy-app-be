@@ -48,7 +48,7 @@ public class FileUploadProvider {
             while (true) {
                 checkFileName.setLength(0);
                 checkFileName.append(folder).append(i++).append(file.getOriginalFilename());
-                if (!isFileExist(file.toString()))
+                if (!isFileExist(checkFileName.toString()))
                     break;
             }
         }

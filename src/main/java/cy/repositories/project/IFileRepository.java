@@ -26,4 +26,9 @@ public interface IFileRepository extends JpaRepository<FileEntity, Long>, JpaSpe
     @Transactional
     @Query(value = "DELETE FROM `tbl_files` WHERE category =  ?1 AND object_id = ?2 ",nativeQuery = true)
     void deleteByCategoryAndObjectId(String category,Long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM `tbl_files` WHERE id = :deletingId ", nativeQuery = true)
+    void deleteByIdNative(Long deletingId);
 }
