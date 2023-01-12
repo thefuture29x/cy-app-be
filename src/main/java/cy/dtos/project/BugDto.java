@@ -9,7 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +36,7 @@ public class BugDto {
     private Boolean isDefault;
     private Boolean isDelete;
     private List<TagDto> tagList;
-    private HashMap<String,Date> attachFiles;
+    private List<FileDto> attachFiles;
     private List<BugHistoryDto> historyLogBug;
     private String status;
     private List<UserMetaDto> reviewerList;
@@ -47,11 +46,6 @@ public class BugDto {
     private String reason;
 
     public static BugDto entityToDto(BugEntity obj) {
-        HashMap<String,Date> lstFile = new HashMap<>();
-        if (obj.getAttachFiles() != null && obj.getAttachFiles().size() > 0) {
-            obj.getAttachFiles().stream().forEach(x -> lstFile.put(x.getLink(),x.getCreatedDate() != null ? x.getCreatedDate() : null));
-        }
-
         return BugDto.builder()
                 .id(obj.getId())
                 .createBy(obj.getCreateBy() != null ? UserMetaDto.toDto(obj.getCreateBy()) : null)
@@ -69,7 +63,8 @@ public class BugDto {
                 .assignTo(obj.getAssignTo() != null ? UserMetaDto.toDto(obj.getAssignTo()) : null)
                 .historyLogBug(obj.getHistoryBugList() != null
                         ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
-                .attachFiles(lstFile)
+                .attachFiles(obj.getAttachFiles()!=null
+                        ? obj.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
                 .status(obj.getStatus())
                 .tagList(obj.getTagList() != null
                         ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
