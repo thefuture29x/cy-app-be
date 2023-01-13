@@ -3,13 +3,9 @@ package cy.resources.project;
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
-import cy.models.attendance.CreateUpdateRequestAttend;
-import cy.models.project.ProjectModel;
 import cy.models.project.TaskModel;
 import cy.services.project.ITaskService;
-import cy.utils.Const;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -66,5 +62,9 @@ public class TaskResouce {
     @GetMapping("/find-all-by-project-id")
     public ResponseDto getAllTaskByProjectId(@RequestParam("id") Long id,Pageable pageable){
         return ResponseDto.of(taskService.findAllByProjectId(id,pageable));
+    }
+    @GetMapping("/update-status-task/{id}/{status}")
+    public ResponseDto getAllTaskByProjectId(@PathVariable("id") Long id,@PathVariable("status") String status){
+        return ResponseDto.of(200,taskService.updateStatusTask(id,status));
     }
 }

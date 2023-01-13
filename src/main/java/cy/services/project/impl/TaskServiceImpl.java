@@ -1,10 +1,9 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.project.BugDto;
-import cy.dtos.project.TagDto;
 import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
+import cy.dtos.project.TagDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
@@ -90,14 +89,14 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     @Override
-    public TaskDto  findById(Long id) {
+    public TaskDto findById(Long id) {
         TaskEntity taskEntity = this.getById(id);
 
         // set Tag
         List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
         List<Long> idTags = tagRelationEntities.stream().map(TagRelationEntity::getIdTag).collect(Collectors.toList());
         List<TagEntity> tagEntities = new ArrayList<>();
-        if(idTags != null){
+        if (idTags != null) {
             for (Long idTag : idTags) {
                 TagEntity tag = this.tagRepository.findById(idTag).orElseThrow(() -> new RuntimeException("Tag not exist !!!"));
                 tagEntities.add(tag);
@@ -109,7 +108,7 @@ public class TaskServiceImpl implements ITaskService {
         List<UserProjectEntity> userProjectEntitiesDev = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_DEV.name());
         List<Long> idUsersDev = userProjectEntitiesDev.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
         List<UserEntity> userEntitiesDev = new ArrayList<>();
-        if(idUsersDev != null){
+        if (idUsersDev != null) {
             for (Long idUser : idUsersDev) {
                 UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
                 userEntitiesDev.add(user);
@@ -121,7 +120,7 @@ public class TaskServiceImpl implements ITaskService {
         List<UserProjectEntity> userProjectEntitiesFollower = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_FOLLOWER.name());
         List<Long> idUsersFollower = userProjectEntitiesFollower.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
         List<UserEntity> userEntitiesFollower = new ArrayList<>();
-        if(idUsersFollower != null){
+        if (idUsersFollower != null) {
             for (Long idUser : idUsersFollower) {
                 UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
                 userEntitiesFollower.add(user);
@@ -133,7 +132,7 @@ public class TaskServiceImpl implements ITaskService {
         List<UserProjectEntity> userProjectEntitiesViewer = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_VIEWER.name());
         List<Long> idUsersViewer = userProjectEntitiesViewer.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
         List<UserEntity> userEntitiesViewer = new ArrayList<>();
-        if(idUsersViewer != null){
+        if (idUsersViewer != null) {
             for (Long idUser : idUsersViewer) {
                 UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
                 userEntitiesViewer.add(user);
@@ -442,63 +441,62 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public Page<TaskDto> findByPage(Integer pageIndex, Integer pageSize, TaskModel taskModel) {
-        Pageable pageable = PageRequest.of(pageIndex,pageSize);
-        String sql="SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        String sql = "SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
         String countSQL = "select count(distinct(task)) from TaskEntity task  ";
-        if(taskModel.getTextSearch() != null && taskModel.getTextSearch().charAt(0) == '#'){
+        if (taskModel.getTextSearch() != null && taskModel.getTextSearch().charAt(0) == '#') {
             sql += " inner join TagRelationEntity tr on tr.objectId = task.id inner join TagEntity t on t.id = tr.idTag ";
             countSQL += " inner join TagRelationEntity tr on tr.objectId = task.id inner join TagEntity t on t.id = tr.idTag ";
         }
         sql += " WHERE 1=1 ";
         countSQL += " WHERE 1=1 ";
-        if(taskModel.getStatus()!= null) {
-            sql+=" AND task.status = :status ";
-            countSQL+=" AND task.status = :status ";
+        if (taskModel.getStatus() != null) {
+            sql += " AND task.status = :status ";
+            countSQL += " AND task.status = :status ";
         }
-        if(taskModel.getFeatureId()!= null) {
-            sql+=" AND task.feature.id = :featureId ";
-            countSQL+=" AND task.feature.id = :featureId ";
+        if (taskModel.getFeatureId() != null) {
+            sql += " AND task.feature.id = :featureId ";
+            countSQL += " AND task.feature.id = :featureId ";
         }
-        if(taskModel.getStartDate() != null){
-            sql+=" AND task.startDate >= :startDate ";
-            countSQL+="AND task.startDate >= :startDate ";
+        if (taskModel.getStartDate() != null) {
+            sql += " AND task.startDate >= :startDate ";
+            countSQL += "AND task.startDate >= :startDate ";
         }
-        if(taskModel.getEndDate() != null){
-            sql+=" AND task.endDate <= :endDate ";
-            countSQL+="AND task.endDate <= :endDate ";
+        if (taskModel.getEndDate() != null) {
+            sql += " AND task.endDate <= :endDate ";
+            countSQL += "AND task.endDate <= :endDate ";
         }
-        if(taskModel.getTextSearch() != null){
-            if(taskModel.getTextSearch().charAt(0) == '#'){
-                sql+=" AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'TASK') ";
-                countSQL+="AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'TASK') ";
+        if (taskModel.getTextSearch() != null) {
+            if (taskModel.getTextSearch().charAt(0) == '#') {
+                sql += " AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'TASK') ";
+                countSQL += "AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'TASK') ";
+            } else {
+                sql += " AND (task.name LIKE :textSearch or task.createBy.fullName LIKE :textSearch ) ";
+                countSQL += "AND (task.name LIKE :textSearch or task.createBy.fullName LIKE :textSearch ) ";
             }
-            else{
-                sql+=" AND (task.name LIKE :textSearch or task.createBy.fullName LIKE :textSearch ) ";
-                countSQL+="AND (task.name LIKE :textSearch or task.createBy.fullName LIKE :textSearch ) ";
-            }
         }
-        sql+="order by task.createdDate desc";
+        sql += "order by task.createdDate desc";
 
         Query q = manager.createQuery(sql, TaskDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        if(taskModel.getStatus() != null){
+        if (taskModel.getStatus() != null) {
             q.setParameter("status", taskModel.getStatus());
             qCount.setParameter("status", taskModel.getStatus());
         }
-        if(taskModel.getFeatureId() != null){
+        if (taskModel.getFeatureId() != null) {
             q.setParameter("featureId", taskModel.getFeatureId());
             qCount.setParameter("featureId", taskModel.getFeatureId());
         }
-        if(taskModel.getStartDate() != null){
+        if (taskModel.getStartDate() != null) {
             q.setParameter("startDate", taskModel.getStartDate());
             qCount.setParameter("startDate", taskModel.getStartDate());
         }
-        if(taskModel.getEndDate() != null){
+        if (taskModel.getEndDate() != null) {
             q.setParameter("endDate", taskModel.getEndDate());
             qCount.setParameter("endDate", taskModel.getEndDate());
         }
-        if(taskModel.getTextSearch() != null){
+        if (taskModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + taskModel.getTextSearch() + "%");
             qCount.setParameter("textSearch", "%" + taskModel.getTextSearch() + "%");
         }
@@ -513,7 +511,13 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public Page<TaskDto> findAllByProjectId(Long id, Pageable pageable) {
-        return this.repository.findAllByProjectId(id,pageable).map(task -> TaskDto.toDto(task));
+        return this.repository.findAllByProjectId(id, pageable).map(task -> TaskDto.toDto(task));
+    }
+
+    public Object updateStatusTask(Long id, String status) {
+        repository.updateStatusTask(id, status);
+
+        return true;
     }
 
 }
