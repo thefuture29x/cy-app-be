@@ -6,6 +6,7 @@ import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.ProjectModel;
 import cy.models.project.TagModel;
+import cy.models.project.UserViewProjectModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.resources.UserResources;
@@ -30,6 +31,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -61,8 +63,12 @@ public class ProjectServiceImpl implements IProjectService {
     IUserProjectRepository iUserProjectRepository;
     @Autowired
     IHistoryLogService iHistoryLogService;
+    @Autowired
+    IUserViewProjectService iUserViewProjectService;
     @Override
     public ProjectDto findById(Long id) {
+        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(),id));
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
         ProjectDto projectDto = ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
         if(projectDto == null)
