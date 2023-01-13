@@ -64,7 +64,7 @@ public class TaskResouce {
         return ResponseDto.of(taskService.findAllByProjectId(id,pageable));
     }
     @GetMapping("/update-status-task/{id}/{status}")
-    public ResponseDto getAllTaskByProjectId(@PathVariable("id") Long id,@PathVariable("status") String status){
-        return ResponseDto.of(200,taskService.updateStatusTask(id,status));
+    public ResponseDto updateStatusTask(@PathVariable("id") Long id,@PathVariable("status") String status){
+        return ResponseDto.of(taskService.updateStatusTask(id,status));
     }
 }

@@ -515,9 +515,12 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     public Object updateStatusTask(Long id, String status) {
-        repository.updateStatusTask(id, status);
-
-        return true;
+        try {
+            repository.updateStatusTask(id, status);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 
 }
