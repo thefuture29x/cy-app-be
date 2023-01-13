@@ -28,8 +28,8 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
             "WHERE pro.id = ?1",nativeQuery = true)
     Page<TaskEntity> findAllByProjectId(Long id, Pageable pageable);
 
+
     @Modifying
-    @Transactional
     @Query(value = "UPDATE tbl_tasks SET `status` = ?2 WHERE id = ?1",nativeQuery = true)
     void updateStatusTask(Long id,String status);
 
@@ -56,4 +56,5 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
             "\tWHERE task_id = ?1 \n" +
             ")",nativeQuery = true)
     void updateStatusTaskAfterAllBugDone(Long id);
+
 }
