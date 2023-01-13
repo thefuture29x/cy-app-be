@@ -127,7 +127,7 @@ public class FileUploadProvider {
     public AmazonS3ClientBuilder amazonS3ClientBuilder() {
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(credentialsProvider())
-                .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(25000).withMaxConnections(200))
+                .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(25000).withMaxConnections(1000))
                 .withRegion(this.region);
     }
 
