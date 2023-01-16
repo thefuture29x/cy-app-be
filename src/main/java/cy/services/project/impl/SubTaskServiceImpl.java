@@ -208,7 +208,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.get().setStartDate(modelUpdate.getStartDate());
         subTaskExisted.get().setEndDate(modelUpdate.getEndDate());
         subTaskExisted.get().setPriority(modelUpdate.getPriority().name());
-        
+
         SubTaskEntity saveSubTask = this.subTaskRepository.saveAndFlush(subTaskExisted.get());
 
         // Update object id value for file
