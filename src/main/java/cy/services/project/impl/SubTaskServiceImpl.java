@@ -4,6 +4,7 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.dtos.project.SubTaskDto;
 import cy.dtos.project.TagDto;
+import cy.dtos.project.UserProjectDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
@@ -90,7 +91,20 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto findById(Long id) {
-        return this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
+        SubTaskDto subTaskDto = this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
+        if(subTaskDto != null){
+            List<UserProjectEntity> userAssignedEntityList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_DEV.name());
+            List<UserProjectDto> userAssignedDtoList = new ArrayList<>();
+            // Convert Entity to Dto
+            for (UserProjectEntity userAssignedEntity : userAssignedEntityList) {
+                UserProjectDto userProjectDto = UserProjectDto.toDto(userAssignedEntity);
+                userAssignedDtoList.add(userProjectDto);
+            }
+            subTaskDto.setAssignedUser(userAssignedDtoList);
+            return subTaskDto;
+        }else {
+            return subTaskDto;
+        }
     }
 
     @Override
@@ -108,7 +122,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Allowed image and video file
         // Allowed document file: .xlxs (Excel), .docx (Word), .pptx (Powerpoint), .pdf, .xml
         List<MultipartFile> attachFiles = model.getAttachFiles();
-        List<FileEntity> fileEntityList = this.validateFileTypeAllowed(attachFiles);
+        List<FileEntity> fileEntityList = new ArrayList<>();
+        if(attachFiles != null && !attachFiles.isEmpty()){
+            fileEntityList = this.validateFileTypeAllowed(attachFiles);
+        }
 
         SubTaskEntity subTaskEntity = new SubTaskEntity();
         subTaskEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
@@ -125,7 +142,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         SubTaskEntity saveSubTask = this.subTaskRepository.save(subTaskEntity);
 
         // Save assigned users to UserProject
-        this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
+        List<UserProjectEntity> userProjectEntityList = this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
 
         // Update object id value for file
         this.updateObjectId(fileEntityList, saveSubTask.getId());
@@ -134,7 +151,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<TagDto> tagListSplit = this.saveTagList(model.getTagList(), saveSubTask.getId());
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
-        subTaskDto.setAssignedUser(userEntitiesAssigned.stream().map(UserDto::toDto).collect(Collectors.toList()));
+        subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
 
         iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
@@ -179,7 +196,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         this.clearAssignedUsers(saveSubTask.getId());
 
         // Save assigned users to UserProject
-        this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
+        List<UserProjectEntity> userProjectEntityList = this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
 
         // Clear old tag list
         this.clearTagList(saveSubTask.getId());
@@ -193,7 +210,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
-
+        subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
         iHistoryLogService.logUpdate(saveSubTask.getId(), subTaskEntityOriginal, saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
@@ -227,15 +244,18 @@ public class SubTaskServiceImpl implements ISubTaskService {
         });
     }
 
-    public void saveAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
+    public List<UserProjectEntity> saveAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
+        List<UserProjectEntity> userProjectEntityList = new ArrayList<>();
         for (UserEntity userEntity : userEntitiesAssigned) {
             UserProjectEntity userProjectEntity = new UserProjectEntity();
             userProjectEntity.setObjectId(subTaskId);
             userProjectEntity.setIdUser(userEntity.getUserId());
             userProjectEntity.setType(Const.type.TYPE_DEV + "");
             userProjectEntity.setCategory(Const.tableName.SUBTASK + "");
-            this.userProjectRepository.save(userProjectEntity);
+            UserProjectEntity userProjectEntitySave = this.userProjectRepository.save(userProjectEntity);
+            userProjectEntityList.add(userProjectEntitySave);
         }
+        return userProjectEntityList;
     }
 
     public List<Object> checkIdAndDate(SubTaskModel model) {
