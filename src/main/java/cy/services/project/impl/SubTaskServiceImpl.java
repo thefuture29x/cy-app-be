@@ -2,6 +2,7 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
+import cy.dtos.project.FileDto;
 import cy.dtos.project.SubTaskDto;
 import cy.dtos.project.TagDto;
 import cy.dtos.project.UserProjectDto;
@@ -93,6 +94,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     public SubTaskDto findById(Long id) {
         SubTaskDto subTaskDto = this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
         if(subTaskDto != null){
+            // Get userAssigned list
             List<UserProjectEntity> userAssignedEntityList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_DEV.name());
             List<UserProjectDto> userAssignedDtoList = new ArrayList<>();
             // Convert Entity to Dto
@@ -101,10 +103,29 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 userAssignedDtoList.add(userProjectDto);
             }
             subTaskDto.setAssignedUser(userAssignedDtoList);
-            return subTaskDto;
-        }else {
-            return subTaskDto;
+
+            // Get tag list
+            List<TagRelationEntity> tagRelationEntityList = tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskDto.getId());
+            List<TagDto> tagDtoList = new ArrayList<>();
+            // Convert TagRelationEntity to TagDto
+            for (TagRelationEntity tagRelationEntity : tagRelationEntityList) {
+                TagDto tagDto = tagRepository.findById(tagRelationEntity.getIdTag()).map(TagDto::toDto).orElse(null);
+                if(tagDto != null){
+                    tagDtoList.add(tagDto);
+                }
+            }
+            subTaskDto.setTagList(tagDtoList);
+
+            // Get file list
+            List<FileEntity> fileEntityList = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskDto.getId());
+            List<FileDto> fileDtoList = new ArrayList<>();
+            // Convert Entity to Dto
+            for (FileEntity fileEntity : fileEntityList) {
+                fileDtoList.add(FileDto.toDto(fileEntity));
+            }
+            subTaskDto.setAttachFileUrls(fileDtoList);
         }
+        return subTaskDto;
     }
 
     @Override
