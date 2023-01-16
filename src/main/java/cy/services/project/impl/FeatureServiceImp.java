@@ -81,7 +81,9 @@ public class FeatureServiceImp implements IFeatureService {
     public FeatureDto findById(Long id) {
         FeatureEntity featureEntity = this.featureRepository.findById(id).orElseThrow(() -> new CustomHandleException(23));
         featureEntity.setTagList(tagRelationService.findTagByCategoryAndObject(Const.tableName.FEATURE.name(), id).stream().map(x -> x.getIdTag()).collect(Collectors.toList()).stream().map(y -> this.tagService.getById(y)).collect(Collectors.toList()));
-        featureEntity.setDevTeam(userProjectRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
+        featureEntity.setDevTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.FEATURE.name(), id, Const.type.TYPE_DEV.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
+        featureEntity.setFollowTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), featureEntity.getProject().getId(), Const.type.TYPE_FOLLOWER.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
+        featureEntity.setViewTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), featureEntity.getProject().getId(), Const.type.TYPE_VIEWER.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
         return FeatureDto.toDto(this.getById(id));
     }
 
@@ -93,7 +95,7 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public FeatureDto add(FeatureModel model) {
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(() -> new CustomHandleException(45354345));
-        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
             throw new CustomHandleException(11);
         }
@@ -133,7 +135,7 @@ public class FeatureServiceImp implements IFeatureService {
         //Add Tags
         tagList.stream().forEach(x -> this.tagRelationService.add(TagRelationModel.builder().idTag(x.getId()).category(Const.tableName.FEATURE.name()).objectId(entity.getId()).build()));
         //Add Users
-        List<Long> curProjectIds = userProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
+        List<Long> curProjectIds = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
         if (new HashSet<>(curProjectIds).containsAll(model.getUids())) {
             model.getUids().stream().forEach(x -> this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(entity.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build()));
             entity.setDevTeam(model.getUids().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
@@ -154,7 +156,7 @@ public class FeatureServiceImp implements IFeatureService {
     public FeatureDto update(FeatureModel model) {
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
         FeatureEntity featureOriginal = (FeatureEntity) Const.copy(oldFeature);
-        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), oldFeature.getProject().getId()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), oldFeature.getProject().getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
             throw new CustomHandleException(2131231);
         }
@@ -193,7 +195,7 @@ public class FeatureServiceImp implements IFeatureService {
         });
         oldFeature.setAttachFiles(newFileEntityList);
         clearDevTeam(oldFeature.getId());
-        List<Long> currentAvailableDev = userProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
+        List<Long> currentAvailableDev = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
         List<Long> newDevTeam = model.getUids();
         List<UserEntity> newDevTeamEntity = new ArrayList<>();
         if (new HashSet<>(currentAvailableDev).containsAll(newDevTeam)) {
@@ -217,7 +219,7 @@ public class FeatureServiceImp implements IFeatureService {
         taskEntities.forEach(taskEntity -> this.taskService.deleteById(taskEntity.getId()));
 
         // delete userProject
-        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id);
+        List<UserProjectEntity> userProjectEntities = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.FEATURE.name(), id, Const.type.TYPE_DEV.name());
         for (UserProjectEntity userProjectEntity : userProjectEntities) {
             this.userProjectRepository.delete(userProjectEntity);
         }
