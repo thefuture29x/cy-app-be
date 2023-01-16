@@ -18,7 +18,8 @@ public class SubTaskResources {
     @Autowired
     ISubTaskService iSubTaskService;
 
-    @ApiOperation(value = "Thêm mới subtask.")
+    @ApiOperation(value = "Thêm mới subtask.", notes = "- Thời gian phải được gửi theo định dạng yyyy-MM-dd HH:mm:ss.\n" +
+            "- Bắt buộc phải gửi thuộc tính taskId.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE", "ROLE_LEADER", "ROLE_MANAGER", "ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/add")
     public Object add(@ModelAttribute SubTaskModel subTaskModel) {

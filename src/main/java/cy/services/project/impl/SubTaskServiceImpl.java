@@ -121,6 +121,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskEntity.setTask(taskEntityChecked);
         subTaskEntity.setAttachFiles(fileEntityList);
         subTaskEntity.setAssignTo(null); // Default value: null
+        subTaskEntity.setIsDefault(model.isDefault());
         SubTaskEntity saveSubTask = this.subTaskRepository.save(subTaskEntity);
 
         // Save assigned users to UserProject

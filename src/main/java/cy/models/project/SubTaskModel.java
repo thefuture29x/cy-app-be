@@ -63,4 +63,6 @@ public class SubTaskModel {
     private List<String> fileNameDeletes;
     // Status for filter.
     private Const.status status;
+    // Set default subtask.
+    private boolean isDefault;
 }
