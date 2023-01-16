@@ -29,6 +29,8 @@ public class FeatureDto {
     private String description;
     private ProjectDto project;
     private List<UserDto> devTeam;
+    private List<UserDto> followersTeam;
+    private List<UserDto> viewerTeams;
     private List<FileDto> files;
     private List<TagDto> tagList;
 
@@ -46,6 +48,8 @@ public class FeatureDto {
                 .name(entity.getName())
                 .priority(entity.getPriority())
                 .description(entity.getDescription())
+                .viewerTeams(entity.getViewTeam()!=null? entity.getViewTeam().stream().map(UserDto::toDto).collect(Collectors.toList()): new ArrayList<>())
+                .followersTeam(entity.getFollowTeam()!=null? entity.getFollowTeam().stream().map(UserDto::toDto).collect(Collectors.toList()): new ArrayList<>())
 //                .project(ProjectDto.toDto(entity.getProject()))
                 .devTeam(entity.getDevTeam()!=null? entity.getDevTeam().stream().map(UserDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
                 .files(entity.getAttachFiles()!=null ? entity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>())

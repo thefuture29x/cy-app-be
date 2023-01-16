@@ -40,4 +40,10 @@ public class FeatureEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "", ignore = true)
     @Transient
     private List<UserEntity> devTeam = new ArrayList<>();
+    @HistoryLogTitle(title = "", ignore = true)
+    @Transient
+    private List<UserEntity> followTeam;
+    @HistoryLogTitle(title = "", ignore = true)
+    @Transient
+    private List<UserEntity> viewTeam;
 }

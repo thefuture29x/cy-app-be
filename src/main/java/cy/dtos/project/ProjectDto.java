@@ -76,6 +76,7 @@ public class ProjectDto {
             this.setStatus(entity.getStatus());
             this.setUpdatedDate(entity.getUpdatedDate());
             this.setStartDate(entity.getStartDate());
+            this.setEndDate(entity.getEndDate());
             this.setUserDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
             this.setUserFollows(entity.getFollowTeam() != null ? entity.getFollowTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
             this.setUserView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
