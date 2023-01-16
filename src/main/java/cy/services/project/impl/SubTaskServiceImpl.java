@@ -199,9 +199,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.get().getId());
         if(currentAttachedFiles != null && !currentAttachedFiles.isEmpty()){
             for (FileEntity fileEntity : currentAttachedFiles) {
-                this.fileRepository.deleteByIdNative(fileEntity.getId());
+                if(!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())){
+                    this.fileRepository.deleteByIdNative(fileEntity.getId());
+                    subTaskExisted.get().getAttachFiles().remove(fileEntity);
+                }
             }
-            subTaskExisted.get().setAttachFiles(new ArrayList<>());
         }
 
         // Validate file type allow
