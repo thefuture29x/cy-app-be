@@ -57,10 +57,9 @@ public class SubTaskModel {
     private List<Long> assignedUserIdList;
     // Attachment list is optional.
     private List<MultipartFile> attachFiles;
+    private List<String> fileUrlsKeeping;
     // Tag list separated by comma (,).
     private String tagList;
-    // File name delete list is optional.
-//    private List<String> fileNameDeletes;
     // Status for filter.
     private Const.status status;
     // Set default subtask.
