@@ -98,7 +98,7 @@ public class BugServiceImpl implements IRequestBugService {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
             tagEntityList.add(TagDto.toDto(tagEntity));
         }
-        BugDto bugDto= BugDto.entityToDto(iBugRepository.findById(id).get());
+        BugDto bugDto = BugDto.entityToDto(iBugRepository.findById(id).get());
         bugDto.setReviewerList(reviewerList);
         bugDto.setResponsibleList(responsibleList);
         bugDto.setTagList(tagEntityList);
@@ -280,9 +280,9 @@ public class BugServiceImpl implements IRequestBugService {
                 }
                 bugEntity.setUpdatedDate(currentDate);
                 //clear data in table relation user project
-                List<UserProjectEntity>listReviewOld=userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), model.getId(),Const.type.TYPE_REVIEWER.name());
-                for (UserProjectEntity user:listReviewOld) {
-                    userProjectRepository.deleteById( user.getId());
+                List<UserProjectEntity> listReviewOld = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), model.getId(), Const.type.TYPE_REVIEWER.name());
+                for (UserProjectEntity user : listReviewOld) {
+                    userProjectRepository.deleteById(user.getId());
                     userProjectRepository.flush();
                 }
                 //create reviewer list
@@ -297,8 +297,8 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                 }
                 //clear data in table relation user project
-                List<UserProjectEntity>listDevOld=userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), model.getId(),Const.type.TYPE_DEV.name());
-                for (UserProjectEntity user:listDevOld) {
+                List<UserProjectEntity> listDevOld = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), model.getId(), Const.type.TYPE_DEV.name());
+                for (UserProjectEntity user : listDevOld) {
                     userProjectRepository.deleteById(user.getId());
                     userProjectRepository.flush();
                 }
@@ -319,7 +319,7 @@ public class BugServiceImpl implements IRequestBugService {
                 System.out.println(tagRelationEntities);
 
                 if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
-                    for (TagRelationEntity tagRelation:tagRelationEntities) {
+                    for (TagRelationEntity tagRelation : tagRelationEntities) {
                         iTagRelationRepository.deleteByIdNative(tagRelation.getId());
                         iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
                     }
@@ -383,10 +383,28 @@ public class BugServiceImpl implements IRequestBugService {
                 System.out.println(e);
                 return null;
             }
-        }else {
+        } else {
             throw new CustomHandleException(311);
         }
 
+    }
+
+    public BugDto deleteOnlyFile(Long idFile, Long idProject) {
+        BugEntity bugEntity = iBugRepository.findById(idProject).orElseThrow(() -> new CustomHandleException(11));
+        if (bugEntity.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
+            try {
+                FileEntity file = iFileRepository.findById(idFile).get();
+                file.setObjectId(null);
+                iFileRepository.saveAndFlush(file);
+                BugEntity newBug = iBugRepository.findById(idProject).get();
+                return BugDto.entityToDto(newBug);
+            } catch (Exception e) {
+                System.out.println(e);
+                return null;
+            }
+        } else {
+            throw new CustomHandleException(311);
+        }
     }
 
     /*
@@ -414,7 +432,7 @@ public class BugServiceImpl implements IRequestBugService {
                     break;
 
             }
-        }else {
+        } else {
             throw new CustomHandleException(311);
         }
 
@@ -429,7 +447,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto updateStatusSubTaskToBug(Long id, int status) {
-         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
+        BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
 
@@ -486,6 +504,7 @@ public class BugServiceImpl implements IRequestBugService {
         //Lưu dữ liệu vào bảng BugHistory
         return bugDto;
     }
+
     @Override
     public BugDto updateStatusBugToTask(Long id, int status) {
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
@@ -515,6 +534,7 @@ public class BugServiceImpl implements IRequestBugService {
         //Lưu dữ liệu vào bảng BugHistory
         return bugDto;
     }
+
     @Override
     public BugDto updateStatusTaskToBug(Long id, int status) {
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
