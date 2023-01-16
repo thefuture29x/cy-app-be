@@ -298,6 +298,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<String> tagListSplit = Arrays.stream(tagList.split(",")).collect(Collectors.toList());
         Long tagId = null;
         for (String tag : tagListSplit) {
+            if(tag.length() == 0){
+                continue;
+            }
             // Tag must be unique
             TagEntity isTagExist = tagRepository.findByName(tag);
             // If tag is not exist, create new tag
