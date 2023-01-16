@@ -191,8 +191,17 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objUpdateList.get(1);
 
         // Deleted attached file
-        if (modelUpdate.getFileNameDeletes() != null && modelUpdate.getFileNameDeletes().size() > 0) {
-            this.deleteAttachFile(modelUpdate.getFileNameDeletes(), subTaskExisted.get().getId(), subTaskExisted.get().getAttachFiles());
+//        if (modelUpdate.getFileNameDeletes() != null && modelUpdate.getFileNameDeletes().size() > 0) {
+//            this.deleteAttachFile(modelUpdate.getFileNameDeletes(), subTaskExisted.get().getId(), subTaskExisted.get().getAttachFiles());
+//        }
+
+        // Delete all current attached files
+        List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.get().getId());
+        if(currentAttachedFiles != null && !currentAttachedFiles.isEmpty()){
+            for (FileEntity fileEntity : currentAttachedFiles) {
+                this.fileRepository.deleteByIdNative(fileEntity.getId());
+            }
+            subTaskExisted.get().setAttachFiles(new ArrayList<>());
         }
 
         // Validate file type allow
@@ -207,6 +216,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.get().setDescription(modelUpdate.getDescription());
         subTaskExisted.get().setStartDate(modelUpdate.getStartDate());
         subTaskExisted.get().setEndDate(modelUpdate.getEndDate());
+        subTaskExisted.get().setPriority(modelUpdate.getPriority().name());
 
         SubTaskEntity saveSubTask = this.subTaskRepository.saveAndFlush(subTaskExisted.get());
 

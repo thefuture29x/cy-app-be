@@ -60,7 +60,7 @@ public class SubTaskModel {
     // Tag list separated by comma (,).
     private String tagList;
     // File name delete list is optional.
-    private List<String> fileNameDeletes;
+//    private List<String> fileNameDeletes;
     // Status for filter.
     private Const.status status;
     // Set default subtask.
