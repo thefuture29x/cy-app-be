@@ -1,7 +1,5 @@
 package cy.models.project;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import cy.entities.project.BugHistoryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,12 +25,15 @@ public class BugHistoryModel {
     private Date endDate;
 
     private MultipartFile[] files;
+    private String detail;
+
 
     public static BugHistoryEntity modelToEntity(BugHistoryModel model) {
         return BugHistoryEntity.builder()
                 .id(model.getId())
                 .startDate(model.getStartDate())
                 .endDate(model.getEndDate())
+                .detail(model.getDetail())
                 .build();
     }
 }

@@ -9,9 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +29,7 @@ public class BugHistoryDto {
     private BugDto bugDto;
     private List<FileDto> attachFiles;
     private Boolean isPending;
+    private String detail;
 
     public static BugHistoryDto entityToDto(BugHistoryEntity obj) {
         return BugHistoryDto.builder()
@@ -40,6 +39,7 @@ public class BugHistoryDto {
                 .endDate(obj.getEndDate())
                 .attachFiles(obj.getAttachFiles() != null ? obj.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
                 .isPending(obj.getIsPending())
+                .detail(obj.getDetail())
                 .build();
     }
 }

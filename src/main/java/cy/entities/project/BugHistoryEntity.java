@@ -42,4 +42,7 @@ public class BugHistoryEntity {
     @Where(clause = "category='BUG_HISTORY'")
     private List<FileEntity> attachFiles;
 
+    @HistoryLogTitle(title = "", ignore = true)
+    private String detail;
+
 }
