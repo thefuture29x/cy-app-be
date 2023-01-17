@@ -4,6 +4,7 @@ import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
 import cy.models.project.ProjectModel;
 import cy.services.project.IProjectService;
+import cy.services.project.IUserViewProjectService;
 import org.hibernate.persister.entity.SingleTableEntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -16,6 +17,8 @@ import javax.transaction.Transactional;
 public class ProjectResource {
     @Autowired
     IProjectService iProjectService;
+    @Autowired
+    IUserViewProjectService iUserViewProjectService;
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping(value = "/findById")
@@ -46,4 +49,12 @@ public class ProjectResource {
     public ResponseDto findBypage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody ProjectModel projectModel) {
         return ResponseDto.of(iProjectService.findByPage(pageIndex,pageSize,projectModel));
     }
+
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @GetMapping(value = "/findProjectRecentlyViewed")
+    public ResponseDto findProjectRecentlyViewed() {
+        return ResponseDto.of(iUserViewProjectService.findProjectRecentlyViewed());
+    }
+
+
 }
