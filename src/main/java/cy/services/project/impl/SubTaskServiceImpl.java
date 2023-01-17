@@ -184,6 +184,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (subTaskExisted.isEmpty()) {
             throw new CustomHandleException(197);
         }
+
+        // Check fileUrlsKeeping
+        if(modelUpdate.getFileUrlsKeeping() == null){
+            throw new CustomHandleException(201);
+        }
         // Copy current subTask to compare with new subTask
         SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted.get());
         List<Object> objUpdateList = this.checkIdAndDate(modelUpdate);
@@ -199,10 +204,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.get().getId());
         if(currentAttachedFiles != null && !currentAttachedFiles.isEmpty()){
             for (FileEntity fileEntity : currentAttachedFiles) {
-                if(!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())){
-                    this.fileRepository.deleteByIdNative(fileEntity.getId());
-                    subTaskExisted.get().getAttachFiles().remove(fileEntity);
-                }
+                    if(!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())){
+                        this.fileRepository.deleteByIdNative(fileEntity.getId());
+                        subTaskExisted.get().getAttachFiles().remove(fileEntity);
+                    }
             }
         }
 
