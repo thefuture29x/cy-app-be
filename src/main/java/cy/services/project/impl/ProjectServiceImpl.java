@@ -389,8 +389,8 @@ public class ProjectServiceImpl implements IProjectService {
             sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
             countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
         }
-        sql += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false";
-        countSQL += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false";
+        sql += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false ";
+        countSQL += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false ";
         if (projectModel.getStatus() != null) {
             sql += " AND p.status = :status ";
             countSQL += " AND p.status = :status ";
