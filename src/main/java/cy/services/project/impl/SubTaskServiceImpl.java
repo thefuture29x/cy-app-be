@@ -159,7 +159,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskEntity.setTask(taskEntityChecked);
         subTaskEntity.setAttachFiles(fileEntityList);
         subTaskEntity.setAssignTo(null); // Default value: null
-        subTaskEntity.setIsDefault(model.isDefault());
+        subTaskEntity.setIsDefault(model.getIsDefault());
         SubTaskEntity saveSubTask = this.subTaskRepository.save(subTaskEntity);
 
         // Save assigned users to UserProject
@@ -184,6 +184,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (subTaskExisted.isEmpty()) {
             throw new CustomHandleException(197);
         }
+
+        // Check fileUrlsKeeping
+        if(modelUpdate.getFileUrlsKeeping() == null){
+            throw new CustomHandleException(201);
+        }
         // Copy current subTask to compare with new subTask
         SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted.get());
         List<Object> objUpdateList = this.checkIdAndDate(modelUpdate);
@@ -195,14 +200,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
 //            this.deleteAttachFile(modelUpdate.getFileNameDeletes(), subTaskExisted.get().getId(), subTaskExisted.get().getAttachFiles());
 //        }
 
-        // Delete all current attached files
+        // Delete attach file if it's url do not exist in fileUrlsKeeping
         List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.get().getId());
         if(currentAttachedFiles != null && !currentAttachedFiles.isEmpty()){
             for (FileEntity fileEntity : currentAttachedFiles) {
-                if(!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())){
-                    this.fileRepository.deleteByIdNative(fileEntity.getId());
-                    subTaskExisted.get().getAttachFiles().remove(fileEntity);
-                }
+                    if(!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())){
+                        this.fileRepository.deleteByIdNative(fileEntity.getId());
+                        subTaskExisted.get().getAttachFiles().remove(fileEntity);
+                    }
             }
         }
 
@@ -219,6 +224,12 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.get().setStartDate(modelUpdate.getStartDate());
         subTaskExisted.get().setEndDate(modelUpdate.getEndDate());
         subTaskExisted.get().setPriority(modelUpdate.getPriority().name());
+
+        // Update default sub task
+        if(modelUpdate.getIsDefault()){
+            unsetDefaultSubTask(subTaskExisted.get().getTask().getId());
+            subTaskExisted.get().setIsDefault(true);
+        }
 
         SubTaskEntity saveSubTask = this.subTaskRepository.saveAndFlush(subTaskExisted.get());
 
@@ -246,6 +257,18 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
         iHistoryLogService.logUpdate(saveSubTask.getId(), subTaskEntityOriginal, saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
+    }
+
+    public void unsetDefaultSubTask(Long taskId){
+        List<SubTaskEntity> subTaskEntityList = subTaskRepository.getByTaskId(taskId);
+        if(subTaskEntityList != null && !subTaskEntityList.isEmpty()){
+            for (SubTaskEntity subTaskEntity : subTaskEntityList) {
+                if(subTaskEntity.getIsDefault() || subTaskEntity.getIsDefault() == null){
+                    subTaskEntity.setIsDefault(false);
+                    subTaskRepository.save(subTaskEntity);
+                }
+            }
+        }
     }
 
     public void clearTagList(Long subTaskId) {
