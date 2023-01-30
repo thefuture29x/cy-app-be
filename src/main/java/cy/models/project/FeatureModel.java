@@ -31,4 +31,5 @@ public class FeatureModel {
     private Boolean isDefault;
     private List<Long> uids;
     private List<MultipartFile> files;
+    private List<String> fileUrlsKeeping;
 }

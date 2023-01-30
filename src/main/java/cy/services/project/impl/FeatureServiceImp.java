@@ -55,6 +55,8 @@ public class FeatureServiceImp implements IFeatureService {
     ITaskService taskService;
     @Autowired
     ITaskRepository taskRepository;
+    @Autowired
+    IFileRepository iFileRepository;
 
 
     @Override
@@ -182,7 +184,12 @@ public class FeatureServiceImp implements IFeatureService {
         oldFeature.setTagList(newTagEntityList);
 
         //Clear old files
-        clearFileList(oldFeature);
+//        clearFileList(oldFeature);
+        if (model.getFileUrlsKeeping().size() > 0){
+            iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.FEATURE.name(), model.getId());
+        }else {
+            iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
+        }
         //Add new files
         List<MultipartFile> newFileList = model.getFiles();
         List<FileEntity> newFileEntityList = new ArrayList<>();
