@@ -347,10 +347,15 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                 }
 
-                if (bugEntity.getAttachFiles() != null && bugEntity.getAttachFiles().size() > 0)
-                    bugEntity.getAttachFiles().clear();
-                else {
-                    bugEntity.setAttachFiles(new ArrayList<>());
+//                if (bugEntity.getAttachFiles() != null && bugEntity.getAttachFiles().size() > 0)
+//                    bugEntity.getAttachFiles().clear();
+//                else {
+//                    bugEntity.setAttachFiles(new ArrayList<>());
+//                }
+                if (model.getFileUrlsKeeping().size() > 0){
+                    iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.BUG.name(), model.getId());
+                }else {
+                    iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
                 }
                 if (model.getFiles() != null && model.getFiles().length > 0) {
                     for (MultipartFile m : model.getFiles()) {
@@ -489,6 +494,15 @@ public class BugServiceImpl implements IRequestBugService {
                     bugEntity.setStatus(Const.status.DONE.name());
                     subTaskRepository.updateStatusSubTaskAfterAllBugDone(bugEntity.getSubTask().getId());
 //                    subTaskEntity.setStatus(Const.status.DONE.name());
+                    break;
+
+                case 4:
+                    // chuyển trạng thái sang pending
+                    bugEntity.setStatus(Const.status.PENDING.name());
+                    BugHistoryEntity bugHistoryEntity = new BugHistoryEntity();
+                    bugHistoryEntity.setStartDate(Date.from(Instant.now()));
+                    bugHistoryEntity.setIsPending(true);
+                    iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
                     break;
 
             }

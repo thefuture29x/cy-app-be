@@ -11,6 +11,7 @@ import cy.entities.project.*;
 import cy.models.UserModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.repositories.IUserRepository;
+import cy.repositories.project.IFileRepository;
 import cy.services.attendance.IPayRollService;
 import cy.services.attendance.IRequestAttendService;
 import cy.services.IUserService;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -96,8 +98,15 @@ public class TestController {
 
     @Autowired
     FileUploadProvider fileUploadProvider;
-    @PostMapping ("test-upload")
-    public String testUpLoadFile(MultipartFile file) throws IOException {
-        return fileUploadProvider.uploadFile("project",file);
+    @Autowired
+    IFileRepository iFileRepository;
+
+    @PostMapping ("test-delete-file")
+    public void testUpLoadFile(@RequestBody List<String> list) {
+        if(list.size() > 0){
+            iFileRepository.deleteFileExistInObject(list,Const.tableName.FEATURE.name(),2L);
+        }else{
+            iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(),2L);
+        }
     }
 }

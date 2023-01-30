@@ -304,11 +304,12 @@ public class ProjectServiceImpl implements IProjectService {
                 fileEntity.setFileName(fileName);
                 fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                 projectEntity.setAvatar(fileEntity);
-                projectEntity = iProjectRepository.save(projectEntity);
+//                projectEntity = iProjectRepository.save(projectEntity);
             } else {
                 if (projectModel.getAvatarUrl() != null) {
-                    FileEntity fileEntity = iFileRepository.findByLinkAndObjectId(projectModel.getAvatarUrl(), projectModel.getId());
-                    projectEntity.setAvatar(fileEntity);
+                    if(projectOriginal.getAvatar().getLink().equals(projectModel.getAvatarUrl())){
+                        projectEntity.setAvatar(projectOriginal.getAvatar());
+                    }
                 }
             }
 
