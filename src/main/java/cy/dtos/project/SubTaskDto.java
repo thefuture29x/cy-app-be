@@ -27,6 +27,7 @@ public class SubTaskDto {
     private Date startDate;
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
+    private boolean isDefault;
     private List<UserProjectDto> assignedUser;
     private List<FileDto> attachFileUrls;
     private List<TagDto> tagList;
@@ -42,6 +43,7 @@ public class SubTaskDto {
                 .status(entity.getStatus())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
+                .isDefault(entity.getIsDefault() != null ? entity.getIsDefault() : false)
                 .attachFileUrls(entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(FileDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagList(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto)

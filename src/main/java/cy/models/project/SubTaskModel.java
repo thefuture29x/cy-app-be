@@ -63,5 +63,5 @@ public class SubTaskModel {
     // Status for filter.
     private Const.status status;
     // Set default subtask.
-    private boolean isDefault;
+    private Boolean isDefault;
 }

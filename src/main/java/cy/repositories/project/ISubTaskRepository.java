@@ -64,4 +64,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
             "\tWHERE sub_task_id = ?1\n" +
             ")",nativeQuery = true)
     void updateStatusSubTaskAfterAllBugDone(Long id);
+
+    @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.task.id = :taskId")
+    List<SubTaskEntity> getByTaskId(@Param("taskId") Long taskId);
 }
