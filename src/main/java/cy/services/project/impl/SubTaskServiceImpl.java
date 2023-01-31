@@ -1,7 +1,6 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
 import cy.dtos.project.SubTaskDto;
 import cy.dtos.project.TagDto;
@@ -93,7 +92,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public SubTaskDto findById(Long id) {
         SubTaskDto subTaskDto = this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
-        if(subTaskDto != null){
+        if (subTaskDto != null) {
             // Get userAssigned list
             List<UserProjectEntity> userAssignedEntityList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_DEV.name());
             List<UserProjectDto> userAssignedDtoList = new ArrayList<>();
@@ -110,7 +109,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             // Convert TagRelationEntity to TagDto
             for (TagRelationEntity tagRelationEntity : tagRelationEntityList) {
                 TagDto tagDto = tagRepository.findById(tagRelationEntity.getIdTag()).map(TagDto::toDto).orElse(null);
-                if(tagDto != null){
+                if (tagDto != null) {
                     tagDtoList.add(tagDto);
                 }
             }
@@ -144,7 +143,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Allowed document file: .xlxs (Excel), .docx (Word), .pptx (Powerpoint), .pdf, .xml
         List<MultipartFile> attachFiles = model.getAttachFiles();
         List<FileEntity> fileEntityList = new ArrayList<>();
-        if(attachFiles != null && !attachFiles.isEmpty()){
+        if (attachFiles != null && !attachFiles.isEmpty()) {
             fileEntityList = this.validateFileTypeAllowed(attachFiles);
         }
 
@@ -186,7 +185,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
 
         // Check fileUrlsKeeping
-        if(modelUpdate.getFileUrlsKeeping() == null){
+        if (modelUpdate.getFileUrlsKeeping() == null) {
             throw new CustomHandleException(201);
         }
         // Copy current subTask to compare with new subTask
@@ -202,12 +201,12 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         // Delete attach file if it's url do not exist in fileUrlsKeeping
         List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.get().getId());
-        if(currentAttachedFiles != null && !currentAttachedFiles.isEmpty()){
+        if (currentAttachedFiles != null && !currentAttachedFiles.isEmpty()) {
             for (FileEntity fileEntity : currentAttachedFiles) {
-                    if(!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())){
-                        this.fileRepository.deleteByIdNative(fileEntity.getId());
-                        subTaskExisted.get().getAttachFiles().remove(fileEntity);
-                    }
+                if (!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())) {
+                    this.fileRepository.deleteByIdNative(fileEntity.getId());
+                    subTaskExisted.get().getAttachFiles().remove(fileEntity);
+                }
             }
         }
 
@@ -226,7 +225,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.get().setPriority(modelUpdate.getPriority().name());
 
         // Update default sub task
-        if(modelUpdate.getIsDefault()){
+        if (modelUpdate.getIsDefault()) {
             unsetDefaultSubTask(subTaskExisted.get().getTask().getId());
             subTaskExisted.get().setIsDefault(true);
         }
@@ -259,11 +258,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return subTaskDto;
     }
 
-    public void unsetDefaultSubTask(Long taskId){
+    public void unsetDefaultSubTask(Long taskId) {
         List<SubTaskEntity> subTaskEntityList = subTaskRepository.getByTaskId(taskId);
-        if(subTaskEntityList != null && !subTaskEntityList.isEmpty()){
+        if (subTaskEntityList != null && !subTaskEntityList.isEmpty()) {
             for (SubTaskEntity subTaskEntity : subTaskEntityList) {
-                if(subTaskEntity.getIsDefault() || subTaskEntity.getIsDefault() == null){
+                if (subTaskEntity.getIsDefault() || subTaskEntity.getIsDefault() == null) {
                     subTaskEntity.setIsDefault(false);
                     subTaskRepository.save(subTaskEntity);
                 }
@@ -374,7 +373,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<String> tagListSplit = Arrays.stream(tagList.split(",")).collect(Collectors.toList());
         Long tagId = null;
         for (String tag : tagListSplit) {
-            if(tag.length() == 0){
+            if (tag.length() == 0) {
                 continue;
             }
             // Tag must be unique
