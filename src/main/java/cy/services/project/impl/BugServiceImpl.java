@@ -1,6 +1,7 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
+import cy.dtos.project.AllBugDto;
 import cy.dtos.project.BugDto;
 import cy.dtos.project.TagDto;
 import cy.dtos.project.UserMetaDto;
@@ -603,6 +604,64 @@ public class BugServiceImpl implements IRequestBugService {
         BugDto bugDto = BugDto.entityToDto(bugEntity);
         //Lưu dữ liệu vào bảng BugHistory
         return bugDto;
+    }
+    @Autowired
+    IProjectRepository iProjectRepository;
+    @Autowired
+    IFeatureRepository iFeatureRepository;
+    @Autowired
+    ISubTaskRepository iSubTaskRepository;
+    @Override
+    public AllBugDto getAllBug(Long idProject) {
+        AllBugDto projectBugDto = new AllBugDto();
+        List<AllBugDto> allBugDtos = new ArrayList<>();
+        int countBugOfProject = 0;
+        for (FeatureEntity feature: iFeatureRepository.findByProjectId(idProject)) {
+            AllBugDto featureBugDto = new AllBugDto();
+            featureBugDto.setIdObject(feature.getId());
+            featureBugDto.setName(feature.getName());
+            featureBugDto.setCategory(Const.tableName.FEATURE.name());
+
+            List<TaskEntity> taskEntityList = iTaskRepository.findByFeatureId(feature.getId());
+            List<AllBugDto> listFeatureDto = new ArrayList<>();
+            int countBugOfFeature = 0;
+            for (TaskEntity task : taskEntityList) {
+                AllBugDto taskBugDto = new AllBugDto();
+                taskBugDto.setIdObject(task.getId());
+                taskBugDto.setName(task.getName());
+                taskBugDto.setCategory(Const.tableName.TASK.name());
+
+                List<SubTaskEntity> subTaskEntityList = iSubTaskRepository.getByTaskId(task.getId());
+                List<AllBugDto> listTaskDto = new ArrayList<>();
+                if (subTaskEntityList.size() > 0){
+                    int countBugOfTask = 0;
+                    for (SubTaskEntity subTaskEntity : subTaskEntityList){
+                        AllBugDto subTaskBugDto = new AllBugDto();
+                        subTaskBugDto.setIdObject(subTaskEntity.getId());
+                        subTaskBugDto.setName(subTaskEntity.getName());
+                        subTaskBugDto.setCategory(Const.tableName.SUBTASK.name());
+                        subTaskBugDto.setCountBug(iBugRepository.countAllBySubTask_IdAndIsDeleted(subTaskEntity.getId(),false));
+                        listTaskDto.add(subTaskBugDto);
+                        countBugOfTask += subTaskBugDto.getCountBug();
+                    }
+                    taskBugDto.setCountBug(countBugOfTask);
+                    taskBugDto.setChildDto(listTaskDto);
+                }else {
+                    taskBugDto.setCountBug(iBugRepository.countAllByTask_IdAndIsDeleted(task.getId(), false));
+                }
+                listFeatureDto.add(taskBugDto);
+                countBugOfFeature += taskBugDto.getCountBug();
+            }
+            featureBugDto.setCountBug(countBugOfFeature);
+            countBugOfProject += featureBugDto.getCountBug();
+            featureBugDto.setChildDto(listFeatureDto);
+            allBugDtos.add(featureBugDto);
+        }
+        projectBugDto.setIdObject(idProject);
+        projectBugDto.setCategory(Const.tableName.PROJECT.name());
+        projectBugDto.setChildDto(allBugDtos);
+        projectBugDto.setCountBug(countBugOfProject);
+        return projectBugDto;
     }
 
     @Override

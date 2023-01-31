@@ -110,14 +110,17 @@ public class FeatureServiceImp implements IFeatureService {
         //Add Files
         List<MultipartFile> files = model.getFiles();
         List<FileEntity> fileEntities = new ArrayList<>();
-        for (MultipartFile file : files
-        ) {
-            FileModel model1 = new FileModel();
-            model1.setFile(file);
+        if (files != null){
+            for (MultipartFile file : files
+            ) {
+                FileModel model1 = new FileModel();
+                model1.setFile(file);
 //            model1.setObjectId(entity.getId());
-            model1.setCategory(Const.tableName.FEATURE.name());
-            fileEntities.add(this.fileService.addEntity(model1));
+                model1.setCategory(Const.tableName.FEATURE.name());
+                fileEntities.add(this.fileService.addEntity(model1));
+            }
         }
+
         FeatureEntity entity = (FeatureEntity) FeatureEntity.builder().
                 startDate(model.getStartDate())
                 .endDate(model.getEndDate())
@@ -192,15 +195,17 @@ public class FeatureServiceImp implements IFeatureService {
 
         //Add new files
         List<MultipartFile> newFileList = model.getFiles();
-        List<FileEntity> newFileEntityList = new ArrayList<>();
-        newFileList.stream().forEach(x -> {
-            FileModel fileModel = new FileModel();
-            fileModel.setFile(x);
-            fileModel.setObjectId(oldFeature.getId());
-            fileModel.setCategory(Const.tableName.FEATURE.name());
-            newFileEntityList.add(this.fileService.addEntity(fileModel));
-        });
-        oldFeature.setAttachFiles(newFileEntityList);
+        if (newFileList != null){
+            newFileList.stream().forEach(x -> {
+                FileModel fileModel = new FileModel();
+                fileModel.setFile(x);
+                fileModel.setObjectId(oldFeature.getId());
+                fileModel.setCategory(Const.tableName.FEATURE.name());
+                oldFeature.getAttachFiles().add(this.fileService.addEntity(fileModel));
+
+            });
+        }
+
         clearDevTeam(oldFeature.getId());
         List<Long> currentAvailableDev = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
         List<Long> newDevTeam = model.getUids();
