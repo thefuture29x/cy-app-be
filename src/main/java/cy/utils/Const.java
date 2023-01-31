@@ -7,12 +7,55 @@ import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.lang.reflect.Modifier.PUBLIC;
 
 public class Const {
+    public enum tableName {
+        PROJECT,
+        FEATURE,
+        TASK,
+        SUBTASK,
+        BUG,
+        BUG_HISTORY,
+        FILE,
+        TAG,
+        HISTORY,
+        COMMENT,
+        USER_PROJECT,
+        TAG_RELATION,
+    }
+
+    public enum type {
+        TYPE_DEV,
+        TYPE_FOLLOWER,
+        TYPE_VIEWER,
+        TYPE_REVIEWER,
+
+    }
+
+    public enum status {
+        TO_DO,
+        IN_PROGRESS,
+        PENDING,
+        IN_REVIEW,
+        DONE,
+        FIX_BUG,
+    }
+
+    public enum priority {
+        CRITICAL,
+        HIGH,
+        MEDIUM,
+        LOW,
+    }
+
+
     /**
      * combine multiple list array into 1 list
      *
@@ -22,10 +65,13 @@ public class Const {
     public static Collection<?> combineMultipleArrays(Object[]... arrays) {
         Collection<Object> result = new ArrayList<>();
         for (Object[] array : arrays) {
-            Collections.addAll(result, array);
+            for (Object o : array) {
+                result.add(o);
+            }
         }
         return result;
     }
+
 
     /**
      * Copy properties from source
@@ -46,7 +92,8 @@ public class Const {
 
             if (!source.getClass().getSuperclass().getName().equals(Object.class.getName())) { // check if the class has super class is ProjectBaseEntity class
                 defaultFields = (List<Field>) Const.combineMultipleArrays(source.getClass().getDeclaredFields(), source.getClass().getSuperclass().getDeclaredFields());
-            } else defaultFields = (List<Field>) Const.combineMultipleArrays(source.getClass().getDeclaredFields());
+            } else
+                defaultFields = (List<Field>) Const.combineMultipleArrays(source.getClass().getDeclaredFields());
 
             // separate list and set field
             for (Field f : defaultFields) {
@@ -62,12 +109,15 @@ public class Const {
                 listTypeFs.forEach(f -> {
                     if (f.getModifiers() != 9 && f.getModifiers() != 10) {
                         try {
-                            if (f.getModifiers() != PUBLIC) f.setAccessible(true);
+                            if (f.getModifiers() != PUBLIC)
+                                f.setAccessible(true);
                             List list = (List) f.get(source);
 
-                            if (list != null) f.set(newObj, list.stream().collect(Collectors.toList()));
+                            if (list != null)
+                                f.set(newObj, list.stream().collect(Collectors.toList()));
 
-                            if (f.getModifiers() != PUBLIC) f.setAccessible(false);
+                            if (f.getModifiers() != PUBLIC)
+                                f.setAccessible(false);
 
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
@@ -82,10 +132,13 @@ public class Const {
                 setTypeFs.forEach(f -> {
                     if (f.getModifiers() != 9 && f.getModifiers() != 10) {
                         try {
-                            if (f.getModifiers() != PUBLIC) f.setAccessible(true);
+                            if (f.getModifiers() != PUBLIC)
+                                f.setAccessible(true);
                             Set setL = (Set) f.get(source);
-                            if (setL != null) f.set(newObj, setL.stream().collect(Collectors.toSet()));
-                            if (f.getModifiers() != PUBLIC) f.setAccessible(false);
+                            if (setL != null)
+                                f.set(newObj, setL.stream().collect(Collectors.toSet()));
+                            if (f.getModifiers() != PUBLIC)
+                                f.setAccessible(false);
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
                             throw new CustomHandleException(6);
@@ -107,9 +160,9 @@ public class Const {
     public static void main(String[] args) {
         ProjectEntity project = new ProjectEntity();
         List<FileEntity> files = new ArrayList<>();
-        files.add(FileEntity.builder().id(1L).build());
-        files.add(FileEntity.builder().id(2L).build());
-        files.add(FileEntity.builder().id(3L).build());
+        files.add(FileEntity.builder().id(1l).build());
+        files.add(FileEntity.builder().id(2l).build());
+        files.add(FileEntity.builder().id(3l).build());
         project.setAttachFiles(files);
 
         ProjectEntity project2 = (ProjectEntity) copy(project);
@@ -118,24 +171,5 @@ public class Const {
         System.out.println("project2 = " + project2.getAttachFiles().size());
         System.out.println("project = " + project.getAttachFiles().size());
 
-    }
-
-
-    public enum tableName {
-        PROJECT, FEATURE, TASK, SUBTASK, BUG, BUG_HISTORY, FILE, TAG, HISTORY, COMMENT, USER_PROJECT, TAG_RELATION,
-    }
-
-
-    public enum type {
-        TYPE_DEV, TYPE_FOLLOWER, TYPE_VIEWER, TYPE_REVIEWER,
-
-    }
-
-    public enum status {
-        TO_DO, IN_PROGRESS, PENDING, IN_REVIEW, DONE, FIX_BUG,
-    }
-
-    public enum priority {
-        CRITICAL, HIGH, MEDIUM, LOW,
     }
 }

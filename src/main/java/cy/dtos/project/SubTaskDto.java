@@ -1,5 +1,6 @@
 package cy.dtos.project;
 
+import cy.dtos.UserDto;
 import cy.entities.project.SubTaskEntity;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,16 +23,16 @@ public class SubTaskDto {
     private String priority;
     private String createBy;
     private String status;
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     private boolean isDefault;
     private List<UserProjectDto> assignedUser;
     private List<FileDto> attachFileUrls;
     private List<TagDto> tagList;
 
-    public static SubTaskDto toDto(SubTaskEntity entity) {
+    public static SubTaskDto toDto(SubTaskEntity entity){
         return SubTaskDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
