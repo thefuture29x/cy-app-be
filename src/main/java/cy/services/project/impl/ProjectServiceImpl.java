@@ -200,6 +200,11 @@ public class ProjectServiceImpl implements IProjectService {
     @Override
     public ProjectDto updateProject(ProjectModel projectModel) {
         try {
+            if (projectModel.getFileUrlsKeeping() != null){
+                iFileRepository.deleteFileExistInObject(projectModel.getFileUrlsKeeping(), Const.tableName.PROJECT.name(), projectModel.getId());
+            }else {
+                iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
+            }
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
             ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
             if (projectEntity == null)
@@ -312,19 +317,6 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-
-
-//            if (projectEntity.getAttachFiles() != null && projectEntity.getAttachFiles().size() > 0)
-//                projectEntity.getAttachFiles().clear();
-//            else {
-//                projectEntity.setAttachFiles(new ArrayList<>());
-//            }
-            if (projectModel.getFileUrlsKeeping() != null){
-                iFileRepository.deleteFileExistInObject(projectModel.getFileUrlsKeeping(), Const.tableName.PROJECT.name(), projectModel.getId());
-            }else {
-                iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
-            }
-            projectEntity.getAttachFiles().clear();
 
             if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
                 for (MultipartFile m : projectModel.getFiles()) {

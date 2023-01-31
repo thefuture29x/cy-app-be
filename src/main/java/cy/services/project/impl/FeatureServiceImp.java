@@ -156,6 +156,13 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
+        //Clear old files
+//        clearFileList(oldFeature);
+        if (model.getFileUrlsKeeping() != null){
+            iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.FEATURE.name(), model.getId());
+        }else {
+            iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
+        }
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
         FeatureEntity featureOriginal = (FeatureEntity) Const.copy(oldFeature);
         Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), oldFeature.getProject().getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
@@ -183,13 +190,6 @@ public class FeatureServiceImp implements IFeatureService {
         }
         oldFeature.setTagList(newTagEntityList);
 
-        //Clear old files
-//        clearFileList(oldFeature);
-        if (model.getFileUrlsKeeping() != null){
-            iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.FEATURE.name(), model.getId());
-        }else {
-            iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
-        }
         //Add new files
         List<MultipartFile> newFileList = model.getFiles();
         List<FileEntity> newFileEntityList = new ArrayList<>();

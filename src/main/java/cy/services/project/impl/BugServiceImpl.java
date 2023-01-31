@@ -247,6 +247,11 @@ public class BugServiceImpl implements IRequestBugService {
         BugEntity bug = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
         if (bug.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
             try {
+                if (model.getFileUrlsKeeping() != null){
+                    iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.BUG.name(), model.getId());
+                }else {
+                    iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
+                }
                 BugEntity bugEntity = iBugRepository.findById(model.getId()).orElse(null);
                 BugEntity bugEntityOriginal = (BugEntity) Const.copy(bugEntity);
                 if (bugEntity == null)
@@ -347,16 +352,6 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                 }
 
-//                if (bugEntity.getAttachFiles() != null && bugEntity.getAttachFiles().size() > 0)
-//                    bugEntity.getAttachFiles().clear();
-//                else {
-//                    bugEntity.setAttachFiles(new ArrayList<>());
-//                }
-                if (model.getFileUrlsKeeping() != null){
-                    iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.BUG.name(), model.getId());
-                }else {
-                    iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
-                }
                 bugEntity.getAttachFiles().clear();
                 if (model.getFiles() != null && model.getFiles().length > 0) {
                     for (MultipartFile m : model.getFiles()) {
