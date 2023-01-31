@@ -102,11 +102,7 @@ public class TestController {
     IFileRepository iFileRepository;
 
     @PostMapping ("test-delete-file")
-    public void testUpLoadFile(@RequestBody List<String> list) {
-        if(list.size() > 0){
-            iFileRepository.deleteFileExistInObject(list,Const.tableName.FEATURE.name(),2L);
-        }else{
-            iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(),2L);
-        }
+    public String testUpLoadFile(MultipartFile file) throws IOException {
+        return fileUploadProvider.uploadFile("avatar",file);
     }
 }

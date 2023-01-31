@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -26,6 +27,7 @@ public class BugHistoryModel {
 
     private MultipartFile[] files;
     private String detail;
+    private List<String> fileUrlsKeeping;
 
 
     public static BugHistoryEntity modelToEntity(BugHistoryModel model) {

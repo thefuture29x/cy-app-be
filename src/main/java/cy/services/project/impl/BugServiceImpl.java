@@ -352,11 +352,12 @@ public class BugServiceImpl implements IRequestBugService {
 //                else {
 //                    bugEntity.setAttachFiles(new ArrayList<>());
 //                }
-                if (model.getFileUrlsKeeping().size() > 0){
+                if (model.getFileUrlsKeeping() != null){
                     iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.BUG.name(), model.getId());
                 }else {
                     iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
                 }
+                bugEntity.getAttachFiles().clear();
                 if (model.getFiles() != null && model.getFiles().length > 0) {
                     for (MultipartFile m : model.getFiles()) {
                         if (!m.isEmpty()) {

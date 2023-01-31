@@ -26,6 +26,7 @@ public class ProjectModel {
     private String name;
     private String description;
     private MultipartFile[] files;
+    private List<String> fileUrlsKeeping;
     private MultipartFile avatar;
     private String avatarUrl;
     private Boolean isDefault;
