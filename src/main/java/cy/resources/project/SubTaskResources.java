@@ -18,8 +18,7 @@ public class SubTaskResources {
     @Autowired
     ISubTaskService iSubTaskService;
 
-    @ApiOperation(value = "Thêm mới subtask.", notes = "- Thời gian phải được gửi theo định dạng yyyy-MM-dd HH:mm:ss.\n" +
-            "- Bắt buộc phải gửi thuộc tính taskId.")
+    @ApiOperation(value = "Thêm mới subtask.", notes = "- Thời gian phải được gửi theo định dạng yyyy-MM-dd HH:mm:ss.\n" + "- Bắt buộc phải gửi thuộc tính taskId.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE", "ROLE_LEADER", "ROLE_MANAGER", "ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/add")
     public Object add(@ModelAttribute SubTaskModel subTaskModel) {
@@ -58,21 +57,15 @@ public class SubTaskResources {
     @ApiOperation(value = "Tìm tất cả subtask theo task id (có phân trang).", notes = "Nếu muốn tìm kiếm thì gửi kèm từ khoá (keyword).")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE", "ROLE_LEADER", "ROLE_MANAGER", "ROLE_ADMINISTRATOR"})
     @GetMapping(value = "/find-all-by-task-id/{id}")
-    public ResponseDto findAllByTaskId(@PathVariable Long id,
-                                       @RequestParam(value = "keyword", defaultValue = "", required = false) String keyword,
-                                       Pageable pageable) {
+    public ResponseDto findAllByTaskId(@PathVariable Long id, @RequestParam(value = "keyword", defaultValue = "", required = false) String keyword, Pageable pageable) {
         Page<SubTaskDto> result = iSubTaskService.findAllByTaskId(id, keyword, pageable);
         return ResponseDto.of(result);
     }
 
-    @ApiOperation(value = "Lọc subtask theo trạng thái và/hoặc khoảng thời gian (có phân trang).",
-            notes = "- Có thể không gửi 1 trong 2 thuộc tính thời gian bắt đầu, thời gian kết thúc.\n" +
-                    "- Thời gian phải được gửi theo định dạng yyyy-MM-dd HH:mm:ss.\n" +
-                    "- Bắt buộc phải gửi thuộc tính taskId.")
+    @ApiOperation(value = "Lọc subtask theo trạng thái và/hoặc khoảng thời gian (có phân trang).", notes = "- Có thể không gửi 1 trong 2 thuộc tính thời gian bắt đầu, thời gian kết thúc.\n" + "- Thời gian phải được gửi theo định dạng yyyy-MM-dd HH:mm:ss.\n" + "- Bắt buộc phải gửi thuộc tính taskId.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE", "ROLE_LEADER", "ROLE_MANAGER", "ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/filter")
-    public ResponseDto filter(@RequestBody SubTaskModel subTaskModel,
-                              Pageable pageable) {
+    public ResponseDto filter(@RequestBody SubTaskModel subTaskModel, Pageable pageable) {
         Page<SubTaskDto> result = iSubTaskService.filter(subTaskModel, pageable);
         return ResponseDto.of(result);
     }
