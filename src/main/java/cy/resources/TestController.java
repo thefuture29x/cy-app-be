@@ -11,6 +11,7 @@ import cy.entities.project.*;
 import cy.models.UserModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.repositories.IUserRepository;
+import cy.repositories.project.IBugRepository;
 import cy.repositories.project.IFileRepository;
 import cy.services.attendance.IPayRollService;
 import cy.services.attendance.IRequestAttendService;
@@ -100,9 +101,11 @@ public class TestController {
     FileUploadProvider fileUploadProvider;
     @Autowired
     IFileRepository iFileRepository;
+    @Autowired
+    IBugRepository iBugRepository;
 
-    @PostMapping ("test-delete-file")
-    public String testUpLoadFile(MultipartFile file) throws IOException {
-        return fileUploadProvider.uploadFile("avatar",file);
+    @PostMapping ("test-count-bug")
+    public int testUpLoadFile() {
+        return iBugRepository.countAllByTask_IdAndIsDeleted(15L,false);
     }
 }
