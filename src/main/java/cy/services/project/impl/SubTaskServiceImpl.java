@@ -477,7 +477,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         Long taskId = subTaskModel.getTaskId();
         Date startDate = subTaskModel.getStartDate();
         Date endDate = subTaskModel.getEndDate();
-        String status = subTaskModel.getStatus().name();
+        String status = subTaskModel.getStatus() != null ? subTaskModel.getStatus().name() : null;
         boolean isTaskExist = taskRepository.existsById(taskId);
         if (!isTaskExist) {
             throw new CustomHandleException(192);
