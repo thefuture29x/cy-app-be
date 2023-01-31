@@ -352,7 +352,7 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                 }
 
-                bugEntity.getAttachFiles().clear();
+//                bugEntity.getAttachFiles().clear();
                 if (model.getFiles() != null && model.getFiles().length > 0) {
                     for (MultipartFile m : model.getFiles()) {
                         if (!m.isEmpty()) {
