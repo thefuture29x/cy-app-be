@@ -1,5 +1,6 @@
 package cy.dtos.project;
 
+import cy.dtos.UserDto;
 import cy.entities.project.SubTaskEntity;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,6 +32,17 @@ public class SubTaskDto {
     private List<FileDto> attachFileUrls;
     private List<TagDto> tagList;
 
+    // Bug list
+    private List<BugDto> bugList;
+
+    // Following user list
+    private List<UserDto> followingUserList;
+
+    // Watching user list
+    private List<UserDto> watchingUserList;
+
+    // Developer list
+    private List<UserDto> developerUserList;
     public static SubTaskDto toDto(SubTaskEntity entity) {
         return SubTaskDto.builder()
                 .id(entity.getId())

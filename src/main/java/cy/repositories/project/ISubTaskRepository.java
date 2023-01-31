@@ -67,4 +67,12 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
 
     @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.task.id = :taskId")
     List<SubTaskEntity> getByTaskId(@Param("taskId") Long taskId);
+
+    @Query(value = "SELECT p.id\n" +
+            "FROM tbl_projects p \n" +
+            "INNER JOIN tbl_features f ON p.id = f.project_id\n" +
+            "INNER JOIN tbl_tasks t ON f.id = t.feature_id \n" +
+            "INNER JOIN tbl_sub_tasks st ON t.id = st.task_id\n" +
+            "WHERE st.id = :subTaskId",nativeQuery = true)
+    Long getProjectIdBySubTaskId(@Param("subTaskId") Long subTaskId);
 }

@@ -19,4 +19,7 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
 
     @Query(value = "DELETE FROM tbl_user_projects WHERE id = :deletingId", nativeQuery = true)
     void deleteByIdNative(Long deletingId);
+
+    @Query("SELECT up.idUser FROM UserProjectEntity up WHERE up.category = ?1 AND up.objectId = ?2 AND up.type = ?3")
+    List<Long> getIdByCategoryAndObjectIdAndType(String category, Long objectId, String type);
 }

@@ -1,10 +1,8 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
-import cy.dtos.project.FileDto;
-import cy.dtos.project.SubTaskDto;
-import cy.dtos.project.TagDto;
-import cy.dtos.project.UserProjectDto;
+import cy.dtos.UserDto;
+import cy.dtos.project.*;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
@@ -93,16 +91,6 @@ public class SubTaskServiceImpl implements ISubTaskService {
     public SubTaskDto findById(Long id) {
         SubTaskDto subTaskDto = this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
         if (subTaskDto != null) {
-            // Get userAssigned list
-            List<UserProjectEntity> userAssignedEntityList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_DEV.name());
-            List<UserProjectDto> userAssignedDtoList = new ArrayList<>();
-            // Convert Entity to Dto
-            for (UserProjectEntity userAssignedEntity : userAssignedEntityList) {
-                UserProjectDto userProjectDto = UserProjectDto.toDto(userAssignedEntity);
-                userAssignedDtoList.add(userProjectDto);
-            }
-            subTaskDto.setAssignedUser(userAssignedDtoList);
-
             // Get tag list
             List<TagRelationEntity> tagRelationEntityList = tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskDto.getId());
             List<TagDto> tagDtoList = new ArrayList<>();
@@ -123,8 +111,75 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 fileDtoList.add(FileDto.toDto(fileEntity));
             }
             subTaskDto.setAttachFileUrls(fileDtoList);
+
+            // Set bug list
+            setBugList(subTaskDto);
+
+            // Set following user list then set watching user list and set developer user list
+            setFollowingUserList(subTaskDto);
         }
         return subTaskDto;
+    }
+
+    private void setBugList(SubTaskDto subTaskDto) {
+        List<BugEntity> bugEntityList = bugRepository.getAllBugBySubTaskId(subTaskDto.getId());
+        List<BugDto> bugDtoList = new ArrayList<>();
+        // Convert Entity to Dto
+        for (BugEntity bugEntity : bugEntityList) {
+            bugDtoList.add(new BugDto(bugEntity));
+        }
+        subTaskDto.setBugList(bugDtoList);
+    }
+
+    private void setFollowingUserList(SubTaskDto subTaskDto) {
+        Long projectIdBySubTaskId = subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId());
+        List<UserDto> userFollowingDtoList = new ArrayList<>();
+        if (projectIdBySubTaskId != null) {
+            // Collect id of user following
+            List<Long> userFollowingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectIdBySubTaskId, Const.type.TYPE_FOLLOWER.name());
+            // Find user entity by id
+            List<UserEntity> userFollowingEntityList = userRepository.findAllById(userFollowingIdList);
+            // Convert Entity to Dto
+            for (UserEntity userFollowingEntity : userFollowingEntityList) {
+                userFollowingDtoList.add(UserDto.toDto(userFollowingEntity));
+            }
+        }
+        subTaskDto.setFollowingUserList(userFollowingDtoList);
+
+        // Set watching (viewer) user list
+        setWatchingUserList(subTaskDto, projectIdBySubTaskId);
+
+        // Set developer user list
+        setDeveloperUserList(subTaskDto);
+    }
+
+    private void setWatchingUserList(SubTaskDto subTaskDto, Long projectIdBySubTaskId) {
+        List<UserDto> userWatchingDtoList = new ArrayList<>();
+        if (projectIdBySubTaskId != null) {
+            // Collect id of user watching (viewer)
+            List<Long> userWatchingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectIdBySubTaskId, Const.type.TYPE_VIEWER.name());
+            // Find user entity by id
+            List<UserEntity> userFollowingEntityList = userRepository.findAllById(userWatchingIdList);
+            // Convert Entity to Dto
+            for (UserEntity userWatchingEntity : userFollowingEntityList) {
+                userWatchingDtoList.add(UserDto.toDto(userWatchingEntity));
+            }
+        }
+        subTaskDto.setWatchingUserList(userWatchingDtoList);
+    }
+
+    private void setDeveloperUserList(SubTaskDto subTaskDto) {
+        List<UserDto> userAssigningDtoList = new ArrayList<>();
+        // Collect id of user assigning
+        List<Long> userAssigningIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
+                subTaskDto.getId(), Const.type.TYPE_DEV.name());
+        // Find user entity by id
+        List<UserEntity> userFollowingEntityList = userRepository.findAllById(userAssigningIdList);
+        // Convert Entity to Dto
+        for (UserEntity userWatchingEntity : userFollowingEntityList) {
+            userAssigningDtoList.add(UserDto.toDto(userWatchingEntity));
+        }
+        subTaskDto.setDeveloperUserList(userAssigningDtoList);
     }
 
     @Override
