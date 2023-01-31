@@ -185,7 +185,7 @@ public class FeatureServiceImp implements IFeatureService {
 
         //Clear old files
 //        clearFileList(oldFeature);
-        if (model.getFileUrlsKeeping().size() > 0){
+        if (model.getFileUrlsKeeping() != null){
             iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.FEATURE.name(), model.getId());
         }else {
             iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());

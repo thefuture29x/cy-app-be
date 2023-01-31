@@ -186,7 +186,7 @@ public class ProjectServiceImpl implements IProjectService {
                         fileEntity.setCategory(Const.tableName.PROJECT.name());
                         fileEntity.setUploadedBy(userEntity);
                         fileEntity.setObjectId(projectEntity.getId());
-                        iFileRepository.save(fileEntity);
+                        iFileRepository.saveAndFlush(fileEntity);
                     }
                 }
             }
@@ -314,11 +314,18 @@ public class ProjectServiceImpl implements IProjectService {
             }
 
 
-            if (projectEntity.getAttachFiles() != null && projectEntity.getAttachFiles().size() > 0)
-                projectEntity.getAttachFiles().clear();
-            else {
-                projectEntity.setAttachFiles(new ArrayList<>());
+//            if (projectEntity.getAttachFiles() != null && projectEntity.getAttachFiles().size() > 0)
+//                projectEntity.getAttachFiles().clear();
+//            else {
+//                projectEntity.setAttachFiles(new ArrayList<>());
+//            }
+            if (projectModel.getFileUrlsKeeping() != null){
+                iFileRepository.deleteFileExistInObject(projectModel.getFileUrlsKeeping(), Const.tableName.PROJECT.name(), projectModel.getId());
+            }else {
+                iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
             }
+            projectEntity.getAttachFiles().clear();
+
             if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
                 for (MultipartFile m : projectModel.getFiles()) {
                     if (!m.isEmpty()) {
