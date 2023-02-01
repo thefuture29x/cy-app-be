@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ISubTaskService extends IBaseService<SubTaskEntity, SubTaskDto, SubTaskModel, Long> {
-    boolean changIsDeleteById(Long id);
+    boolean softDeleteById(Long id);
 
     Page<SubTaskDto> findAllByProjectId(Long id, Pageable pageable);
 
