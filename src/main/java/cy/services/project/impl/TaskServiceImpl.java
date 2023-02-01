@@ -234,14 +234,17 @@ public class TaskServiceImpl implements ITaskService {
 
         // save file
         List<String> fileAfterSave = new ArrayList<>();
-        for (MultipartFile file : model.getFiles()) {
-            FileModel fileModel = new FileModel();
-            fileModel.setFile(file);
-            fileModel.setObjectId(taskEntity.getId());
-            fileModel.setCategory(Const.tableName.TASK.name());
-            FileDto fileAfterSaveZ = fileService.add(fileModel);
-            fileAfterSave.add(fileAfterSaveZ.getLink());
+        if (model.getFiles() != null){
+            for (MultipartFile file : model.getFiles()) {
+                FileModel fileModel = new FileModel();
+                fileModel.setFile(file);
+                fileModel.setObjectId(taskEntity.getId());
+                fileModel.setCategory(Const.tableName.TASK.name());
+                FileDto fileAfterSaveZ = fileService.add(fileModel);
+                fileAfterSave.add(fileAfterSaveZ.getLink());
+            }
         }
+
         TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskEntity));
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
