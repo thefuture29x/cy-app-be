@@ -37,7 +37,7 @@ public interface IFileRepository extends JpaRepository<FileEntity, Long>, JpaSpe
             "?1",nativeQuery = true)
     void deleteFileExistInObject(List<String> listFile, String category, Long objectId);
     @Modifying
-    @Transactional
+//    @Transactional
     @Query(value = "DELETE FROM `tbl_files` WHERE category = ?1 AND object_id = ?2",nativeQuery = true)
     void deleteAllByCategoryAndObjectId(String category, Long objectId);
 
