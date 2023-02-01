@@ -21,6 +21,7 @@ public class BugModel {
     private String description;
     private Boolean isDefault;
     private MultipartFile[] files;
+    private List<String> fileUrlsKeeping;
     private List<TagModel> tags;
     private List<UserProjectModel> reviewerList;
     private List<UserProjectModel> responsibleList;

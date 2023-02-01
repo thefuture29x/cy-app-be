@@ -2,6 +2,7 @@ package cy.services.project.impl;
 
 import cy.dtos.project.BugHistoryDto;
 import cy.dtos.project.FileDto;
+import cy.entities.project.BugEntity;
 import cy.entities.project.BugHistoryEntity;
 import cy.entities.project.FileEntity;
 import cy.models.project.BugHistoryModel;
@@ -78,17 +79,16 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setEndDate(null);
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
-//        List<String> fileAfterSave = new ArrayList<>();
-        HashMap<String,Date> fileAfterSave = new HashMap<>();
         for (MultipartFile file : model.getFiles()) {
             FileModel fileModel = new FileModel();
             fileModel.setFile(file);
             fileModel.setObjectId(bugHistoryEntityAfterSave.getId());
             fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
-            FileDto fileAfterSaveZ = iFileService.add(fileModel);
-            fileAfterSave.put(fileAfterSaveZ.getLink(),fileAfterSaveZ.getCreatedDate());
+            iFileService.add(fileModel);
         }
-        bugHistoryEntityAfterSave.setAttachFiles(fileAfterSave);
+        BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
+        bugEntity.setStatus(Const.status.TO_DO.name());
+        iBugRepository.save(bugEntity);
         return bugHistoryEntityAfterSave;
     }
 
@@ -101,8 +101,12 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
     public BugHistoryDto update(BugHistoryModel model) {
 
         // delete old file
-        iFileRepository.deleteByCategoryAndObjectId(Const.tableName.BUG_HISTORY.name(), model.getId());
-
+//        iFileRepository.deleteByCategoryAndObjectId(Const.tableName.BUG_HISTORY.name(), model.getId());
+        if (model.getFileUrlsKeeping() != null){
+            iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.BUG_HISTORY.name(), model.getId());
+        }else {
+            iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.BUG_HISTORY.name(), model.getId());
+        }
         // save file
         if(model.getFiles( ) != null && model.getFiles().length > 0){
             for (MultipartFile file : model.getFiles()) {

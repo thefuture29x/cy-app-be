@@ -3,6 +3,9 @@ package cy.services.project;
 import cy.dtos.project.ProjectDto;
 import cy.models.project.ProjectModel;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.parameters.P;
+
+import java.util.List;
 
 public interface IProjectService {
     ProjectDto findById(Long id);

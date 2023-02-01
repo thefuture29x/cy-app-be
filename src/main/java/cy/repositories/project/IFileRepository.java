@@ -1,7 +1,6 @@
 package cy.repositories.project;
 
 import cy.entities.project.FileEntity;
-import cy.entities.project.TagRelationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
-import java.io.File;
 import java.util.List;
 
 @Repository
@@ -31,4 +29,17 @@ public interface IFileRepository extends JpaRepository<FileEntity, Long>, JpaSpe
     @Transactional
     @Query(value = "DELETE FROM `tbl_files` WHERE id = :deletingId ", nativeQuery = true)
     void deleteByIdNative(Long deletingId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM `tbl_files`\n" +
+            "WHERE category = ?2 AND object_id = ?3 AND link NOT IN " +
+            "?1",nativeQuery = true)
+    void deleteFileExistInObject(List<String> listFile, String category, Long objectId);
+    @Modifying
+//    @Transactional
+    @Query(value = "DELETE FROM `tbl_files` WHERE category = ?1 AND object_id = ?2",nativeQuery = true)
+    void deleteAllByCategoryAndObjectId(String category, Long objectId);
+
+
 }

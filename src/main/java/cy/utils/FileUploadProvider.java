@@ -44,13 +44,13 @@ public class FileUploadProvider {
         StringBuilder checkFileName = new StringBuilder(folder);
         checkFileName.append(file.getOriginalFilename());
         if (isFileExist(checkFileName.toString())) { //Check if file exist, make a copy with increase prefix
-            int i = 1;
-            while (true) {
+//            int i = 1;
+//            while (true) {
                 checkFileName.setLength(0);
-                checkFileName.append(folder).append(i++).append(file.getOriginalFilename());
-                if (!isFileExist(checkFileName.toString()))
-                    break;
-            }
+                checkFileName.append(folder).append(file.getOriginalFilename());
+//                if (!isFileExist(checkFileName.toString()))
+//                    break;
+//            }
         }
         String filePath = checkFileName.toString();
         s3Client.putObject(this.bucket, filePath, file.getInputStream(), null);
@@ -61,13 +61,12 @@ public class FileUploadProvider {
         StringBuilder checkFileName = new StringBuilder(folder);
         checkFileName.append(file.getSubmittedFileName());
         if (isFileExist(checkFileName.toString())) { //Check if file exist, make a copy with increase prefix
-            int i = 1;
-            while (true) {
+//            while (true) {
                 checkFileName.setLength(0);
-                checkFileName.append(folder).append(i++).append(file.getSubmittedFileName());
-                if (!isFileExist(file.toString()))
-                    break;
-            }
+                checkFileName.append(folder).append(file.getSubmittedFileName());
+//                if (!isFileExist(file.toString()))
+//                    break;
+//            }
         }
         String filePath = checkFileName.toString();
         s3Client.putObject(this.bucket, filePath, file.getInputStream(), null);
@@ -127,7 +126,7 @@ public class FileUploadProvider {
     public AmazonS3ClientBuilder amazonS3ClientBuilder() {
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(credentialsProvider())
-                .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(25000).withMaxConnections(200))
+                .withClientConfiguration(new ClientConfiguration().withConnectionTimeout(25000).withMaxConnections(1000))
                 .withRegion(this.region);
     }
 

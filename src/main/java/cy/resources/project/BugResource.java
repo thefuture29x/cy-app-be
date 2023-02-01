@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class BugResource {
     @Autowired
     BugServiceImpl bugService;
+
     @PostMapping(value = "/create")
     public ResponseDto create( BugModel bugModel) {
         return ResponseDto.of(bugService.add(bugModel));
@@ -30,6 +31,11 @@ public class BugResource {
         return ResponseDto.of(bugService.deleteById(id));
     }
 
+    @DeleteMapping(value = "/deleteFile")
+    public ResponseDto deleteFile(@RequestParam(name = "idFile")Long idFile ,@RequestParam(name = "id")Long id) {
+        return ResponseDto.of(bugService.deleteOnlyFile(idFile,id));
+    }
+
     @PutMapping(value = "/updateStatusSubTaskToBug")
     public ResponseDto updateStatusSubTaskToBug(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
         return ResponseDto.of(bugService.updateStatusSubTaskToBug(id,status));
@@ -45,6 +51,10 @@ public class BugResource {
     @PostMapping(value = "/findBypage")
     public ResponseDto findBypage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody BugModel bugModel) {
         return ResponseDto.of(bugService.findByPage(pageIndex,pageSize,bugModel));
+    }
+    @GetMapping(value = "getAllBug")
+    public ResponseDto getAllBug(@RequestParam(name = "id") Long idProject){
+        return ResponseDto.of(bugService.getAllBug(idProject));
     }
 
 }

@@ -23,4 +23,9 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
 
     @Query(value = "select * from tbl_bugs where sub_task_id = ?1", nativeQuery = true)
     List<BugEntity> getAllBugBySubTaskId(Long subtaskId);
+
+    Integer countAllBySubTask_IdAndIsDeleted(Long id, Boolean isDelete);
+    Integer countAllByTask_IdAndIsDeleted(Long id, Boolean isDelete);
+
+
 }

@@ -1,6 +1,5 @@
 package cy.repositories.project;
 
-import cy.dtos.project.FeatureDto;
 import cy.entities.project.FeatureEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +25,9 @@ public interface IFeatureRepository extends JpaRepository<FeatureEntity,Long>, J
     Page<FeatureEntity> findAll(Specification<FeatureEntity> specification, Pageable pageable);
 
     Page<FeatureEntity> findAllByProject_Id(Long id, Pageable pageable);
+
+    @Query(value = "UPDATE `tbl_features` SET status =?1 WHERE id=?2", nativeQuery = true)
+    List<FeatureEntity> updateStatusFeature(String status,Long id);
 
 
 }
