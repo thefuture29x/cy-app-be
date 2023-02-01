@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
@@ -56,4 +57,7 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
             "\tWHERE task_id = ?1 \n" +
             ")",nativeQuery = true)
     void updateStatusTaskAfterAllBugDone(Long id);
+
+    @Query(value = "SELECT t FROM TaskEntity t WHERE t.id = :id AND t.isDeleted = false")
+    TaskEntity findByIdAndIsDeletedFalse(@Param("id") Long id);
 }

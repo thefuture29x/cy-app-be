@@ -35,35 +35,26 @@ import java.util.stream.Collectors;
 public class SubTaskServiceImpl implements ISubTaskService {
     @Autowired
     IUserRepository userRepository;
-
     @Autowired
     ITagRepository tagRepository;
-
     @Autowired
     ITagRelationRepository tagRelationRepository;
-
     @Autowired
     ITaskRepository taskRepository;
-
     @Autowired
     ISubTaskRepository subTaskRepository;
-
     @Autowired
     IFileRepository fileRepository;
-
     @Autowired
     IUserProjectRepository userProjectRepository;
-
     @Autowired
     FileUploadProvider fileUploadProvider;
     @Autowired
     IBugRepository bugRepository;
     @Autowired
     IRequestBugService bugService;
-
     @Autowired
     IHistoryLogService iHistoryLogService;
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -89,8 +80,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto findById(Long id) {
-        SubTaskDto subTaskDto = this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
-        if (subTaskDto != null) {
+        SubTaskEntity subTaskEntity = this.subTaskRepository.findByIdAndIsDeletedFalse(id);
+        SubTaskDto subTaskDto = new SubTaskDto();
+        if (subTaskEntity != null) {
+            subTaskDto = SubTaskDto.toDto(subTaskEntity);
             // Get tag list
             List<TagRelationEntity> tagRelationEntityList = tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskDto.getId());
             List<TagDto> tagDtoList = new ArrayList<>();
@@ -234,8 +227,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
-        Optional<SubTaskEntity> subTaskExisted = this.subTaskRepository.findById(modelUpdate.getId());
-        if (subTaskExisted.isEmpty()) {
+        SubTaskEntity subTaskExisted = this.subTaskRepository.findByIdAndIsDeletedFalse(modelUpdate.getId());
+        if (subTaskExisted == null) {
             throw new CustomHandleException(197);
         }
 
@@ -243,8 +236,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (modelUpdate.getFileUrlsKeeping() == null) {
             throw new CustomHandleException(201);
         }
+
         // Copy current subTask to compare with new subTask
-        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted.get());
+        SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted);
         List<Object> objUpdateList = this.checkIdAndDate(modelUpdate);
         List<FileEntity> fileEntityList = new ArrayList<>();
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objUpdateList.get(1);
@@ -255,12 +249,12 @@ public class SubTaskServiceImpl implements ISubTaskService {
 //        }
 
         // Delete attach file if it's url do not exist in fileUrlsKeeping
-        List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.get().getId());
+        List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.getId());
         if (currentAttachedFiles != null && !currentAttachedFiles.isEmpty()) {
             for (FileEntity fileEntity : currentAttachedFiles) {
                 if (!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())) {
                     this.fileRepository.deleteByIdNative(fileEntity.getId());
-                    subTaskExisted.get().getAttachFiles().remove(fileEntity);
+                    subTaskExisted.getAttachFiles().remove(fileEntity);
                 }
             }
         }
@@ -273,19 +267,19 @@ public class SubTaskServiceImpl implements ISubTaskService {
             fileEntityList = this.validateFileTypeAllowed(attachFiles);
         }
 
-        subTaskExisted.get().setName(modelUpdate.getName());
-        subTaskExisted.get().setDescription(modelUpdate.getDescription());
-        subTaskExisted.get().setStartDate(modelUpdate.getStartDate());
-        subTaskExisted.get().setEndDate(modelUpdate.getEndDate());
-        subTaskExisted.get().setPriority(modelUpdate.getPriority().name());
+        subTaskExisted.setName(modelUpdate.getName());
+        subTaskExisted.setDescription(modelUpdate.getDescription());
+        subTaskExisted.setStartDate(modelUpdate.getStartDate());
+        subTaskExisted.setEndDate(modelUpdate.getEndDate());
+        subTaskExisted.setPriority(modelUpdate.getPriority().name());
 
         // Update default sub task
         if (modelUpdate.getIsDefault()) {
-            unsetDefaultSubTask(subTaskExisted.get().getTask().getId());
-            subTaskExisted.get().setIsDefault(true);
+            unsetDefaultSubTask(subTaskExisted.getTask().getId());
+            subTaskExisted.setIsDefault(true);
         }
 
-        SubTaskEntity saveSubTask = this.subTaskRepository.saveAndFlush(subTaskExisted.get());
+        SubTaskEntity saveSubTask = this.subTaskRepository.saveAndFlush(subTaskExisted);
 
         // Update object id value for file
         this.updateObjectId(fileEntityList, saveSubTask.getId());
@@ -302,7 +296,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Split tag list
         List<TagDto> tagListSplit = this.saveTagList(modelUpdate.getTagList(), saveSubTask.getId());
 
-        saveSubTask.setTask(subTaskExisted.get().getTask());
+        saveSubTask.setTask(subTaskExisted.getTask());
         // Join 2 file lists
         saveSubTask.getAttachFiles().addAll(fileEntityList); // If save attach file, it will be null
 
@@ -313,7 +307,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return subTaskDto;
     }
 
-    public void unsetDefaultSubTask(Long taskId) {
+    private void unsetDefaultSubTask(Long taskId) {
         List<SubTaskEntity> subTaskEntityList = subTaskRepository.getByTaskId(taskId);
         if (subTaskEntityList != null && !subTaskEntityList.isEmpty()) {
             for (SubTaskEntity subTaskEntity : subTaskEntityList) {
@@ -325,7 +319,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
     }
 
-    public void clearTagList(Long subTaskId) {
+    private void clearTagList(Long subTaskId) {
         this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId).forEach(tagRelationEntity -> {
             this.tagRelationRepository.deleteByIdNative(tagRelationEntity.getId());
         });
@@ -348,13 +342,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
         currentFileList.removeIf(fileEntity -> fileIdDeleted.contains(fileEntity.getId()));
     }
 
-    public void clearAssignedUsers(Long subTaskId) {
+    private void clearAssignedUsers(Long subTaskId) {
         this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId).forEach(userProjectEntity -> {
             userProjectRepository.deleteByIdNative(userProjectEntity.getId());
         });
     }
 
-    public List<UserProjectEntity> saveAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
+    private List<UserProjectEntity> saveAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
         List<UserProjectEntity> userProjectEntityList = new ArrayList<>();
         for (UserEntity userEntity : userEntitiesAssigned) {
             UserProjectEntity userProjectEntity = new UserProjectEntity();
@@ -368,15 +362,15 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return userProjectEntityList;
     }
 
-    public List<Object> checkIdAndDate(SubTaskModel model) {
+    private List<Object> checkIdAndDate(SubTaskModel model) {
         List<Object> objectList = new ArrayList<>();
         List<UserEntity> userEntitiesAssigned = new ArrayList<>();
-        Optional<TaskEntity> taskEntityOptional = taskRepository.findById(model.getTaskId());
+        TaskEntity taskEntityExisted = taskRepository.findByIdAndIsDeletedFalse(model.getTaskId());
         // If task do not exist -> throw exception
-        if (taskEntityOptional.isEmpty()) {
+        if (taskEntityExisted == null) {
             throw new CustomHandleException(192);
         }
-        objectList.add(taskEntityOptional.get());
+        objectList.add(taskEntityExisted);
 
         // End date can not be earlier than start date
         if (model.getEndDate().before(model.getStartDate())) {
@@ -404,7 +398,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
             if (fileName != null) {
                 fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
             }
-            if (file.getContentType().equalsIgnoreCase("video/*") && !file.getContentType().equalsIgnoreCase("image/*") && !fileType.equalsIgnoreCase("xlxs") && !fileType.equalsIgnoreCase("docx") && !fileType.equalsIgnoreCase("pptx") && !fileType.equalsIgnoreCase("pdf") && !fileType.equalsIgnoreCase("xml")) {
+            if (file.getContentType().equalsIgnoreCase("video/*") && !file.getContentType().equalsIgnoreCase("image/*")
+                    && !fileType.equalsIgnoreCase("xlxs") && !fileType.equalsIgnoreCase("docx")
+                    && !fileType.equalsIgnoreCase("pptx") && !fileType.equalsIgnoreCase("pdf")
+                    && !fileType.equalsIgnoreCase("xml")) {
                 throw new CustomHandleException(195);
             } else {
                 FileEntity fileEntity = new FileEntity();
@@ -473,7 +470,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         try {
             SubTaskEntity sb = this.subTaskRepository.findById(id).orElseThrow(() -> new CustomHandleException(163));
 
-            // delete bug
+            // Delete bug
             this.bugRepository.getAllBugBySubTaskId(id).forEach(bugEntity -> this.bugService.deleteBug(bugEntity.getId()));
 
             for (UserProjectEntity userProjectEntity : this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id)) {
@@ -484,7 +481,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 this.tagRelationRepository.delete(tagRelationEntity);
             }
 
-            // delete file
+            // Delete file
             fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), id).stream().forEach(fileEntity -> this.fileRepository.deleteById(fileEntity.getId()));
 
             this.subTaskRepository.delete(sb);
@@ -501,14 +498,16 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     @Override
-    public boolean changIsDeleteById(Long id) {
-        Optional<SubTaskEntity> subTaskDeleted = this.subTaskRepository.findById(id);
-        if (subTaskDeleted.isEmpty()) {
+    public boolean softDeleteById(Long id) {
+        SubTaskEntity subTaskDeleting = this.subTaskRepository.findByIdAndIsDeletedFalse(id);
+        if (subTaskDeleting == null) {
             throw new CustomHandleException(199);
         } else {
-            subTaskDeleted.get().setIsDeleted(true);
-            this.subTaskRepository.save(subTaskDeleted.get());
-            iHistoryLogService.logDelete(id, subTaskDeleted.get(), Const.tableName.SUBTASK);
+            subTaskDeleting.setIsDeleted(true);
+            // Unset default sub task (if it is default sub task)
+            subTaskDeleting.setIsDefault(false);
+            this.subTaskRepository.save(subTaskDeleting);
+            iHistoryLogService.logDelete(id, subTaskDeleting, Const.tableName.SUBTASK);
         }
         return true;
     }
@@ -532,8 +531,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
         Date startDate = subTaskModel.getStartDate();
         Date endDate = subTaskModel.getEndDate();
         String status = subTaskModel.getStatus() != null ? subTaskModel.getStatus().name() : null;
-        boolean isTaskExist = taskRepository.existsById(taskId);
-        if (!isTaskExist) {
+        TaskEntity isTaskExist = taskRepository.findByIdAndIsDeletedFalse(taskId);
+        if (isTaskExist == null) {
             throw new CustomHandleException(192);
         }
 
@@ -550,6 +549,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (status != null) {
             sql += " AND status = '" + status + "'";
         }
+        sql += " AND is_deleted = false";
+
         sql += " ORDER BY created_date DESC";
 
         // Paging

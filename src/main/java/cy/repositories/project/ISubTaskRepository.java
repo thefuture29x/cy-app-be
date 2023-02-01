@@ -26,7 +26,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     @Query(value = "select * from tbl_sub_tasks where task_id = ?1", nativeQuery = true)
     List<SubTaskEntity> findByTaskId(Long id);
 
-    @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.task.id = :taskId AND st.name LIKE CONCAT('%',:keyword,'%')")
+    @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.task.id = :taskId AND st.name LIKE CONCAT('%',:keyword,'%') AND st.isDeleted = false")
     Page<SubTaskEntity> findByTaskIdWithPaging(@Param("taskId") Long taskId, @Param("keyword") String keyword, Pageable pageable);
 
     @Modifying
@@ -65,7 +65,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
             ")",nativeQuery = true)
     void updateStatusSubTaskAfterAllBugDone(Long id);
 
-    @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.task.id = :taskId")
+    @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.task.id = :taskId AND st.isDeleted = false")
     List<SubTaskEntity> getByTaskId(@Param("taskId") Long taskId);
 
     @Query(value = "SELECT p.id\n" +
@@ -75,4 +75,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
             "INNER JOIN tbl_sub_tasks st ON t.id = st.task_id\n" +
             "WHERE st.id = :subTaskId",nativeQuery = true)
     Long getProjectIdBySubTaskId(@Param("subTaskId") Long subTaskId);
+
+    @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.id = :id AND st.isDeleted = false")
+    SubTaskEntity findByIdAndIsDeletedFalse(@Param("id") Long id);
 }
