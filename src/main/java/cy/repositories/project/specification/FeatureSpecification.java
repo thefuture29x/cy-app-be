@@ -55,8 +55,7 @@ public class FeatureSpecification {
     public static Specification<FeatureEntity> byCreatorName(String name){
         return ((root, query, cb) -> {
             Join<FeatureEntity, UserEntity> createByRoot =root.join(FeatureEntity_.CREATE_BY);
-            return createByRoot.on(cb.like(createByRoot.get(UserEntity_.FULL_NAME), "%" + name + "%"))
-                    .getOn();
+            return cb.or(cb.like(createByRoot.get(UserEntity_.FULL_NAME), "%" + name + "%"));
         });
     }
     public static Specification<FeatureEntity> byFeatureDate(String minDate, String maxDate){
