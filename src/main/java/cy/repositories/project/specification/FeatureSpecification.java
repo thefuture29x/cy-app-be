@@ -47,6 +47,9 @@ public class FeatureSpecification {
     }
 
     public static Specification<FeatureEntity> byStatus(String eStatus) {
+        if(eStatus == null){
+            return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.ID),0);
+        }
         return (root, query, cb) -> cb.equal(root.get(FeatureEntity_.STATUS.toLowerCase()), eStatus.toLowerCase());
     }
     public static Specification<FeatureEntity> byPriority(String ePriority) {
@@ -81,12 +84,12 @@ public class FeatureSpecification {
 
     public static Specification<FeatureEntity> filterAndSearch(FeatureFilterModel filterModel) {
         List<Specification<FeatureEntity>> specificationList = new ArrayList<>();
+        specificationList.add(byStatus(filterModel.getStatus().name()));
         Specification<FeatureEntity> finalSpecs = null;
         if (filterModel.getSearchField() != null) {
             specificationList.add(byName(filterModel.getSearchField()));
             specificationList.add(byDescription(filterModel.getSearchField()));
             specificationList.add(byCreatorName(filterModel.getSearchField()));
-
         }
         if(filterModel.getMaxDate()!= null || filterModel.getMinDate()!=null){
             specificationList.add(byFeatureDate(filterModel.getMinDate(),filterModel.getMaxDate()));
