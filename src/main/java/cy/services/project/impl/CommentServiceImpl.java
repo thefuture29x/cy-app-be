@@ -158,7 +158,13 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public boolean deleteById(Long id) {
-        return false;
+        try{
+            commentRepository.deleteAllByIdParent_Id(id);
+            commentRepository.deleteById(id);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 
     @Override
