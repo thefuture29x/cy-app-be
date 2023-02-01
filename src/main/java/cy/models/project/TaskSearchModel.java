@@ -12,6 +12,7 @@ import java.util.Date;
 @Data
 public class TaskSearchModel {
     private Long userId;
+    private Long featureId;
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date startDate;
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")

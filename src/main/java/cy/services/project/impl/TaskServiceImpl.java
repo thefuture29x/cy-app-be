@@ -511,46 +511,41 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public List<TaskDto> searchTask(TaskSearchModel taskSearchModel){
         String sql = "SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
-        String countSQL = "select count(distinct(task)) from TaskEntity task  ";
         sql += "inner join UserProjectEntity uspr ON task.id = uspr.objectId AND uspr.category = 'TASK' AND uspr.type = 'TYPE_DEV'";
-        countSQL += "inner join UserProjectEntity uspr ON task.id = uspr.objectId AND uspr.category = 'TASK' AND uspr.type = 'TYPE_DEV'";
+
         if (taskSearchModel.getUserId() != null){
-            sql+= "AND uspr.idUser = :userId";
-            countSQL+= "AND uspr.idUser = :userId";
+            sql+= " AND uspr.idUser = :userId";
+        }
+        if (taskSearchModel.getFeatureId() != null){
+            sql+= " AND task.feature.id = :featureId";
         }
         sql += " WHERE 1=1 ";
-        countSQL += " WHERE 1=1 ";
         if (taskSearchModel.getStartDate() != null) {
             sql += " AND task.startDate >= :startDate ";
-            countSQL += "AND task.startDate >= :startDate ";
         }
         if (taskSearchModel.getEndDate() != null) {
             sql += " AND task.endDate <= :endDate ";
-            countSQL += "AND task.endDate <= :endDate ";
         }
         if (taskSearchModel.getName() != null) {
             sql += " AND task.name LIKE :name ";
-            countSQL += "AND task.name LIKE :name ";
-
         }
+        
         Query q = manager.createQuery(sql, TaskDto.class);
-        Query qCount = manager.createQuery(countSQL);
 
         if (taskSearchModel.getUserId() != null) {
             q.setParameter("userId", taskSearchModel.getUserId());
-            qCount.setParameter("userId", taskSearchModel.getUserId());
+        }
+        if (taskSearchModel.getFeatureId() != null) {
+            q.setParameter("featureId", taskSearchModel.getFeatureId());
         }
         if (taskSearchModel.getStartDate() != null) {
             q.setParameter("startDate", taskSearchModel.getStartDate());
-            qCount.setParameter("startDate", taskSearchModel.getStartDate());
         }
         if (taskSearchModel.getEndDate() != null) {
             q.setParameter("endDate", taskSearchModel.getEndDate());
-            qCount.setParameter("endDate", taskSearchModel.getEndDate());
         }
         if (taskSearchModel.getName() != null) {
             q.setParameter("name", "%" + taskSearchModel.getName() + "%");
-            qCount.setParameter("name", "%" + taskSearchModel.getName() + "%");
         }
         return q.getResultList();
     }

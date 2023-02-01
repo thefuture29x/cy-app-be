@@ -38,6 +38,6 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
     @Query(value = "SELECT t FROM TaskEntity t WHERE t.id = :id AND t.isDeleted = false")
     TaskEntity findByIdAndIsDeletedFalse(@Param("id") Long id);
 
-    @Query(value = "?1",nativeQuery = true)
+    @Query(value = "SELECT t from  TaskEntity t where t.feature.id = 1")
     List<TaskEntity> searchAllTask(String sql);
 }
