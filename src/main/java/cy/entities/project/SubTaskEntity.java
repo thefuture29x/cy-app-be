@@ -22,7 +22,7 @@ import java.util.List;
 public class SubTaskEntity extends ProjectBaseEntity {
     @HistoryLogTitle(title = "mức độ ưu tiên")
     private String priority;
-    
+
     @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
