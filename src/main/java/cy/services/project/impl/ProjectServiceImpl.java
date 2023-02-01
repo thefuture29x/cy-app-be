@@ -26,6 +26,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -198,13 +199,24 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     @Override
+//    @Transactional(dontRollbackOn = Exception.class)
     public ProjectDto updateProject(ProjectModel projectModel) {
         try {
+            List<String> fileUrlsKeeping = new ArrayList<>();
             if (projectModel.getFileUrlsKeeping() != null){
-                iFileRepository.deleteFileExistInObject(projectModel.getFileUrlsKeeping(), Const.tableName.PROJECT.name(), projectModel.getId());
-            }else {
+                projectModel.getFileUrlsKeeping().stream().map(url -> fileUrlsKeeping.add(url)).collect(Collectors.toList());
+            }
+            if (projectModel.getAvatarUrl() != null){
+                fileUrlsKeeping.add(projectModel.getAvatarUrl());
+            }
+            
+            if (fileUrlsKeeping.size() > 0){
+                iFileRepository.deleteFileExistInObject(fileUrlsKeeping, Const.tableName.PROJECT.name(), projectModel.getId());
+            }
+            else {
                 iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
             }
+
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
             ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
             if (projectEntity == null)
@@ -297,7 +309,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-
+            iFileRepository.delete(projectEntity.getAvatar());
             if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
                 String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity = new FileEntity();
@@ -305,7 +317,7 @@ public class ProjectServiceImpl implements IProjectService {
                 fileEntity.setCategory(Const.tableName.PROJECT.name());
                 fileEntity.setUploadedBy(userEntity);
                 fileEntity.setLink(urlAvatar);
-                fileEntity.setObjectId(projectEntity.getId());
+//                fileEntity.setObjectId(projectEntity.getId());
                 fileEntity.setFileName(fileName);
                 fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                 projectEntity.setAvatar(fileEntity);
