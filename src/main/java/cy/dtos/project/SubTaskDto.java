@@ -19,6 +19,7 @@ public class SubTaskDto {
     private Long id;
     private String name;
     private TaskDto taskDto;
+    private Long taskId;
     private String description;
     private String priority;
     private String createBy;
@@ -48,6 +49,7 @@ public class SubTaskDto {
                 .id(entity.getId())
                 .name(entity.getName())
 //                .taskDto(TaskDto.toDto(entity.getTask()))
+                .taskId(entity.getTask().getId())
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .createBy(entity.getCreateBy().getFullName())
