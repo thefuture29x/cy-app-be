@@ -23,16 +23,27 @@ public class SubTaskDto {
     private String priority;
     private String createBy;
     private String status;
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
     private boolean isDefault;
     private List<UserProjectDto> assignedUser;
     private List<FileDto> attachFileUrls;
     private List<TagDto> tagList;
 
-    public static SubTaskDto toDto(SubTaskEntity entity){
+    // Bug list
+    private List<BugDto> bugList;
+
+    // Following user list
+    private List<UserDto> followingUserList;
+
+    // Watching user list
+    private List<UserDto> watchingUserList;
+
+    // Developer list
+    private List<UserDto> developerUserList;
+    public static SubTaskDto toDto(SubTaskEntity entity) {
         return SubTaskDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())

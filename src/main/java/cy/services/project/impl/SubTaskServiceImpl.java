@@ -2,10 +2,7 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
-import cy.dtos.project.FileDto;
-import cy.dtos.project.SubTaskDto;
-import cy.dtos.project.TagDto;
-import cy.dtos.project.UserProjectDto;
+import cy.dtos.project.*;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
@@ -93,24 +90,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public SubTaskDto findById(Long id) {
         SubTaskDto subTaskDto = this.subTaskRepository.findById(id).map(SubTaskDto::toDto).orElse(null);
-        if(subTaskDto != null){
-            // Get userAssigned list
-            List<UserProjectEntity> userAssignedEntityList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_DEV.name());
-            List<UserProjectDto> userAssignedDtoList = new ArrayList<>();
-            // Convert Entity to Dto
-            for (UserProjectEntity userAssignedEntity : userAssignedEntityList) {
-                UserProjectDto userProjectDto = UserProjectDto.toDto(userAssignedEntity);
-                userAssignedDtoList.add(userProjectDto);
-            }
-            subTaskDto.setAssignedUser(userAssignedDtoList);
-
+        if (subTaskDto != null) {
             // Get tag list
             List<TagRelationEntity> tagRelationEntityList = tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskDto.getId());
             List<TagDto> tagDtoList = new ArrayList<>();
             // Convert TagRelationEntity to TagDto
             for (TagRelationEntity tagRelationEntity : tagRelationEntityList) {
                 TagDto tagDto = tagRepository.findById(tagRelationEntity.getIdTag()).map(TagDto::toDto).orElse(null);
-                if(tagDto != null){
+                if (tagDto != null) {
                     tagDtoList.add(tagDto);
                 }
             }
@@ -124,8 +111,75 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 fileDtoList.add(FileDto.toDto(fileEntity));
             }
             subTaskDto.setAttachFileUrls(fileDtoList);
+
+            // Set bug list
+            setBugList(subTaskDto);
+
+            // Set following user list then set watching user list and set developer user list
+            setFollowingUserList(subTaskDto);
         }
         return subTaskDto;
+    }
+
+    private void setBugList(SubTaskDto subTaskDto) {
+        List<BugEntity> bugEntityList = bugRepository.getAllBugBySubTaskId(subTaskDto.getId());
+        List<BugDto> bugDtoList = new ArrayList<>();
+        // Convert Entity to Dto
+        for (BugEntity bugEntity : bugEntityList) {
+            bugDtoList.add(new BugDto(bugEntity));
+        }
+        subTaskDto.setBugList(bugDtoList);
+    }
+
+    private void setFollowingUserList(SubTaskDto subTaskDto) {
+        Long projectIdBySubTaskId = subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId());
+        List<UserDto> userFollowingDtoList = new ArrayList<>();
+        if (projectIdBySubTaskId != null) {
+            // Collect id of user following
+            List<Long> userFollowingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectIdBySubTaskId, Const.type.TYPE_FOLLOWER.name());
+            // Find user entity by id
+            List<UserEntity> userFollowingEntityList = userRepository.findAllById(userFollowingIdList);
+            // Convert Entity to Dto
+            for (UserEntity userFollowingEntity : userFollowingEntityList) {
+                userFollowingDtoList.add(UserDto.toDto(userFollowingEntity));
+            }
+        }
+        subTaskDto.setFollowingUserList(userFollowingDtoList);
+
+        // Set watching (viewer) user list
+        setWatchingUserList(subTaskDto, projectIdBySubTaskId);
+
+        // Set developer user list
+        setDeveloperUserList(subTaskDto);
+    }
+
+    private void setWatchingUserList(SubTaskDto subTaskDto, Long projectIdBySubTaskId) {
+        List<UserDto> userWatchingDtoList = new ArrayList<>();
+        if (projectIdBySubTaskId != null) {
+            // Collect id of user watching (viewer)
+            List<Long> userWatchingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectIdBySubTaskId, Const.type.TYPE_VIEWER.name());
+            // Find user entity by id
+            List<UserEntity> userFollowingEntityList = userRepository.findAllById(userWatchingIdList);
+            // Convert Entity to Dto
+            for (UserEntity userWatchingEntity : userFollowingEntityList) {
+                userWatchingDtoList.add(UserDto.toDto(userWatchingEntity));
+            }
+        }
+        subTaskDto.setWatchingUserList(userWatchingDtoList);
+    }
+
+    private void setDeveloperUserList(SubTaskDto subTaskDto) {
+        List<UserDto> userAssigningDtoList = new ArrayList<>();
+        // Collect id of user assigning
+        List<Long> userAssigningIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
+                subTaskDto.getId(), Const.type.TYPE_DEV.name());
+        // Find user entity by id
+        List<UserEntity> userFollowingEntityList = userRepository.findAllById(userAssigningIdList);
+        // Convert Entity to Dto
+        for (UserEntity userWatchingEntity : userFollowingEntityList) {
+            userAssigningDtoList.add(UserDto.toDto(userWatchingEntity));
+        }
+        subTaskDto.setDeveloperUserList(userAssigningDtoList);
     }
 
     @Override
@@ -144,7 +198,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Allowed document file: .xlxs (Excel), .docx (Word), .pptx (Powerpoint), .pdf, .xml
         List<MultipartFile> attachFiles = model.getAttachFiles();
         List<FileEntity> fileEntityList = new ArrayList<>();
-        if(attachFiles != null && !attachFiles.isEmpty()){
+        if (attachFiles != null && !attachFiles.isEmpty()) {
             fileEntityList = this.validateFileTypeAllowed(attachFiles);
         }
 
@@ -186,7 +240,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
 
         // Check fileUrlsKeeping
-        if(modelUpdate.getFileUrlsKeeping() == null){
+        if (modelUpdate.getFileUrlsKeeping() == null) {
             throw new CustomHandleException(201);
         }
         // Copy current subTask to compare with new subTask
@@ -202,12 +256,12 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         // Delete attach file if it's url do not exist in fileUrlsKeeping
         List<FileEntity> currentAttachedFiles = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskExisted.get().getId());
-        if(currentAttachedFiles != null && !currentAttachedFiles.isEmpty()){
+        if (currentAttachedFiles != null && !currentAttachedFiles.isEmpty()) {
             for (FileEntity fileEntity : currentAttachedFiles) {
-                    if(!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())){
-                        this.fileRepository.deleteByIdNative(fileEntity.getId());
-                        subTaskExisted.get().getAttachFiles().remove(fileEntity);
-                    }
+                if (!modelUpdate.getFileUrlsKeeping().contains(fileEntity.getLink())) {
+                    this.fileRepository.deleteByIdNative(fileEntity.getId());
+                    subTaskExisted.get().getAttachFiles().remove(fileEntity);
+                }
             }
         }
 
@@ -226,7 +280,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.get().setPriority(modelUpdate.getPriority().name());
 
         // Update default sub task
-        if(modelUpdate.getIsDefault()){
+        if (modelUpdate.getIsDefault()) {
             unsetDefaultSubTask(subTaskExisted.get().getTask().getId());
             subTaskExisted.get().setIsDefault(true);
         }
@@ -259,11 +313,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return subTaskDto;
     }
 
-    public void unsetDefaultSubTask(Long taskId){
+    public void unsetDefaultSubTask(Long taskId) {
         List<SubTaskEntity> subTaskEntityList = subTaskRepository.getByTaskId(taskId);
-        if(subTaskEntityList != null && !subTaskEntityList.isEmpty()){
+        if (subTaskEntityList != null && !subTaskEntityList.isEmpty()) {
             for (SubTaskEntity subTaskEntity : subTaskEntityList) {
-                if(subTaskEntity.getIsDefault() || subTaskEntity.getIsDefault() == null){
+                if (subTaskEntity.getIsDefault() || subTaskEntity.getIsDefault() == null) {
                     subTaskEntity.setIsDefault(false);
                     subTaskRepository.save(subTaskEntity);
                 }
@@ -374,7 +428,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<String> tagListSplit = Arrays.stream(tagList.split(",")).collect(Collectors.toList());
         Long tagId = null;
         for (String tag : tagListSplit) {
-            if(tag.length() == 0){
+            if (tag.length() == 0) {
                 continue;
             }
             // Tag must be unique

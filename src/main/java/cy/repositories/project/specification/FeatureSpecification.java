@@ -22,10 +22,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.springframework.data.jpa.domain.Specification.*;
 
@@ -47,7 +44,10 @@ public class FeatureSpecification {
     }
 
     public static Specification<FeatureEntity> byStatus(String eStatus) {
-        return (root, query, cb) -> cb.equal(root.get(FeatureEntity_.STATUS.toLowerCase()), eStatus.toLowerCase());
+        if(eStatus == null){
+            return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.ID),0);
+        }
+            return (root, query, cb) -> cb.equal(root.get(FeatureEntity_.STATUS.toLowerCase()), eStatus.toLowerCase());
     }
     public static Specification<FeatureEntity> byPriority(String ePriority) {
         return (root, query, cb) -> cb.equal(root.get(FeatureEntity_.PRIORITY.toLowerCase()), ePriority.toLowerCase());
@@ -55,8 +55,7 @@ public class FeatureSpecification {
     public static Specification<FeatureEntity> byCreatorName(String name){
         return ((root, query, cb) -> {
             Join<FeatureEntity, UserEntity> createByRoot =root.join(FeatureEntity_.CREATE_BY);
-            return createByRoot.on(cb.like(createByRoot.get(UserEntity_.FULL_NAME), "%" + name + "%"))
-                    .getOn();
+            return cb.or(cb.like(createByRoot.get(UserEntity_.FULL_NAME), "%" + name + "%"));
         });
     }
     public static Specification<FeatureEntity> byFeatureDate(String minDate, String maxDate){
@@ -82,17 +81,23 @@ public class FeatureSpecification {
     public static Specification<FeatureEntity> filterAndSearch(FeatureFilterModel filterModel) {
         List<Specification<FeatureEntity>> specificationList = new ArrayList<>();
         Specification<FeatureEntity> finalSpecs = null;
+        Specification<FeatureEntity> firstSpecs = null;
+        if (filterModel.getProjectId() != null){
+            firstSpecs = byProjectId(filterModel.getProjectId());
+        }
+        String status = filterModel.getStatus()==null? null : filterModel.getStatus().name();
+        if(firstSpecs!=null){
+            firstSpecs = firstSpecs.and(byStatus(status));
+        }else {
+            firstSpecs = byStatus(status);
+        }
         if (filterModel.getSearchField() != null) {
             specificationList.add(byName(filterModel.getSearchField()));
             specificationList.add(byDescription(filterModel.getSearchField()));
             specificationList.add(byCreatorName(filterModel.getSearchField()));
-
         }
         if(filterModel.getMaxDate()!= null || filterModel.getMinDate()!=null){
             specificationList.add(byFeatureDate(filterModel.getMinDate(),filterModel.getMaxDate()));
-        }
-        if (filterModel.getProjectId() != null){
-            specificationList.add(byProjectId(filterModel.getProjectId()));
         }
         for (Specification<FeatureEntity> spec : specificationList) {
             if(finalSpecs == null) {
@@ -100,6 +105,9 @@ public class FeatureSpecification {
             } else {
                 finalSpecs = finalSpecs.or(spec);
             }
+        }
+        if(firstSpecs!=null){
+            return firstSpecs.and(finalSpecs);
         }
         return finalSpecs;
     }
