@@ -70,7 +70,7 @@ public class TaskResouce {
     }
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping(value = "/searchTask")
-    public ResponseDto searchTask(TaskSearchModel taskSearchModel) {
+    public ResponseDto searchTask(@RequestBody TaskSearchModel taskSearchModel) {
         return ResponseDto.of(taskService.searchTask(taskSearchModel));
     }
 
