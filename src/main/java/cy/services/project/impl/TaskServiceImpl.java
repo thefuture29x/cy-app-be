@@ -7,10 +7,7 @@ import cy.dtos.project.TagDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
-import cy.models.project.FileModel;
-import cy.models.project.TagModel;
-import cy.models.project.TagRelationModel;
-import cy.models.project.TaskModel;
+import cy.models.project.*;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.services.project.*;
@@ -49,10 +46,12 @@ public class TaskServiceImpl implements ITaskService {
     private final IHistoryLogService iHistoryLogService;
     private final ISubTaskService subTaskService;
     private final ISubTaskRepository subTaskRepository;
+    private final ITaskRepository iTaskRepository;
+
     @Autowired
     EntityManager manager;
 
-    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository) {
+    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository,ITaskRepository iTaskRepository) {
         this.repository = repository;
         this.fileService = fileService;
         this.fileRepository = fileRepository;
@@ -66,6 +65,7 @@ public class TaskServiceImpl implements ITaskService {
         this.iHistoryLogService = iHistoryLogService;
         this.subTaskService = subTaskService;
         this.subTaskRepository = subTaskRepository;
+        this.iTaskRepository = iTaskRepository;
     }
 
     @Override
@@ -507,6 +507,52 @@ public class TaskServiceImpl implements ITaskService {
         Long numberResult = (Long) qCount.getSingleResult();
         Page<TaskDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
         return result;
+    }
+    @Override
+    public List<TaskDto> searchTask(TaskSearchModel taskSearchModel){
+        String sql = "SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
+        String countSQL = "select count(distinct(task)) from TaskEntity task  ";
+        sql += "inner join UserProjectEntity uspr ON task.id = uspr.objectId AND uspr.category = 'TASK' AND uspr.type = 'TYPE_DEV'";
+        countSQL += "inner join UserProjectEntity uspr ON task.id = uspr.objectId AND uspr.category = 'TASK' AND uspr.type = 'TYPE_DEV'";
+        if (taskSearchModel.getUserId() != null){
+            sql+= "AND uspr.idUser = :userId";
+            countSQL+= "AND uspr.idUser = :userId";
+        }
+        sql += " WHERE 1=1 ";
+        countSQL += " WHERE 1=1 ";
+        if (taskSearchModel.getStartDate() != null) {
+            sql += " AND task.startDate >= :startDate ";
+            countSQL += "AND task.startDate >= :startDate ";
+        }
+        if (taskSearchModel.getEndDate() != null) {
+            sql += " AND task.endDate <= :endDate ";
+            countSQL += "AND task.endDate <= :endDate ";
+        }
+        if (taskSearchModel.getName() != null) {
+            sql += " AND task.name LIKE :name ";
+            countSQL += "AND task.name LIKE :name ";
+
+        }
+        Query q = manager.createQuery(sql, TaskDto.class);
+        Query qCount = manager.createQuery(countSQL);
+
+        if (taskSearchModel.getUserId() != null) {
+            q.setParameter("userId", taskSearchModel.getUserId());
+            qCount.setParameter("userId", taskSearchModel.getUserId());
+        }
+        if (taskSearchModel.getStartDate() != null) {
+            q.setParameter("startDate", taskSearchModel.getStartDate());
+            qCount.setParameter("startDate", taskSearchModel.getStartDate());
+        }
+        if (taskSearchModel.getEndDate() != null) {
+            q.setParameter("endDate", taskSearchModel.getEndDate());
+            qCount.setParameter("endDate", taskSearchModel.getEndDate());
+        }
+        if (taskSearchModel.getName() != null) {
+            q.setParameter("name", "%" + taskSearchModel.getName() + "%");
+            qCount.setParameter("name", "%" + taskSearchModel.getName() + "%");
+        }
+        return q.getResultList();
     }
 
     @Override

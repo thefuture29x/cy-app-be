@@ -4,6 +4,7 @@ import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
 import cy.models.project.TaskModel;
+import cy.models.project.TaskSearchModel;
 import cy.services.project.ITaskService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -58,7 +59,7 @@ public class TaskResouce {
         return ResponseDto.of(taskService.findByPage(pageIndex,pageSize,taskModel));
     }
 
-//    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @GetMapping("/find-all-by-project-id")
     public ResponseDto getAllTaskByProjectId(@RequestParam("id") Long id,Pageable pageable){
         return ResponseDto.of(taskService.findAllByProjectId(id,pageable));
@@ -67,4 +68,10 @@ public class TaskResouce {
     public ResponseDto updateStatusTask(@PathVariable("id") Long id,@PathVariable("status") String status){
         return ResponseDto.of(taskService.updateStatusTask(id,status));
     }
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @PostMapping(value = "/searchTask")
+    public ResponseDto searchTask(TaskSearchModel taskSearchModel) {
+        return ResponseDto.of(taskService.searchTask(taskSearchModel));
+    }
+
 }
