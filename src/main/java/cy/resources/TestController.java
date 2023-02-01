@@ -10,13 +10,16 @@ import cy.dtos.ResponseDto;
 import cy.entities.project.*;
 import cy.models.UserModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
+import cy.models.project.TaskSearchModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.IBugRepository;
 import cy.repositories.project.IFileRepository;
+import cy.repositories.project.ITaskRepository;
 import cy.services.attendance.IPayRollService;
 import cy.services.attendance.IRequestAttendService;
 import cy.services.IUserService;
 import cy.services.attendance.impl.RequestAttendServiceImpl;
+import cy.services.project.ITaskService;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,9 +106,11 @@ public class TestController {
     IFileRepository iFileRepository;
     @Autowired
     IBugRepository iBugRepository;
+    @Autowired
+    ITaskService iTaskService;
 
-    @PostMapping ("test-count-bug")
-    public int testUpLoadFile() {
-        return iBugRepository.countAllByTask_IdAndIsDeleted(15L,false);
+    @PostMapping ("test-search-task")
+    public ResponseDto testUpLoadFile(TaskSearchModel taskSearchModel) {
+        return ResponseDto.of(iTaskService.searchTask(taskSearchModel));
     }
 }

@@ -37,4 +37,7 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
 
     @Query(value = "SELECT t FROM TaskEntity t WHERE t.id = :id AND t.isDeleted = false")
     TaskEntity findByIdAndIsDeletedFalse(@Param("id") Long id);
+
+    @Query(value = "?1",nativeQuery = true)
+    List<TaskEntity> searchAllTask(String sql);
 }
