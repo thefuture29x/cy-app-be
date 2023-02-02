@@ -60,21 +60,21 @@ public class FeatureSpecification {
     }
     public static Specification<FeatureEntity> byFeatureDate(String minDate, String maxDate){
         return ((root, query, criteriaBuilder) -> {
-            if (maxDate != null) {
+//            if (maxDate != null) {
 //                Instant instant = maxDate.toInstant();
 //                instant = instant.plus(1, ChronoUnit.DAYS);
 //                Instant maxInstant = instant;
 //                Timestamp maxTimestamp = new Timestamp(instant.toEpochMilli());
-                if (minDate != null){
-                    return criteriaBuilder.between(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000"), convertDate(maxDate+".000"));
+                if (minDate != null && maxDate !=null){
+                    return criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000")),criteriaBuilder.lessThanOrEqualTo(root.get(FeatureEntity_.END_DATE), convertDate(maxDate+".000")));
                 }
-                else
+                else if (minDate != null ) {
+                    return criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000"));
+                }
+                else if(maxDate !=null){
                     return criteriaBuilder.lessThanOrEqualTo(root.get(FeatureEntity_.END_DATE), convertDate(maxDate+".000"));
-            } else if (minDate != null) {
-                return criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000"));
-            } else {
-                return null;
-            }
+                }else
+                    return null;
         });
     }
 
