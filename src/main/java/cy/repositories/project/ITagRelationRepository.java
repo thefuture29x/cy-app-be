@@ -36,4 +36,6 @@ public interface ITagRelationRepository extends JpaRepository<TagRelationEntity,
 
     @Query(value = "DELETE FROM tbl_tag_relations WHERE id = ?1", nativeQuery = true)
     void deleteByIdNative(Long id);
+
+    TagRelationEntity findByIdTag(Long id);
 }

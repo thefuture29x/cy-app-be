@@ -138,7 +138,7 @@ public class BugServiceImpl implements IRequestBugService {
                 SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(281));
                 bugEntity.setSubTask(subTaskEntity);
 //                chuyển trạng thái Subtask sang fixBug
-                subTaskEntity.setStatus(Const.status.FIX_BUG.name());
+                subTaskEntity.setStatus(Const.status.IN_PROGRESS.name());
                 subTaskRepository.saveAndFlush(subTaskEntity);
             }
 
@@ -146,7 +146,7 @@ public class BugServiceImpl implements IRequestBugService {
                 TaskEntity taskEntity = iTaskRepository.findById(model.getTask()).orElseThrow(() -> new CustomHandleException(251));
                 bugEntity.setTask(taskEntity);
                 //chuyển trạng thái Task sang fixBug
-                taskEntity.setStatus(Const.status.FIX_BUG.name());
+                taskEntity.setStatus(Const.status.IN_PROGRESS.name());
                 iTaskRepository.saveAndFlush(taskEntity);
             }
 
@@ -273,7 +273,7 @@ public class BugServiceImpl implements IRequestBugService {
                     SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(281));
                     bugEntity.setSubTask(subTaskEntity);
 //                chuyển trạng thái Subtask sang fixBug
-                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
+                    subTaskEntity.setStatus(Const.status.IN_PROGRESS.name());
                     subTaskRepository.saveAndFlush(subTaskEntity);
                 }
 
@@ -281,7 +281,7 @@ public class BugServiceImpl implements IRequestBugService {
                     TaskEntity taskEntity = iTaskRepository.findById(model.getTask()).orElseThrow(() -> new CustomHandleException(251));
                     bugEntity.setTask(taskEntity);
                     //chuyển trạng thái Task sang fixBug
-                    taskEntity.setStatus(Const.status.FIX_BUG.name());
+                    taskEntity.setStatus(Const.status.IN_PROGRESS.name());
                     iTaskRepository.saveAndFlush(taskEntity);
                 }
                 bugEntity.setUpdatedDate(currentDate);
@@ -424,7 +424,7 @@ public class BugServiceImpl implements IRequestBugService {
             switch (status) {
                 case 1:
                     //reviewer fail xong thì
-                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
+                    subTaskEntity.setStatus(Const.status.IN_PROGRESS.name());
                     bugEntity.setStatus(Const.status.IN_PROGRESS.name());
                     break;
                 case 2:
@@ -459,7 +459,7 @@ public class BugServiceImpl implements IRequestBugService {
                 case 1:
                     //dev bắt đầu fix bug
                     bugEntity.setStatus(Const.status.IN_PROGRESS.name());
-                    subTaskRepository.updateStatusSubTask(id, Const.status.FIX_BUG.name());
+                    subTaskRepository.updateStatusSubTask(id, Const.status.IN_PROGRESS.name());
 //                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
                     List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
                         return FileEntity.builder()
@@ -525,7 +525,7 @@ public class BugServiceImpl implements IRequestBugService {
             switch (status) {
                 case 1:
                     //reviewer fail xong thì
-                    taskEntity.setStatus(Const.status.FIX_BUG.name());
+                    taskEntity.setStatus(Const.status.IN_PROGRESS.name());
                     bugEntity.setStatus(Const.status.IN_PROGRESS.name());
                     break;
                 case 2:
@@ -558,7 +558,7 @@ public class BugServiceImpl implements IRequestBugService {
                 case 1:
                     //dev bắt đầu fix bug
                     bugEntity.setStatus(Const.status.IN_PROGRESS.name());
-                    iTaskRepository.updateStatusTask(id, Const.status.FIX_BUG.name());
+                    iTaskRepository.updateStatusTask(id, Const.status.IN_PROGRESS.name());
 //                    subTaskEntity.setStatus(Const.status.FIX_BUG.name());
                     List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
                         return FileEntity.builder()
