@@ -1,4 +1,4 @@
-package cy.services.impl;
+package cy.services.attendance.impl;
 
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtProvider;
@@ -302,6 +302,7 @@ public class UserServiceImp implements IUserService {
                 .token(this.jwtProvider.generateToken(userDetail.getUsername(), timeValid))
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .timeValid(timeValid)
+                .avatar(user.getAvatar())
                 .build();
     }
 
