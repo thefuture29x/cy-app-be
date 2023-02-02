@@ -37,5 +37,6 @@ public class ProjectModel {
     private List<Long> userFollow;
     private List<Long> userViewer;
     private String typeUser;
+    private Boolean otherProject;
 
 }
