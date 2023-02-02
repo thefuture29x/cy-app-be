@@ -412,8 +412,25 @@ public class ProjectServiceImpl implements IProjectService {
             sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
             countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
         }
-        sql += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false ";
-        countSQL += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false ";
+        sql += " WHERE (up.category like 'PROJECT') AND p.isDeleted = false ";
+        countSQL += " WHERE (up.category like 'PROJECT') AND p.isDeleted = false ";
+
+        if (projectModel.getTypeUser() != null){
+            sql+= " AND up.type = :typeUser";
+            countSQL+= " AND up.type = :typeUser";
+        }else {
+            sql+= " AND up.type is not null";
+            countSQL+= " AND up.type is not null";
+        }
+
+        if (projectModel.getOtherProject()){
+            sql += " and (up.idUser <> :currentUserId) ";
+            countSQL += " and (up.idUser <> :currentUserId) ";
+        }else {
+            sql += " and (up.idUser = :currentUserId) ";
+            countSQL += " and (up.idUser = :currentUserId) ";
+        }
+
         if (projectModel.getStatus() != null) {
             sql += " AND p.status = :status ";
             countSQL += " AND p.status = :status ";
@@ -435,7 +452,7 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += "AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
             }
         }
-        sql += "order by p.createdDate desc";
+        sql += "order by p.id asc";
 
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
@@ -458,6 +475,10 @@ public class ProjectServiceImpl implements IProjectService {
         if (projectModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
             qCount.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
+        }
+        if (projectModel.getTypeUser() != null) {
+            q.setParameter("typeUser", projectModel.getTypeUser());
+            qCount.setParameter("typeUser", projectModel.getTypeUser());
         }
 
         q.setFirstResult(pageIndex * pageSize);
