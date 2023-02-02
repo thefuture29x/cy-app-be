@@ -33,6 +33,7 @@ public class ProjectDto {
     private List<UserDto> userDevs;
     private List<UserDto> userFollows;
     private List<UserDto> userView;
+    private List<String> tagArray = new ArrayList<>();
     public static ProjectDto toDto(ProjectEntity entity){
         if(entity == null)
             return null;

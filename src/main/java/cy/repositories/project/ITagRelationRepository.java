@@ -17,6 +17,9 @@ public interface ITagRelationRepository extends JpaRepository<TagRelationEntity,
     @Query("select tr from TagRelationEntity tr where tr.category = ?1 and tr.objectId = ?2")
     List<TagRelationEntity> getByCategoryAndObjectId(String category, Long objectId);
 
+    @Query("select t.name from TagRelationEntity tr inner join TagEntity t on tr.idTag = t.id where tr.category = ?1 and tr.objectId = ?2")
+    List<String> getNameTagByCategoryAndObjectId(String category, Long objectId);
+
     @Query(value = "select * from tbl_tag_relations where category LIKE ?1 and object_id = ?2 and tag_id = ?3", nativeQuery = true)
     List<TagRelationEntity> getByCategoryAndObjectIdAAndIdTag(String category, Long objectId, Long tagId);
     @Modifying

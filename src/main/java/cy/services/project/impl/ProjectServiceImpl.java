@@ -75,6 +75,7 @@ public class ProjectServiceImpl implements IProjectService {
         projectDto.setUserView(userView);
         projectDto.setUserDevs(userDev);
         projectDto.setUserFollows(userFollow);
+        projectDto.setTagArray(iTagRelationRepository.getNameTagByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId()));
         return projectDto;
     }
 
@@ -140,6 +141,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
+            List<String> tagArray = new ArrayList<>();
 //          if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
             if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
                 for (String tagModel : projectModel.getTagArray()) {
@@ -160,6 +162,7 @@ public class ProjectServiceImpl implements IProjectService {
                         tagRelationEntity.setObjectId(projectEntity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
                     }
+                    tagArray.add(tagEntity.getName());
                 }
             }
             if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
@@ -192,7 +195,9 @@ public class ProjectServiceImpl implements IProjectService {
                 }
             }
             iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT);
-            return ProjectDto.toDto(projectEntity);
+            ProjectDto result = ProjectDto.toDto(projectEntity);
+            result.setTagArray(tagArray);
+            return result;
         } catch (Exception e) {
             return null;
         }
@@ -288,6 +293,7 @@ public class ProjectServiceImpl implements IProjectService {
                 iTagRelationRepository.deleteAll(tagRelationEntities);
             }
 //            if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
+            List<String> tagArray = new ArrayList<>();
             if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
                 for (String tagModel : projectModel.getTagArray()) {
                     TagEntity tagEntity = iTagRepository.findByName(tagModel);
@@ -307,6 +313,7 @@ public class ProjectServiceImpl implements IProjectService {
                         tagRelationEntity.setObjectId(projectEntity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
                     }
+                    tagArray.add(tagEntity.getName());
                 }
             }
             iFileRepository.delete(projectEntity.getAvatar());
@@ -349,7 +356,9 @@ public class ProjectServiceImpl implements IProjectService {
             }
             iProjectRepository.save(projectEntity);
             iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal, projectEntity, Const.tableName.PROJECT);
-            return ProjectDto.toDto(projectEntity);
+            ProjectDto result = ProjectDto.toDto(projectEntity);
+            result.setTagArray(tagArray);
+            return result;
         } catch (Exception e) {
             System.out.println(e);
             return null;
