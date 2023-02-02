@@ -48,7 +48,7 @@ public class SubTaskResources {
     }
 
     @ApiOperation(value = "Tìm tất cả subtask theo project id (có phân trang).")
-//    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping("/find-all-by-project-id")
     public ResponseDto getAllSubTaskByProjectId(@RequestParam("id") Long id, Pageable pageable) {
         return ResponseDto.of(iSubTaskService.findAllByProjectId(id, pageable));

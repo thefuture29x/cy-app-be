@@ -36,5 +36,6 @@ public class ProjectModel {
     private List<Long> userDev;
     private List<Long> userFollow;
     private List<Long> userViewer;
+    private String typeUser;
 
 }

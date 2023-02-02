@@ -2,9 +2,11 @@ package cy.services.project.impl;
 
 import cy.dtos.UserDto;
 import cy.dtos.project.ProjectDto;
+import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.ProjectModel;
+import cy.models.project.TaskSearchModel;
 import cy.models.project.UserViewProjectModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
@@ -172,7 +174,7 @@ public class ProjectServiceImpl implements IProjectService {
                 fileEntity.setCategory(Const.tableName.PROJECT.name());
                 fileEntity.setUploadedBy(userEntity);
                 fileEntity.setLink(urlAvatar);
-                fileEntity.setObjectId(projectEntity.getId());
+//                fileEntity.setObjectId(projectEntity.getId());
                 fileEntity.setFileName(fileName);
                 fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                 projectEntity.setAvatar(fileEntity);
@@ -464,5 +466,48 @@ public class ProjectServiceImpl implements IProjectService {
         Long numberResult = (Long) qCount.getSingleResult();
         Page<ProjectDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
         return result;
+    }
+
+    public List<TaskDto> searchProject(ProjectModel projectModel){
+        Long userIdd = SecurityUtils.getCurrentUserId();
+        String sql = "SELECT distinct new cy.dtos.project.ProjectDto(pro) FROM ProjectEntity pro ";
+        sql += "inner join UserProjectEntity uspr ON pro.id  = uspr.objectId AND uspr.category = 'PROJECT'";
+
+        if (userIdd != null){
+            sql+= " AND uspr.idUser = :userId";
+        }
+
+        if (projectModel.getTypeUser() != null){
+            sql+= " AND uspr.type = :typeUser";
+        }
+        sql += " WHERE 1=1 ";
+        if (projectModel.getStartDate() != null) {
+            sql += " AND task.startDate >= :startDate ";
+        }
+        if (projectModel.getEndDate() != null) {
+            sql += " AND task.endDate <= :endDate ";
+        }
+        if (projectModel.getName() != null) {
+            sql += " AND task.name LIKE :name ";
+        }
+        sql += " AND task.isDeleted = FALSE";
+        Query q = manager.createQuery(sql, TaskDto.class);
+
+        if (userIdd != null) {
+            q.setParameter("userId", userIdd);
+        }
+        if (projectModel.getTypeUser() != null) {
+            q.setParameter("typeUser", projectModel.getTypeUser());
+        }
+        if (projectModel.getStartDate() != null) {
+            q.setParameter("startDate", projectModel.getStartDate());
+        }
+        if (projectModel.getEndDate() != null) {
+            q.setParameter("endDate", projectModel.getEndDate());
+        }
+        if (projectModel.getName() != null) {
+            q.setParameter("name", "%" + projectModel.getName() + "%");
+        }
+        return q.getResultList();
     }
 }

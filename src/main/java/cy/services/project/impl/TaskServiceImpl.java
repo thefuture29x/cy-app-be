@@ -532,7 +532,7 @@ public class TaskServiceImpl implements ITaskService {
         if (taskSearchModel.getName() != null) {
             sql += " AND task.name LIKE :name ";
         }
-        
+        sql += " AND task.isDeleted = FALSE";
         Query q = manager.createQuery(sql, TaskDto.class);
 
         if (taskSearchModel.getUserId() != null) {
