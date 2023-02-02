@@ -32,7 +32,26 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE `tbl_tasks` tas \n" + "JOIN `tbl_bugs` bug ON tas.id = bug.task_id\n" + "SET tas.status = 'DONE' \n" + "WHERE tas.id = ?1 \n" + "AND 'TO_DO' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1\n" + ")\n" + "AND'IN_PROGRESS' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1\n" + ")\n" + "AND'IN_REVIEW' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1\n" + ")\n" + "AND'FIX_BUG' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1 \n" + ")", nativeQuery = true)
+    @Query(value = "UPDATE `tbl_tasks` tas \n"
+            + "JOIN `tbl_bugs` bug ON tas.id = bug.task_id\n"
+            + "SET tas.status = 'DONE' \n"
+            + "WHERE tas.id = ?1 \n"
+            + "AND 'TO_DO' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1\n"
+            + ")\n"
+            + "AND 'IN_PROGRESS' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1\n"
+            + ")\n"
+            + "AND 'PENDING' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1\n"
+            + ")\n"
+            + "AND 'IN_REVIEW' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1 \n"
+            + ")", nativeQuery = true)
     void updateStatusTaskAfterAllBugDone(Long id);
 
     @Query(value = "SELECT t FROM TaskEntity t WHERE t.id = :id AND t.isDeleted = false")

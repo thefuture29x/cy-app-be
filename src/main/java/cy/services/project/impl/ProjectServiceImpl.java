@@ -290,10 +290,10 @@ public class ProjectServiceImpl implements IProjectService {
                 }
             }
 
-            List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
-            if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
-                iTagRelationRepository.deleteAll(tagRelationEntities);
-            }
+//            List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
+//            if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
+//                iTagRelationRepository.deleteAll(tagRelationEntities);
+//            }
 //            if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
             List<String> tagArray = new ArrayList<>();
             if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
@@ -308,14 +308,16 @@ public class ProjectServiceImpl implements IProjectService {
                         tagRelationEntity.setIdTag(tagEntity1.getId());
                         tagRelationEntity.setObjectId(projectEntity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
+                        tagArray.add(tagEntity1.getName());
                     } else if (tagEntity != null) {
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                        TagRelationEntity tagRelationEntity = iTagRelationRepository.findByIdTag(tagEntity.getId());
+//                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
                         tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
                         tagRelationEntity.setIdTag(tagEntity.getId());
                         tagRelationEntity.setObjectId(projectEntity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
+                        tagArray.add(tagEntity.getName());
                     }
-                    tagArray.add(tagEntity.getName());
                 }
             }
             iFileRepository.delete(projectEntity.getAvatar());
@@ -452,7 +454,7 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += "AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
             }
         }
-        sql += "order by p.id asc";
+        sql += "order by p.updatedDate desc";
 
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
@@ -487,48 +489,5 @@ public class ProjectServiceImpl implements IProjectService {
         Long numberResult = (Long) qCount.getSingleResult();
         Page<ProjectDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
         return result;
-    }
-
-    public List<TaskDto> searchProject(ProjectModel projectModel){
-        Long userIdd = SecurityUtils.getCurrentUserId();
-        String sql = "SELECT distinct new cy.dtos.project.ProjectDto(pro) FROM ProjectEntity pro ";
-        sql += "inner join UserProjectEntity uspr ON pro.id  = uspr.objectId AND uspr.category = 'PROJECT'";
-
-        if (userIdd != null){
-            sql+= " AND uspr.idUser = :userId";
-        }
-
-        if (projectModel.getTypeUser() != null){
-            sql+= " AND uspr.type = :typeUser";
-        }
-        sql += " WHERE 1=1 ";
-        if (projectModel.getStartDate() != null) {
-            sql += " AND task.startDate >= :startDate ";
-        }
-        if (projectModel.getEndDate() != null) {
-            sql += " AND task.endDate <= :endDate ";
-        }
-        if (projectModel.getName() != null) {
-            sql += " AND task.name LIKE :name ";
-        }
-        sql += " AND task.isDeleted = FALSE";
-        Query q = manager.createQuery(sql, TaskDto.class);
-
-        if (userIdd != null) {
-            q.setParameter("userId", userIdd);
-        }
-        if (projectModel.getTypeUser() != null) {
-            q.setParameter("typeUser", projectModel.getTypeUser());
-        }
-        if (projectModel.getStartDate() != null) {
-            q.setParameter("startDate", projectModel.getStartDate());
-        }
-        if (projectModel.getEndDate() != null) {
-            q.setParameter("endDate", projectModel.getEndDate());
-        }
-        if (projectModel.getName() != null) {
-            q.setParameter("name", "%" + projectModel.getName() + "%");
-        }
-        return q.getResultList();
     }
 }

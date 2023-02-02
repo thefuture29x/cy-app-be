@@ -51,15 +51,15 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
-            "AND'IN_PROGRESS' NOT IN (\n" +
+            "AND 'IN_PROGRESS' NOT IN (\n" +
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
-            "AND'IN_REVIEW' NOT IN (\n" +
+            "AND 'PENDING' NOT IN (\n" +
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
-            "AND'FIX_BUG' NOT IN (\n" +
+            "AND 'IN_REVIEW' NOT IN (\n" +
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")",nativeQuery = true)

@@ -30,6 +30,7 @@ public class FeatureModel {
     private List<String> tagList;
     private Boolean isDefault;
     private List<Long> uids;
+    private List<Long> userFollow;
     private List<MultipartFile> files;
     private List<String> fileUrlsKeeping;
 }
