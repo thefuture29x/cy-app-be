@@ -33,6 +33,8 @@ public class CommentModel {
 
     private Long ObjectId;
 
+    private List<String> fileUrlsKeeping;
+
     public static CommentEntity toEntity(CommentModel commentModel) {
         return CommentEntity.builder()
                 .id(commentModel.getId())
