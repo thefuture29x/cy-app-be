@@ -35,6 +35,7 @@ public class TaskModel {
     private List<String> tagNames;
     private List<MultipartFile> files;
     private String textSearch;
+    private List<String> fileUrlsKeeping;
 
     public static TaskEntity toEntity(TaskModel model){
         if(model == null) return null;

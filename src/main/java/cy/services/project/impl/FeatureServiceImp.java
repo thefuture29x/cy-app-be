@@ -84,8 +84,8 @@ public class FeatureServiceImp implements IFeatureService {
         FeatureEntity featureEntity = this.featureRepository.findById(id).orElseThrow(() -> new CustomHandleException(23));
         featureEntity.setTagList(tagRelationService.findTagByCategoryAndObject(Const.tableName.FEATURE.name(), id).stream().map(x -> x.getIdTag()).collect(Collectors.toList()).stream().map(y -> this.tagService.getById(y)).collect(Collectors.toList()));
         featureEntity.setDevTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.FEATURE.name(), id, Const.type.TYPE_DEV.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
-        featureEntity.setFollowTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), featureEntity.getProject().getId(), Const.type.TYPE_FOLLOWER.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
-        featureEntity.setViewTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), featureEntity.getProject().getId(), Const.type.TYPE_VIEWER.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
+        featureEntity.setFollowTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.FEATURE.name(), featureEntity.getId(), Const.type.TYPE_FOLLOWER.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
+        featureEntity.setViewTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.FEATURE.name(), featureEntity.getId(), Const.type.TYPE_VIEWER.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
         return FeatureDto.toDto(this.getById(id));
     }
 
@@ -98,7 +98,18 @@ public class FeatureServiceImp implements IFeatureService {
     public FeatureDto add(FeatureModel model) {
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(() -> new CustomHandleException(45354345));
         Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectIdFollows = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        int countError = 0;
         if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
+            countError += 1;
+        }
+        if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectIdFollows::contains)) {
+            countError += 1;
+        }
+        if(SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()){
+            countError += 1;
+        }
+        if (countError == 3){
             throw new CustomHandleException(11);
         }
         List<TagEntity> tagList = new ArrayList<>();
@@ -238,7 +249,7 @@ public class FeatureServiceImp implements IFeatureService {
         if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
             newFollowTeam.stream().forEach(x -> {
                 newFollowTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
-                this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_VIEWER.name()).build());
+                this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_FOLLOWER.name()).build());
             });
             oldFeature.setFollowTeam(newFollowTeamEntity);
         }
