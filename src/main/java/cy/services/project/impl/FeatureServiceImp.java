@@ -121,6 +121,8 @@ public class FeatureServiceImp implements IFeatureService {
             }
         }
 
+
+
         FeatureEntity entity = (FeatureEntity) FeatureEntity.builder().
                 startDate(model.getStartDate())
                 .endDate(model.getEndDate())
@@ -146,6 +148,18 @@ public class FeatureServiceImp implements IFeatureService {
             entity.setDevTeam(model.getUids().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
         } else {
             throw new CustomHandleException(2131231);
+        }
+
+
+        if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
+            model.getUserFollow().stream().forEach(x -> this.userProjectRepository.save(UserProjectEntity.builder()
+                    .idUser(x)
+                    .objectId(entity.getId())
+                    .category(Const.tableName.FEATURE.name())
+                    .type(Const.type.TYPE_FOLLOWER.name())
+                    .build()));
+            entity.setFollowTeam(model.getUserFollow().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
+
         }
 //        entity.setProject();
         iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.FEATURE);
@@ -218,6 +232,15 @@ public class FeatureServiceImp implements IFeatureService {
             oldFeature.setDevTeam(newDevTeamEntity);
         } else {
             throw new CustomHandleException(2131231);
+        }
+        List<Long> newFollowTeam = model.getUserFollow();
+        List<UserEntity> newFollowTeamEntity = new ArrayList<>();
+        if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
+            newFollowTeam.stream().forEach(x -> {
+                newFollowTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
+                this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_VIEWER.name()).build());
+            });
+            oldFeature.setFollowTeam(newFollowTeamEntity);
         }
         iHistoryLogService.logUpdate(oldFeature.getId(), featureOriginal, oldFeature, Const.tableName.FEATURE);
         return FeatureDto.toDto(this.featureRepository.save(oldFeature));
