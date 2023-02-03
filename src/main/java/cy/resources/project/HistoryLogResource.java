@@ -18,7 +18,12 @@ public class HistoryLogResource {
     }
 
     @GetMapping("{object_id}")
-    public ResponseDto getComments(@PathVariable(name = "object_id") Long objectId, @RequestParam Const.tableName category, Pageable page) {
+    public ResponseDto getHistoryOfProjects(@PathVariable(name = "object_id") Long objectId, @RequestParam Const.tableName category, Pageable page) {
         return ResponseDto.of(this.historyLogService.filter(page, HistoryLogSpecification.byObjectAndCategory(objectId, category)));
+    }
+
+    @GetMapping("/all-history")
+    public ResponseDto getHistoryNotOfProjects(@RequestParam Const.tableName category, Pageable page) {
+        return ResponseDto.of(this.historyLogService.filter(page, HistoryLogSpecification.byCategory(category)));
     }
 }
