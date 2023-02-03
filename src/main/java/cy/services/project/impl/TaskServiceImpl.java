@@ -262,6 +262,12 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
+        if (model.getFileUrlsKeeping() != null){
+            fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.TASK.name(), model.getId());
+        }else {
+            fileRepository.deleteAllByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
+        }
+
         TaskEntity taskExist = (TaskEntity) Const.copy(this.getById(model.getId()));
         TaskEntity taskOld = this.getById(model.getId());
 
@@ -337,21 +343,24 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         // delete old file
-        List<FileEntity> fileEntities = this.fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
-        if (!fileEntities.isEmpty()) {
-            this.fileRepository.deleteAllInBatch(fileEntities);
-        }
+//        List<FileEntity> fileEntities = this.fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
+//        if (!fileEntities.isEmpty()) {
+//            this.fileRepository.deleteAllInBatch(fileEntities);
+//        }
 
         // save file
         List<String> fileAfterSave = new ArrayList<>();
-        for (MultipartFile file : model.getFiles()) {
-            FileModel fileModel = new FileModel();
-            fileModel.setFile(file);
-            fileModel.setObjectId(taskupdate.getId());
-            fileModel.setCategory(Const.tableName.TASK.name());
-            FileDto fileAfterSaveZ = fileService.add(fileModel);
-            fileAfterSave.add(fileAfterSaveZ.getLink());
+        if (model.getFiles() != null){
+            for (MultipartFile file : model.getFiles()) {
+                FileModel fileModel = new FileModel();
+                fileModel.setFile(file);
+                fileModel.setObjectId(taskupdate.getId());
+                fileModel.setCategory(Const.tableName.TASK.name());
+                FileDto fileAfterSaveZ = fileService.add(fileModel);
+                fileAfterSave.add(fileAfterSaveZ.getLink());
+            }
         }
+
         TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskupdate));
         result.setFiles(fileAfterSave);
         result.setTagName(tagList);
