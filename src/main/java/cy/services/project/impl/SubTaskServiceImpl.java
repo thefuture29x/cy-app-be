@@ -674,4 +674,18 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
         return new PageImpl<>(subTaskDtoList, pageable, subTaskDtoList.size());
     }
+
+    @Override
+    public boolean changeStatus(Long subTaskId, Const.status newStatus) {
+        SubTaskEntity subTaskEntityExist = subTaskRepository.findById(subTaskId).orElseThrow(() -> new CustomHandleException(204));
+        if (subTaskEntityExist.getStatus().equals(newStatus)) {
+            throw new CustomHandleException(205);
+        }
+        subTaskEntityExist.setStatus(newStatus.name());
+        SubTaskEntity saveResult = subTaskRepository.save(subTaskEntityExist);
+        if(saveResult == null){
+            return false;
+        }
+        return true;
+    }
 }
