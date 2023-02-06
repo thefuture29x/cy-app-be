@@ -73,7 +73,7 @@ public class SubTaskResources {
 
     @ApiOperation(value = "Thay đổi trạng thái subtask.", notes = "Trạng thái mới bắt buộc phải nằm trong các giá trị được quy định sẵn.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE", "ROLE_LEADER", "ROLE_MANAGER", "ROLE_ADMINISTRATOR"})
-    @GetMapping(value = "/change-status/{subTaskId}/{newStatus}")
+    @PutMapping(value = "/change-status/{subTaskId}/{newStatus}")
     public ResponseDto changeStatus(@PathVariable Long subTaskId, @PathVariable Const.status newStatus) {
         boolean result = iSubTaskService.changeStatus(subTaskId, newStatus);
         return ResponseDto.of(result ? "Thay đổi trạng thái thành công." : "Thay đổi trạng thái thất bại.");

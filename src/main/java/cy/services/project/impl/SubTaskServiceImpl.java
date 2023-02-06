@@ -678,7 +678,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public boolean changeStatus(Long subTaskId, Const.status newStatus) {
         SubTaskEntity subTaskEntityExist = subTaskRepository.findById(subTaskId).orElseThrow(() -> new CustomHandleException(204));
-        if (subTaskEntityExist.getStatus().equals(newStatus)) {
+        if (subTaskEntityExist.getStatus().equals(newStatus.name())) {
             throw new CustomHandleException(205);
         }
         subTaskEntityExist.setStatus(newStatus.name());
