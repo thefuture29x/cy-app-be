@@ -52,7 +52,7 @@ public class TaskServiceImpl implements ITaskService {
     @Autowired
     EntityManager manager;
 
-    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository,ITaskRepository iTaskRepository,IProjectRepository iProjectRepository) {
+    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository, ITaskRepository iTaskRepository, IProjectRepository iProjectRepository) {
         this.repository = repository;
         this.fileService = fileService;
         this.fileRepository = fileRepository;
@@ -205,22 +205,22 @@ public class TaskServiceImpl implements ITaskService {
         if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
                 // add dev to task
-                UserProjectEntity userProject = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.TASK.name());
+                UserProjectEntity userProject = this.addDev(devId, Const.type.TYPE_DEV.name(), Const.tableName.TASK.name());
                 userProject.setObjectId(taskEntity.getId());
                 this.userProjectRepository.saveAndFlush(userProject);
                 UserEntity userEntity1 = this.userRepository.findById(devId).orElseThrow(() -> new CustomHandleException(11));
                 devList.add(UserDto.toDto(userEntity1));
 
                 // add dev to feature
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),featureEntity.getId(),Const.type.TYPE_DEV.name(),devId).size() == 0){
-                    UserProjectEntity userProjectFeature = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.FEATURE.name());
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(), featureEntity.getId(), Const.type.TYPE_DEV.name(), devId).size() == 0) {
+                    UserProjectEntity userProjectFeature = this.addDev(devId, Const.type.TYPE_DEV.name(), Const.tableName.FEATURE.name());
                     userProjectFeature.setObjectId(featureEntity.getId());
                     this.userProjectRepository.saveAndFlush(userProjectFeature);
                 }
 
                 // add dev to project
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),idProjectEntity,Const.type.TYPE_DEV.name(),devId).size() == 0){
-                    UserProjectEntity userProjectPro = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.PROJECT.name());
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(), idProjectEntity, Const.type.TYPE_DEV.name(), devId).size() == 0) {
+                    UserProjectEntity userProjectPro = this.addDev(devId, Const.type.TYPE_DEV.name(), Const.tableName.PROJECT.name());
                     userProjectPro.setObjectId(idProjectEntity);
                     this.userProjectRepository.saveAndFlush(userProjectPro);
                 }
@@ -254,7 +254,7 @@ public class TaskServiceImpl implements ITaskService {
 
         // save file
         List<String> fileAfterSave = new ArrayList<>();
-        if (model.getFiles() != null){
+        if (model.getFiles() != null) {
             for (MultipartFile file : model.getFiles()) {
                 FileModel fileModel = new FileModel();
                 fileModel.setFile(file);
@@ -282,9 +282,9 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
-        if (model.getFileUrlsKeeping() != null){
+        if (model.getFileUrlsKeeping() != null) {
             fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.TASK.name(), model.getId());
-        }else {
+        } else {
             fileRepository.deleteAllByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
         }
 
@@ -356,22 +356,22 @@ public class TaskServiceImpl implements ITaskService {
         Long idProjectEntity = iProjectRepository.findById(featureEntity.getProject().getId()).get().getId();
         if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
-                UserProjectEntity userProject = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.TASK.name());
+                UserProjectEntity userProject = this.addDev(devId, Const.type.TYPE_DEV.name(), Const.tableName.TASK.name());
                 userProject.setObjectId(taskupdate.getId());
                 this.userProjectRepository.saveAndFlush(userProject);
                 UserEntity userEntity1 = this.userRepository.findById(devId).orElseThrow(() -> new CustomHandleException(11));
                 devList.add(UserDto.toDto(userEntity1));
 
                 // add dev to feature
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),featureEntity.getId(),Const.type.TYPE_DEV.name(),devId).size() == 0){
-                    UserProjectEntity userProjectFeature = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.FEATURE.name());
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(), featureEntity.getId(), Const.type.TYPE_DEV.name(), devId).size() == 0) {
+                    UserProjectEntity userProjectFeature = this.addDev(devId, Const.type.TYPE_DEV.name(), Const.tableName.FEATURE.name());
                     userProjectFeature.setObjectId(featureEntity.getId());
                     this.userProjectRepository.saveAndFlush(userProjectFeature);
                 }
 
                 // add dev to project
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),idProjectEntity,Const.type.TYPE_DEV.name(),devId).size() == 0){
-                    UserProjectEntity userProjectPro = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.PROJECT.name());
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(), idProjectEntity, Const.type.TYPE_DEV.name(), devId).size() == 0) {
+                    UserProjectEntity userProjectPro = this.addDev(devId, Const.type.TYPE_DEV.name(), Const.tableName.PROJECT.name());
                     userProjectPro.setObjectId(idProjectEntity);
                     this.userProjectRepository.saveAndFlush(userProjectPro);
                 }
@@ -380,7 +380,7 @@ public class TaskServiceImpl implements ITaskService {
 
         // save file
         List<String> fileAfterSave = new ArrayList<>();
-        if (model.getFiles() != null){
+        if (model.getFiles() != null) {
             for (MultipartFile file : model.getFiles()) {
                 FileModel fileModel = new FileModel();
                 fileModel.setFile(file);
@@ -561,16 +561,17 @@ public class TaskServiceImpl implements ITaskService {
         Page<TaskDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
         return result;
     }
+
     @Override
-    public List<TaskDto> searchTask(TaskSearchModel taskSearchModel){
+    public List<TaskDto> searchTask(TaskSearchModel taskSearchModel) {
         String sql = "SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
         sql += "inner join UserProjectEntity uspr ON task.id = uspr.objectId AND uspr.category = 'TASK' AND uspr.type = 'TYPE_DEV'";
 
-        if (taskSearchModel.getUserId() != null){
-            sql+= " AND uspr.idUser = :userId";
+        if (taskSearchModel.getUserId() != null) {
+            sql += " AND uspr.idUser = :userId";
         }
-        if (taskSearchModel.getFeatureId() != null){
-            sql+= " AND task.feature.id = :featureId";
+        if (taskSearchModel.getFeatureId() != null) {
+            sql += " AND task.feature.id = :featureId";
         }
         sql += " WHERE 1=1 ";
         if (taskSearchModel.getStartDate() != null) {
@@ -600,7 +601,16 @@ public class TaskServiceImpl implements ITaskService {
         if (taskSearchModel.getName() != null) {
             q.setParameter("name", "%" + taskSearchModel.getName() + "%");
         }
-        return q.getResultList();
+//        data.setCountSubtask(iTaskRepository.countSubtask(data.getId()))
+        List<TaskDto> querryResult = q.getResultList();
+        List<TaskDto> result = new ArrayList<>();
+        querryResult.stream().forEach(data -> {
+                    data.setCountSubtask(iTaskRepository.countSubtask(data.getId()));
+                    result.add(data);
+                }
+        );
+
+        return querryResult;
     }
 
     @Override
@@ -612,7 +622,7 @@ public class TaskServiceImpl implements ITaskService {
         try {
             repository.updateStatusTask(id, status);
             return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }

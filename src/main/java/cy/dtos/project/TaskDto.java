@@ -34,6 +34,7 @@ public class TaskDto {
     private List<UserDto> viewerList;
     private List<String> tagName;
     private List<String> files;
+    private int countSubtask;
 
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;

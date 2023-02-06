@@ -59,4 +59,10 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
 
     @Query(value = "SELECT t from  TaskEntity t where t.feature.id = 1")
     List<TaskEntity> searchAllTask(String sql);
+
+    @Query(value = "SELECT distinct COUNT(sub.id) FROM tbl_sub_tasks sub\n" +
+            "JOIN tbl_tasks tas ON sub.task_id = tas.id\n" +
+            "WHERE tas.id = ?1 and sub.is_deleted = false",nativeQuery = true)
+    int countSubtask(Long idTask);
+
 }
