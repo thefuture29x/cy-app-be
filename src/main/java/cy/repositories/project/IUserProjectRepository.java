@@ -22,4 +22,7 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
 
     @Query("SELECT up.idUser FROM UserProjectEntity up WHERE up.category = ?1 AND up.objectId = ?2 AND up.type = ?3")
     List<Long> getIdByCategoryAndObjectIdAndType(String category, Long objectId, String type);
+
+    @Query(value = "SELECT up FROM UserProjectEntity up WHERE up.category = ?1 AND up.idUser = ?2 AND up.objectId = ?3 AND up.type = ?4")
+    List<UserProjectEntity> getByAllAttrs(String category, Long userId, Long objectId, String type);
 }

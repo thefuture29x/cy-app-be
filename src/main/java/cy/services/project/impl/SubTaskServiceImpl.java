@@ -129,8 +129,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<UserDto> userFollowingDtoList = new ArrayList<>();
         if (subTaskDto.getId() != null) {
             // Collect id of user following
-            List<Long> userFollowingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
-                    subTaskDto.getId(), Const.type.TYPE_FOLLOWER.name());
+            List<Long> userFollowingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_FOLLOWER.name());
             // Find user entity by id
             List<UserEntity> userFollowingEntityList = userRepository.findAllById(userFollowingIdList);
             // Convert Entity to Dto
@@ -165,8 +164,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     private void setDeveloperUserList(SubTaskDto subTaskDto) {
         List<UserDto> userAssigningDtoList = new ArrayList<>();
         // Collect id of user assigning
-        List<Long> userAssigningIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
-                subTaskDto.getId(), Const.type.TYPE_DEV.name());
+        List<Long> userAssigningIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_DEV.name());
         // Find user entity by id
         List<UserEntity> userFollowingEntityList = userRepository.findAllById(userAssigningIdList);
         // Convert Entity to Dto
@@ -214,8 +212,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Save assigned users to UserProject
         List<UserProjectEntity> userProjectEntityList = this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
 
+        // Save assigned users for Task -> Feature -> Project
+        this.saveAssignedUsersForTask(userEntitiesAssigned, taskEntityChecked.getId());
+        this.saveAssignedUsersForFeature(userEntitiesAssigned, taskEntityChecked);
+        this.saveAssignedUsersForProject(userEntitiesAssigned, saveSubTask.getId());
+
         // Save following users to UserProject
-        if(isSaveFollowingUser) {
+        if (isSaveFollowingUser) {
             boolean saveFollowingUsersResult = this.saveFollowingUsers(model.getFollowingUserIdList(), saveSubTask.getId());
             if (!saveFollowingUsersResult) {
                 throw new CustomHandleException(203);
@@ -300,8 +303,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Save assigned users to UserProject
         List<UserProjectEntity> userProjectEntityList = this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
 
+        // Add assigned users for Task -> Feature -> Project (NOT clear old assigned users)
+        this.saveAssignedUsersForTask(userEntitiesAssigned, subTaskExisted.getTask().getId());
+        this.saveAssignedUsersForFeature(userEntitiesAssigned, subTaskExisted.getTask());
+        this.saveAssignedUsersForProject(userEntitiesAssigned, saveSubTask.getId());
+
         // Save following users to UserProject
-        if(modelUpdate.getFollowingUserIdList() != null && modelUpdate.getFollowingUserIdList().size() > 0) {
+        if (modelUpdate.getFollowingUserIdList() != null && modelUpdate.getFollowingUserIdList().size() > 0) {
             boolean saveFollowingUsersResult = this.saveFollowingUsers(modelUpdate.getFollowingUserIdList(), saveSubTask.getId());
             if (!saveFollowingUsersResult) {
                 throw new CustomHandleException(203);
@@ -366,6 +374,56 @@ public class SubTaskServiceImpl implements ISubTaskService {
         });
     }
 
+    private void saveAssignedUsersForProject(List<UserEntity> userEntitiesAssigned, Long subTaskId){
+        Long projectId = subTaskRepository.getProjectIdBySubTaskId(subTaskId);
+            for (UserEntity userEntity : userEntitiesAssigned) {
+                if(userProjectRepository.getByAllAttrs(Const.tableName.PROJECT + "", userEntity.getUserId(), projectId,
+                        Const.type.TYPE_DEV + "").size() > 0){
+                    continue;
+                }
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setObjectId(projectId);
+                userProjectEntity.setIdUser(userEntity.getUserId());
+                userProjectEntity.setType(Const.type.TYPE_DEV + "");
+                userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                this.userProjectRepository.save(userProjectEntity);
+            }
+    }
+
+    private void saveAssignedUsersForFeature(List<UserEntity> userEntitiesAssigned, TaskEntity taskEntity) {
+        if (taskEntity.getFeature() != null) {
+            Long featureId = taskEntity.getFeature().getId();
+            for (UserEntity userEntity : userEntitiesAssigned) {
+                if(userProjectRepository.getByAllAttrs(Const.tableName.FEATURE + "", userEntity.getUserId(), featureId,
+                        Const.type.TYPE_DEV + "").size() > 0){
+                    continue;
+                }
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setObjectId(featureId);
+                userProjectEntity.setIdUser(userEntity.getUserId());
+                userProjectEntity.setType(Const.type.TYPE_DEV + "");
+                userProjectEntity.setCategory(Const.tableName.FEATURE + "");
+                this.userProjectRepository.save(userProjectEntity);
+            }
+        }
+    }
+
+    private void saveAssignedUsersForTask(List<UserEntity> userEntitiesAssigned, Long taskId) {
+        // taskEntity always not null
+        for (UserEntity userEntity : userEntitiesAssigned) {
+            if(userProjectRepository.getByAllAttrs(Const.tableName.TASK + "", userEntity.getUserId(), taskId,
+                    Const.type.TYPE_DEV + "").size() > 0){
+                continue;
+            }
+            UserProjectEntity userProjectEntity = new UserProjectEntity();
+            userProjectEntity.setObjectId(taskId);
+            userProjectEntity.setIdUser(userEntity.getUserId());
+            userProjectEntity.setType(Const.type.TYPE_DEV + "");
+            userProjectEntity.setCategory(Const.tableName.TASK + "");
+            this.userProjectRepository.save(userProjectEntity);
+        }
+    }
+
     private List<UserProjectEntity> saveAssignedUsers(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
         List<UserProjectEntity> userProjectEntityList = new ArrayList<>();
         for (UserEntity userEntity : userEntitiesAssigned) {
@@ -380,15 +438,15 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return userProjectEntityList;
     }
 
-    private boolean saveFollowingUsers(List<Long> userIdList, Long subTaskId){
-        for(Long userId : userIdList){
+    private boolean saveFollowingUsers(List<Long> userIdList, Long subTaskId) {
+        for (Long userId : userIdList) {
             UserProjectEntity userProjectEntity = new UserProjectEntity();
             userProjectEntity.setObjectId(subTaskId);
             userProjectEntity.setIdUser(userId);
             userProjectEntity.setType(Const.type.TYPE_FOLLOWER + "");
             userProjectEntity.setCategory(Const.tableName.SUBTASK + "");
             UserProjectEntity userProjectEntitySave = this.userProjectRepository.save(userProjectEntity);
-            if(userProjectEntitySave == null){
+            if (userProjectEntitySave == null) {
                 return false;
             }
         }
@@ -418,15 +476,15 @@ public class SubTaskServiceImpl implements ISubTaskService {
         objectList.add(userEntitiesAssigned);
 
         // Check follow user id list
-        if(model.getFollowingUserIdList() != null) {
+        if (model.getFollowingUserIdList() != null) {
             for (Long userId : model.getFollowingUserIdList()) {
                 boolean isUserEntityExist = userRepository.existsById(userId);
-                if(!isUserEntityExist) {
+                if (!isUserEntityExist) {
                     throw new CustomHandleException(202);
                 }
             }
             objectList.add(true);
-        }else {
+        } else {
             objectList.add(false);
         }
         return objectList;
@@ -445,10 +503,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             if (fileName != null) {
                 fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
             }
-            if (file.getContentType().equalsIgnoreCase("video/*") && !file.getContentType().equalsIgnoreCase("image/*")
-                    && !fileType.equalsIgnoreCase("xlxs") && !fileType.equalsIgnoreCase("docx")
-                    && !fileType.equalsIgnoreCase("pptx") && !fileType.equalsIgnoreCase("pdf")
-                    && !fileType.equalsIgnoreCase("xml")) {
+            if (file.getContentType().equalsIgnoreCase("video/*") && !file.getContentType().equalsIgnoreCase("image/*") && !fileType.equalsIgnoreCase("xlxs") && !fileType.equalsIgnoreCase("docx") && !fileType.equalsIgnoreCase("pptx") && !fileType.equalsIgnoreCase("pdf") && !fileType.equalsIgnoreCase("xml")) {
                 throw new CustomHandleException(195);
             } else {
                 FileEntity fileEntity = new FileEntity();
