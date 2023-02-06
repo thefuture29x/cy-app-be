@@ -633,6 +633,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         Date startDate = subTaskModel.getStartDate();
         Date endDate = subTaskModel.getEndDate();
         String status = subTaskModel.getStatus() != null ? subTaskModel.getStatus().name() : null;
+        String priority = subTaskModel.getPriority() != null ? subTaskModel.getPriority().name() : null;
         TaskEntity isTaskExist = taskRepository.findByIdAndIsDeletedFalse(taskId);
         if (isTaskExist == null) {
             throw new CustomHandleException(192);
@@ -651,6 +652,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (status != null) {
             sql += " AND status = '" + status + "'";
         }
+        if(priority != null) {
+            sql += " AND priority = '" + priority + "'";
+        }
+
         sql += " AND is_deleted = false";
 
         sql += " ORDER BY created_date DESC";
