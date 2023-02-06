@@ -64,4 +64,6 @@ public class SubTaskModel {
     private Const.status status;
     // Set default subtask.
     private Boolean isDefault;
+    // Following user id list can be null or empty.
+    private List<Long> followingUserIdList;
 }
