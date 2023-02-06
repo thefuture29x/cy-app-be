@@ -5,6 +5,7 @@ import cy.dtos.ResponseDto;
 import cy.dtos.project.SubTaskDto;
 import cy.models.project.SubTaskModel;
 import cy.services.project.ISubTaskService;
+import cy.utils.Const;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -68,5 +69,13 @@ public class SubTaskResources {
     public ResponseDto filter(@RequestBody SubTaskModel subTaskModel, Pageable pageable) {
         Page<SubTaskDto> result = iSubTaskService.filter(subTaskModel, pageable);
         return ResponseDto.of(result);
+    }
+
+    @ApiOperation(value = "Thay đổi trạng thái subtask.", notes = "Trạng thái mới bắt buộc phải nằm trong các giá trị được quy định sẵn.")
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE", "ROLE_LEADER", "ROLE_MANAGER", "ROLE_ADMINISTRATOR"})
+    @GetMapping(value = "/change-status/{subTaskId}/{newStatus}")
+    public ResponseDto changeStatus(@PathVariable Long subTaskId, @PathVariable Const.status newStatus) {
+        boolean result = iSubTaskService.changeStatus(subTaskId, newStatus);
+        return ResponseDto.of(result ? "Thay đổi trạng thái thành công." : "Thay đổi trạng thái thất bại.");
     }
 }
