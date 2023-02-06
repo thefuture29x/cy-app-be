@@ -47,11 +47,12 @@ public class TaskServiceImpl implements ITaskService {
     private final ISubTaskService subTaskService;
     private final ISubTaskRepository subTaskRepository;
     private final ITaskRepository iTaskRepository;
+    private final IProjectRepository iProjectRepository;
 
     @Autowired
     EntityManager manager;
 
-    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository,ITaskRepository iTaskRepository) {
+    public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository,ITaskRepository iTaskRepository,IProjectRepository iProjectRepository) {
         this.repository = repository;
         this.fileService = fileService;
         this.fileRepository = fileRepository;
@@ -66,6 +67,7 @@ public class TaskServiceImpl implements ITaskService {
         this.subTaskService = subTaskService;
         this.subTaskRepository = subTaskRepository;
         this.iTaskRepository = iTaskRepository;
+        this.iProjectRepository = iProjectRepository;
     }
 
     @Override
@@ -198,13 +200,31 @@ public class TaskServiceImpl implements ITaskService {
 
         // add dev
         List<UserDto> devList = new ArrayList<>();
+        FeatureEntity featureEntity = featureRepository.findById(taskEntity.getFeature().getId()).get();
+        Long idProjectEntity = iProjectRepository.findById(featureEntity.getProject().getId()).get().getId();
         if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
-                UserProjectEntity userProject = this.addDev(devId);
+                // add dev to task
+                UserProjectEntity userProject = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.TASK.name());
                 userProject.setObjectId(taskEntity.getId());
                 this.userProjectRepository.saveAndFlush(userProject);
                 UserEntity userEntity1 = this.userRepository.findById(devId).orElseThrow(() -> new CustomHandleException(11));
                 devList.add(UserDto.toDto(userEntity1));
+
+                // add dev to feature
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),featureEntity.getId(),Const.type.TYPE_DEV.name(),devId).size() == 0){
+                    UserProjectEntity userProjectFeature = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.FEATURE.name());
+                    userProjectFeature.setObjectId(featureEntity.getId());
+                    this.userProjectRepository.saveAndFlush(userProjectFeature);
+                }
+
+                // add dev to project
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),idProjectEntity,Const.type.TYPE_DEV.name(),devId).size() == 0){
+                    UserProjectEntity userProjectPro = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.PROJECT.name());
+                    userProjectPro.setObjectId(idProjectEntity);
+                    this.userProjectRepository.saveAndFlush(userProjectPro);
+                }
+
             }
         }
 
@@ -332,21 +352,31 @@ public class TaskServiceImpl implements ITaskService {
         oldUserProjects.stream().forEach(oldUserProject -> this.userProjectRepository.delete(oldUserProject));
         // add dev
         List<UserDto> devList = new ArrayList<>();
+        FeatureEntity featureEntity = featureRepository.findById(taskOld.getFeature().getId()).get();
+        Long idProjectEntity = iProjectRepository.findById(featureEntity.getProject().getId()).get().getId();
         if (model.getDevIds() != null && model.getDevIds().size() > 0) {
             for (Long devId : model.getDevIds()) {
-                UserProjectEntity userProject = this.addDev(devId);
+                UserProjectEntity userProject = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.TASK.name());
                 userProject.setObjectId(taskupdate.getId());
                 this.userProjectRepository.saveAndFlush(userProject);
                 UserEntity userEntity1 = this.userRepository.findById(devId).orElseThrow(() -> new CustomHandleException(11));
                 devList.add(UserDto.toDto(userEntity1));
+
+                // add dev to feature
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),featureEntity.getId(),Const.type.TYPE_DEV.name(),devId).size() == 0){
+                    UserProjectEntity userProjectFeature = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.FEATURE.name());
+                    userProjectFeature.setObjectId(featureEntity.getId());
+                    this.userProjectRepository.saveAndFlush(userProjectFeature);
+                }
+
+                // add dev to project
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),idProjectEntity,Const.type.TYPE_DEV.name(),devId).size() == 0){
+                    UserProjectEntity userProjectPro = this.addDev(devId,Const.type.TYPE_DEV.name(),Const.tableName.PROJECT.name());
+                    userProjectPro.setObjectId(idProjectEntity);
+                    this.userProjectRepository.saveAndFlush(userProjectPro);
+                }
             }
         }
-
-        // delete old file
-//        List<FileEntity> fileEntities = this.fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
-//        if (!fileEntities.isEmpty()) {
-//            this.fileRepository.deleteAllInBatch(fileEntities);
-//        }
 
         // save file
         List<String> fileAfterSave = new ArrayList<>();
@@ -358,6 +388,17 @@ public class TaskServiceImpl implements ITaskService {
                 fileModel.setCategory(Const.tableName.TASK.name());
                 FileDto fileAfterSaveZ = fileService.add(fileModel);
                 fileAfterSave.add(fileAfterSaveZ.getLink());
+            }
+        }
+        // add follower
+        List<UserDto> followerList = new ArrayList<>();
+        if (model.getFollowerIds() != null && model.getFollowerIds().size() > 0) {
+            for (Long followerId : model.getFollowerIds()) {
+                UserProjectEntity userProject = this.addFollower(followerId);
+                userProject.setObjectId(taskupdate.getId());
+                this.userProjectRepository.saveAndFlush(userProject);
+                UserEntity userEntity2 = this.userRepository.findById(followerId).orElseThrow(() -> new CustomHandleException(11));
+                followerList.add(UserDto.toDto(userEntity2));
             }
         }
 
@@ -406,13 +447,13 @@ public class TaskServiceImpl implements ITaskService {
     }
 
     // add dev
-    public UserProjectEntity addDev(Long id) {
+    public UserProjectEntity addDev(Long id, String type, String category) {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         UserProjectEntity userProject = UserProjectEntity.builder()
                 .idUser(userEntity.getUserId())
-                .type(Const.type.TYPE_DEV.name())
-                .category(Const.tableName.TASK.name())
+                .type(type)
+                .category(category)
                 .build();
 
         return this.userProjectRepository.saveAndFlush(userProject);
