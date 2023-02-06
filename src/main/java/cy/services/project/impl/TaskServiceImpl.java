@@ -602,7 +602,10 @@ public class TaskServiceImpl implements ITaskService {
             q.setParameter("name", "%" + taskSearchModel.getName() + "%");
         }
         List<TaskDto> querryResult = q.getResultList();
-        querryResult.stream().forEach(data -> data.setCountSubtask(iTaskRepository.countSubtask(data.getId())));
+        querryResult.stream().forEach(data -> {
+            data.setCountSubtask(iTaskRepository.countSubtask(data.getId()));
+            data.setCountSubtask(iTaskRepository.countSubtaskDone(data.getId()));
+        });
         return querryResult;
     }
 
