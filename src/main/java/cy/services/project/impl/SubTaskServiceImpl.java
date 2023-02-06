@@ -185,6 +185,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<Object> objectList = this.checkIdAndDate(model);
         TaskEntity taskEntityChecked = (TaskEntity) objectList.get(0);
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objectList.get(1);
+        boolean isSaveFollowingUser = (boolean) objectList.get(2);
 
         // Validate file type allow
         // Allowed image and video file
@@ -211,6 +212,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         // Save assigned users to UserProject
         List<UserProjectEntity> userProjectEntityList = this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
+
+        // Save following users to UserProject
+        if(isSaveFollowingUser) {
+            boolean saveFollowingUsersResult = this.saveFollowingUsers(model.getFollowingUserIdList(), saveSubTask.getId());
+            if (!saveFollowingUsersResult) {
+                throw new CustomHandleException(203);
+            }
+        }
 
         // Update object id value for file
         this.updateObjectId(fileEntityList, saveSubTask.getId());
@@ -290,6 +299,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Save assigned users to UserProject
         List<UserProjectEntity> userProjectEntityList = this.saveAssignedUsers(userEntitiesAssigned, saveSubTask.getId());
 
+        // Save following users to UserProject
+        if(modelUpdate.getFollowingUserIdList() != null && modelUpdate.getFollowingUserIdList().size() > 0) {
+            boolean saveFollowingUsersResult = this.saveFollowingUsers(modelUpdate.getFollowingUserIdList(), saveSubTask.getId());
+            if (!saveFollowingUsersResult) {
+                throw new CustomHandleException(203);
+            }
+        }
+
         // Clear old tag list
         this.clearTagList(saveSubTask.getId());
 
@@ -302,7 +319,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
-        subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
+//        subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
         iHistoryLogService.logUpdate(saveSubTask.getId(), subTaskEntityOriginal, saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
     }
@@ -362,6 +379,21 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return userProjectEntityList;
     }
 
+    private boolean saveFollowingUsers(List<Long> userIdList, Long subTaskId){
+        for(Long userId : userIdList){
+            UserProjectEntity userProjectEntity = new UserProjectEntity();
+            userProjectEntity.setObjectId(subTaskId);
+            userProjectEntity.setIdUser(userId);
+            userProjectEntity.setType(Const.type.TYPE_FOLLOWER + "");
+            userProjectEntity.setCategory(Const.tableName.SUBTASK + "");
+            UserProjectEntity userProjectEntitySave = this.userProjectRepository.save(userProjectEntity);
+            if(userProjectEntitySave == null){
+                return false;
+            }
+        }
+        return true;
+    }
+
     private List<Object> checkIdAndDate(SubTaskModel model) {
         List<Object> objectList = new ArrayList<>();
         List<UserEntity> userEntitiesAssigned = new ArrayList<>();
@@ -377,11 +409,25 @@ public class SubTaskServiceImpl implements ISubTaskService {
             throw new CustomHandleException(193);
         }
 
+        // Check assigned user id list
         for (Long userId : model.getAssignedUserIdList()) {
             UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new CustomHandleException(194));
             userEntitiesAssigned.add(userEntity);
         }
         objectList.add(userEntitiesAssigned);
+
+        // Check follow user id list
+        if(model.getFollowingUserIdList() != null) {
+            for (Long userId : model.getFollowingUserIdList()) {
+                boolean isUserEntityExist = userRepository.existsById(userId);
+                if(!isUserEntityExist) {
+                    throw new CustomHandleException(202);
+                }
+            }
+            objectList.add(true);
+        }else {
+            objectList.add(false);
+        }
         return objectList;
     }
 
