@@ -127,9 +127,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
     private void setFollowingUserList(SubTaskDto subTaskDto) {
         Long projectIdBySubTaskId = subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId());
         List<UserDto> userFollowingDtoList = new ArrayList<>();
-        if (projectIdBySubTaskId != null) {
+        if (subTaskDto.getId() != null) {
             // Collect id of user following
-            List<Long> userFollowingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectIdBySubTaskId, Const.type.TYPE_FOLLOWER.name());
+            List<Long> userFollowingIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
+                    subTaskDto.getId(), Const.type.TYPE_FOLLOWER.name());
             // Find user entity by id
             List<UserEntity> userFollowingEntityList = userRepository.findAllById(userFollowingIdList);
             // Convert Entity to Dto
