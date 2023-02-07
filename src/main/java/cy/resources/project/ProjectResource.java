@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "project")
 @RestController
 public class ProjectResource {
@@ -25,13 +27,13 @@ public class ProjectResource {
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/create")
-    public ResponseDto create(@ModelAttribute ProjectModel projectModel) {
+    public ResponseDto create(@ModelAttribute ProjectModel projectModel) throws IOException {
         return ResponseDto.of(iProjectService.createProject(projectModel));
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/update")
-    public ResponseDto update(@ModelAttribute ProjectModel projectModel) {
+    public ResponseDto update(@ModelAttribute ProjectModel projectModel) throws IOException {
         return ResponseDto.of(iProjectService.updateProject(projectModel));
     }
 

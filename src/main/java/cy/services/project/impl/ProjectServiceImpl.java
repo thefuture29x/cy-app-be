@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -82,8 +83,7 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     @Override
-    public ProjectDto createProject(ProjectModel projectModel) {
-        try {
+    public ProjectDto createProject(ProjectModel projectModel) throws IOException {
             ProjectEntity projectEntity = new ProjectEntity();
             Long userId = SecurityUtils.getCurrentUserId();
             if (userId == null)
@@ -143,8 +143,6 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            List<String> tagArray = new ArrayList<>();
-//          if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
             if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
                 for (String tagModel : projectModel.getTagArray()) {
                     TagEntity tagEntity = iTagRepository.findByName(tagModel);
@@ -164,7 +162,6 @@ public class ProjectServiceImpl implements IProjectService {
                         tagRelationEntity.setObjectId(projectEntity.getId());
                         iTagRelationRepository.save(tagRelationEntity);
                     }
-                    tagArray.add(tagEntity.getName());
                 }
             }
 //            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
@@ -200,17 +197,11 @@ public class ProjectServiceImpl implements IProjectService {
             }
             iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT);
             ProjectDto result = ProjectDto.toDto(projectEntity);
-            result.setTagArray(tagArray);
             return result;
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     @Override
-//    @Transactional(dontRollbackOn = Exception.class)
-    public ProjectDto updateProject(ProjectModel projectModel) {
-        try {
+    public ProjectDto updateProject(ProjectModel projectModel) throws IOException {
             List<String> fileUrlsKeeping = new ArrayList<>();
             if (projectModel.getFileUrlsKeeping() != null){
                 projectModel.getFileUrlsKeeping().stream().map(url -> fileUrlsKeeping.add(url)).collect(Collectors.toList());
@@ -292,36 +283,21 @@ public class ProjectServiceImpl implements IProjectService {
                 }
             }
 
-//            List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
-//            if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
-//                iTagRelationRepository.deleteAll(tagRelationEntities);
-//            }
-//            if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
-            List<String> tagArray = new ArrayList<>();
+            List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
+            iTagRelationRepository.deleteAll(tagRelationEntities);
             if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
                 for (String tagModel : projectModel.getTagArray()) {
-                    TagEntity tagEntity = iTagRepository.findByName(tagModel);
-                    if (tagEntity == null) {
-                        TagEntity tagEntity1 = new TagEntity();
-                        tagEntity1.setName(tagModel);
-                        tagEntity1 = iTagRepository.save(tagEntity1);
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
-                        tagRelationEntity.setIdTag(tagEntity1.getId());
-                        tagRelationEntity.setObjectId(projectEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
-                        tagArray.add(tagEntity1.getName());
-                    } else if (tagEntity != null) {
-                        TagRelationEntity tagRelationEntity = iTagRelationRepository.findByIdTag(tagEntity.getId());
-//                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
-                        tagRelationEntity.setIdTag(tagEntity.getId());
-                        tagRelationEntity.setObjectId(projectEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
-                        tagArray.add(tagEntity.getName());
-                    }
+                    TagEntity tagEntity1 = new TagEntity();
+                    tagEntity1.setName(tagModel);
+                    tagEntity1 = iTagRepository.save(tagEntity1);
+                    TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                    tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
+                    tagRelationEntity.setIdTag(tagEntity1.getId());
+                    tagRelationEntity.setObjectId(projectEntity.getId());
+                    iTagRelationRepository.save(tagRelationEntity);
                 }
             }
+
             iFileRepository.delete(projectEntity.getAvatar());
             if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
                 String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
@@ -363,12 +339,7 @@ public class ProjectServiceImpl implements IProjectService {
             iProjectRepository.save(projectEntity);
             iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal, projectEntity, Const.tableName.PROJECT);
             ProjectDto result = ProjectDto.toDto(projectEntity);
-            result.setTagArray(tagArray);
             return result;
-        } catch (Exception e) {
-            System.out.println(e);
-            return null;
-        }
     }
 
     @Override
