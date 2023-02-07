@@ -5,12 +5,13 @@ import cy.models.project.ProjectModel;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.parameters.P;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface IProjectService {
     ProjectDto findById(Long id);
-    ProjectDto createProject(ProjectModel projectModel);
-    ProjectDto updateProject(ProjectModel projectModel);
+    ProjectDto createProject(ProjectModel projectModel) throws IOException;
+    ProjectDto updateProject(ProjectModel projectModel) throws IOException;
     Boolean deleteProject(Long id);
     Boolean changIsDeleteById(Long id);
     Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel);

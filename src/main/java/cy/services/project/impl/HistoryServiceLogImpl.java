@@ -323,7 +323,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         }
 
         StringBuilder content = new StringBuilder()
-                .append(user.getFullName())
                 .append(" đã xóa ")
                 .append(category.name().toLowerCase())
                 .append(".");

@@ -33,17 +33,17 @@ public class TaskDto {
     private List<UserDto> followerList;
     private List<UserDto> viewerList;
     private List<String> tagName;
-    private List<String> files;
+    private List<FileDto> files;
     private int countSubtask;
     private int countSubtaskDone;
 
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;
-
-        List<String> lstFile = new ArrayList<>();
-        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
-            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
-        }
+//
+//        List<String> lstFile = new ArrayList<>();
+//        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
+//            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
+//        }
 
         return TaskDto.builder()
                 .id(entity.getId())
@@ -63,7 +63,7 @@ public class TaskDto {
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagName(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)
                         .collect(Collectors.toList()) : new ArrayList<>())
-                .files(lstFile)
+                .files(entity.getAttachFiles()!=null ? entity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
                 .build();
 
     }
@@ -81,7 +81,6 @@ public class TaskDto {
                 .collect(Collectors.toList()) : new ArrayList<>();
         this.tagName = entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)
                 .collect(Collectors.toList()) : new ArrayList<>();
-        this.files = entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(x-> x.getLink())
-                .collect(Collectors.toList()) : new ArrayList<>();
+        this.files = entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>();
     }
 }

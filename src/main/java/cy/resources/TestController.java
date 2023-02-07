@@ -109,8 +109,8 @@ public class TestController {
     @Autowired
     ITaskService iTaskService;
 
-    @PostMapping ("test-search-task")
-    public ResponseDto testUpLoadFile(TaskSearchModel taskSearchModel) {
-        return ResponseDto.of(iTaskService.searchTask(taskSearchModel));
+    @PostMapping ("upfile")
+    public ResponseDto testUpLoadFile(MultipartFile file) throws IOException {
+        return ResponseDto.of(fileUploadProvider.uploadFile("avatar",file));
     }
 }

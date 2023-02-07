@@ -253,7 +253,7 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         // save file
-        List<String> fileAfterSave = new ArrayList<>();
+//        List<String> fileAfterSave = new ArrayList<>();
         if (model.getFiles() != null) {
             for (MultipartFile file : model.getFiles()) {
                 FileModel fileModel = new FileModel();
@@ -261,12 +261,12 @@ public class TaskServiceImpl implements ITaskService {
                 fileModel.setObjectId(taskEntity.getId());
                 fileModel.setCategory(Const.tableName.TASK.name());
                 FileDto fileAfterSaveZ = fileService.add(fileModel);
-                fileAfterSave.add(fileAfterSaveZ.getLink());
+//                fileAfterSave.add(fileAfterSaveZ.getLink());
             }
         }
 
         TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskEntity));
-        result.setFiles(fileAfterSave);
+//        result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
         result.setFollowerList(followerList);
@@ -391,19 +391,19 @@ public class TaskServiceImpl implements ITaskService {
             }
         }
         // add follower
-        List<UserDto> followerList = new ArrayList<>();
+//        List<UserDto> followerList = new ArrayList<>();
         if (model.getFollowerIds() != null && model.getFollowerIds().size() > 0) {
             for (Long followerId : model.getFollowerIds()) {
                 UserProjectEntity userProject = this.addFollower(followerId);
                 userProject.setObjectId(taskupdate.getId());
                 this.userProjectRepository.saveAndFlush(userProject);
                 UserEntity userEntity2 = this.userRepository.findById(followerId).orElseThrow(() -> new CustomHandleException(11));
-                followerList.add(UserDto.toDto(userEntity2));
+//                followerList.add(UserDto.toDto(userEntity2));
             }
         }
 
         TaskDto result = TaskDto.toDto(this.repository.saveAndFlush(taskupdate));
-        result.setFiles(fileAfterSave);
+//        result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
 
