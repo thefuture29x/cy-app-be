@@ -167,7 +167,8 @@ public class ProjectServiceImpl implements IProjectService {
                     tagArray.add(tagEntity.getName());
                 }
             }
-            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
+//            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
+            if (projectModel.getAvatar() != null) {
                 String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity = new FileEntity();
                 String fileName = projectModel.getAvatar().getOriginalFilename();
@@ -180,7 +181,8 @@ public class ProjectServiceImpl implements IProjectService {
                 projectEntity.setAvatar(fileEntity);
                 projectEntity = iProjectRepository.save(projectEntity);
             }
-            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
+//            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
+            if (projectModel.getFiles().length > 0) {
                 for (MultipartFile m : projectModel.getFiles()) {
                     if (!m.isEmpty()) {
                         String urlFile = fileUploadProvider.uploadFile("project", m);
