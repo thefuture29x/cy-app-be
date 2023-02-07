@@ -196,7 +196,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             throw new CustomHandleException(371);
 
         StringBuilder content = new StringBuilder()
-                .append(user.getFullName())
                 .append(" đã thêm ")
                 .append(annotationClass.title())
                 .append(" mới.");
@@ -295,7 +294,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 throw new CustomHandleException(371);
             }
             changedContent.setLength(0);
-            changedContent.append(user.getUserName())
+            changedContent
                     .append(" đã cập nhật ")
                     .append(annotationClass.title())
                     .append(".");
