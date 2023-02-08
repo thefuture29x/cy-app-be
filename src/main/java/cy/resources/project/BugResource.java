@@ -49,7 +49,7 @@ public class BugResource {
         return ResponseDto.of(bugService.findAllBugOfProject(idProject,pageable));
     }
     @PostMapping(value = "/findBypage")
-    public ResponseDto findBypage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody BugModel bugModel) {
+    public ResponseDto findByPage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody BugModel bugModel) {
         return ResponseDto.of(bugService.findByPage(pageIndex,pageSize,bugModel));
     }
     @GetMapping(value = "getAllBug")
