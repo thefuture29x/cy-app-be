@@ -93,8 +93,9 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto findById(Long id) {
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
-        List<UserMetaDto> reviewerList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
-        List<UserMetaDto> responsibleList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
+
+        List<UserMetaDto> reviewerList =showListUserInBug( Const.type.TYPE_REVIEWER.name(), id) ;// userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
+        List<UserMetaDto> responsibleList =showListUserInBug( Const.type.TYPE_DEV.name(), id); //userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
         List<TagDto> tagEntityList = new ArrayList<>();
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
@@ -694,9 +695,14 @@ public class BugServiceImpl implements IRequestBugService {
 
     }
 
+    public List<UserMetaDto> showListUserInBug(String type, Long id) {
+        List<UserMetaDto> userList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), type, id);
+        return userList;
+    }
+
     @Override
     public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
-        return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDto(data));
+        return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
 
     @Autowired
