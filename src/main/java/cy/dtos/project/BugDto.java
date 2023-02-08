@@ -76,29 +76,29 @@ public class BugDto {
     public static BugDto entityToDtoInProject(BugEntity obj, List<UserMetaDto> responsibleList,List<UserMetaDto> reviewerList) {
         return BugDto.builder()
                 .id(obj.getId())
-                .createBy(obj.getCreateBy() != null ? UserMetaDto.toDto(obj.getCreateBy()) : null)
-                .priority(obj.getPriority())
+//                .createBy(obj.getCreateBy() != null ? UserMetaDto.toDto(obj.getCreateBy()) : null)
+//                .priority(obj.getPriority())
                 .nameBug(obj.getName())
                 .subTask(obj.getSubTask() != null ? obj.getSubTask().getId() : null)
                 .task(obj.getTask() != null ? obj.getTask().getId() : null)
-                .description(obj.getDescription())
+//                .description(obj.getDescription())
                 .startDate(obj.getStartDate())
-                .createdDate(obj.getCreatedDate())
-                .updatedDate(obj.getUpdatedDate())
+//                .createdDate(obj.getCreatedDate())
+//                .updatedDate(obj.getUpdatedDate())
                 .endDate(obj.getEndDate())
-                .isDefault(obj.getIsDefault())
-                .isDelete(obj.getIsDeleted())
-                .assignTo(obj.getAssignTo() != null ? UserMetaDto.toDto(obj.getAssignTo()) : null)
-                .historyLogBug(obj.getHistoryBugList() != null
-                        ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
-                .attachFiles(obj.getAttachFiles()!=null
-                        ? obj.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
-                .status(obj.getStatus())
-                .tagList(obj.getTagList() != null
-                        ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
+//                .isDefault(obj.getIsDefault())
+//                .isDelete(obj.getIsDeleted())
+//                .assignTo(obj.getAssignTo() != null ? UserMetaDto.toDto(obj.getAssignTo()) : null)
+//                .historyLogBug(obj.getHistoryBugList() != null
+//                        ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
+//                .attachFiles(obj.getAttachFiles()!=null
+//                        ? obj.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
+//                .status(obj.getStatus())
+//                .tagList(obj.getTagList() != null
+//                        ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .reviewerList(reviewerList != null ? reviewerList : null)
                 .responsibleList(responsibleList != null ? responsibleList : null)
-                .reason(obj.getReason()!=null ? obj.getReason() : null)
+//                .reason(obj.getReason()!=null ? obj.getReason() : null)
                 .build();
     }
 
