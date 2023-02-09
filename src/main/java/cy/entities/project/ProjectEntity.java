@@ -33,15 +33,15 @@ public class ProjectEntity extends ProjectBaseEntity{
     private FileEntity avatar;
 
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người phụ trách", isListType = true)
     @Transient
     private List<UserEntity> devTeam;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người theo dõi", isListType = true)
     @Transient
     private List<UserEntity> followTeam;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người có thể xem", isListType = true)
     @Transient
     private List<UserEntity> viewTeam;
 

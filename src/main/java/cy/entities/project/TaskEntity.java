@@ -33,15 +33,15 @@ public class TaskEntity extends ProjectBaseEntity{
     @Where(clause = "category='TASK'")
     private List<FileEntity> attachFiles;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người phụ trách", isListType = true)
     @Transient
     private List<UserEntity> devTeam;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người theo dõi", isListType = true)
     @Transient
     private List<UserEntity> followerTeam;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người có thể xem", isListType = true)
     @Transient
     private List<UserEntity> viewerTeam;
 }

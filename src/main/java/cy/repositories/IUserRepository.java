@@ -48,4 +48,9 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
     @Query("select new cy.dtos.project.UserMetaDto(u) from UserEntity u inner join UserProjectEntity up on u.userId = up.idUser where up.category = ?1 and up.type=?2 and up.objectId=?3")
     List<UserMetaDto> getByCategoryAndTypeAndObjectIdUserMetaDto(String category, String type, Long objectId);
 
+    @Query(value = "SELECT DISTINCT us.* FROM tbl_user_projects uspr \n" +
+            "JOIN tbl_user us ON uspr.user_id = us.user_id\n" +
+            "WHERE uspr.category = ?1 AND uspr.type = ?2 AND uspr.object_id = ?3\n",nativeQuery = true)
+    List<UserEntity> getAllByCategoryAndTypeAndObjectId(String category, String type, Long objectId);
+
 }

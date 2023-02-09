@@ -3,10 +3,7 @@ package cy.services.project.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.HistoryLogDto;
 import cy.entities.UserEntity;
-import cy.entities.project.FileEntity;
-import cy.entities.project.HistoryEntity;
-import cy.entities.project.HistoryLogTitle;
-import cy.entities.project.ProjectBaseEntity;
+import cy.entities.project.*;
 import cy.models.attendance.NotificationModel;
 import cy.repositories.project.IHistoryLogRepository;
 import cy.services.attendance.INotificationService;
@@ -21,6 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -201,7 +200,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .append(" mới.");
 
 
-
         this.historyLogRepository.saveAndFlush(HistoryEntity
                 .builder()
                 .ObjectId(objectId)
@@ -244,6 +242,15 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         AtomicInteger changedFiles = new AtomicInteger(0);
         StringBuilder checkFileChangeContent = new StringBuilder();
 
+        HistoryEntity historyEntity = HistoryEntity
+                .builder()
+                .id(null)
+                .ObjectId(objectId)
+                .category(category.name())
+                .userId(user)
+                .build();
+        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
+
         for (int i = 0; i < fieldLength; ++i) {
             changedContent.setLength(0);
             Field field = originalInsFsList.get(i);
@@ -251,12 +258,13 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             if (field.getModifiers() == 9 || field.getModifiers() == 10)
                 continue;
 
-            // IGNORE WHEN CHANGE GT 1
-            if (changedCount.get() > 1)
-                break;
+//            // IGNORE WHEN CHANGE GT 1
+//            if (changedCount.get() > 1)
+//                break;
 
             // annotation on field
             HistoryLogTitle annotationField = field.getAnnotation(HistoryLogTitle.class);
+            ;
             if (annotationField == null) {
                 throw new CustomHandleException(371);
             }
@@ -264,22 +272,22 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 continue;
 
             if (field.getModifiers() == PUBLIC) {
-                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles);
+                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles, historyEntity);
 
             } else {
                 field.setAccessible(true); // open access to private field
-                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles);
+                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles, historyEntity);
                 field.setAccessible(false); // close access to restore original
             }
         }
 
-        HistoryEntity historyEntity = HistoryEntity
-                .builder()
-                .ObjectId(objectId)
-                .category(category.name())
-                .userId(user)
-                .build();
-        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
+//        HistoryEntity historyEntity = HistoryEntity
+//                .builder()
+//                .ObjectId(objectId)
+//                .category(category.name())
+//                .userId(user)
+//                .build();
+//        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
 
         if (changedCount.get() == 0)
             return false;
@@ -363,12 +371,16 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                                      AtomicInteger changedCount,
                                      StringBuilder changedContent,
                                      StringBuilder checkFileChangeContent,
-                                     AtomicInteger changedFiles) {
+                                     AtomicInteger changedFiles,
+                                     HistoryEntity historyEntity) {
+
+        //            field.getGenericType().getTypeName()
         String className = field.getType().getName();
 
+
         try {
-            Object val1 = field.get(original);
-            Object val2 = field.get(newObj);
+            Object val1 = field.get(original);  // gia tri gia tri cu
+            Object val2 = field.get(newObj); // gia tri moi
 
             if (val1 == null && val2 == null) { // nothing do
             } else if (val1 == null || val2 == null) { // for only 1 or 2 changed
@@ -391,6 +403,42 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                         });
                     }
 
+                } else if (annotation.isListType()) { // for list user
+                    // so sanh tiep
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.UserEntity>")) { // cho userEntity
+                        List<UserEntity> originalUserList = (List<UserEntity>) val1;
+                        List<UserEntity> newUserList = (List<UserEntity>) val2;
+                        if (!new HashSet<>(originalUserList).equals(new HashSet<>(newUserList))){
+                            changedContent.append(" đã cập nhật ")
+                                    .append(annotation.title())
+                                    .append(".");
+                        }
+                    }
+                } else if (annotation.isTagFields()) { // for list tag
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.TagEntity>")) { // cho TagEntity
+                        List<TagEntity> originalTagList = (List<TagEntity>) val1;
+                        List<TagEntity> newTagList = (List<TagEntity>) val2;
+                        if (!new HashSet<>(originalTagList).equals(new HashSet<>(newTagList))){
+                            changedContent.append(" đã cập nhật ")
+                                    .append(annotation.title())
+                                    .append(".");
+                        }
+                    }
+                } else if (annotation.isDateType()) { // for date
+                    // so sanh date
+                    String pattern = "yyyy-MM-dd HH:mm:ss";
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+                    if (!simpleDateFormat.format(val1).equals(simpleDateFormat.format(val2))) {
+                        changedContent.append(" đã cập nhật ")
+                                .append(annotation.title())
+                                .append(".");
+                    }
+                } else if (!annotation.title().equals("")) {
+                    if (!val1.equals(val2)) {
+                        changedContent.append(" đã cập nhật ")
+                                .append(annotation.title())
+                                .append(".");
+                    }
                 } else if (className.equals(FileEntity.class.getName())) { // for avatar
                     changedContent.append(" đã cập nhật ")
                             .append(annotation.title())
@@ -410,8 +458,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                                 .append(".");
                     }
                 }
-
-
             } else if (!val1.equals(val2)) {
                 changedCount.incrementAndGet();
                 if (annotation.isMultipleFiles()) { // for multiple file
@@ -430,6 +476,38 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                             checkFileChangeContent.append(createHtmlATag(file, " đã được thêm"));
                         }
                     });
+                } else if (annotation.isListType()) {
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.UserEntity>")) { // cho userEntity
+                        List<UserEntity> originalUserList = (List<UserEntity>) val1;
+                        List<UserEntity> newUserList = (List<UserEntity>) val2;
+                        if (!new HashSet<>(originalUserList).equals(new HashSet<>(newUserList))){
+                            changedContent.append(" đã cập nhật ")
+                                    .append(annotation.title())
+                                    .append(".");
+                        }
+                    }
+                } else if (annotation.isTagFields()) { // for list tag
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.project.TagEntity>")) {
+                        List<TagEntity> originalTagList = (List<TagEntity>) val1;
+                        List<TagEntity> newTagList = (List<TagEntity>) val2;
+                        if (!new HashSet<>(originalTagList).equals(new HashSet<>(newTagList))){
+                            changedContent.append(" đã cập nhật ")
+                                    .append(annotation.title())
+                                    .append(".");
+                        }
+                    }
+                } else if (annotation.isDateType()) { // for date
+                    String pattern = "yyyy-MM-dd HH:mm:ss";
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+                    if (!simpleDateFormat.format(val1).equals(simpleDateFormat.format(val2))) {
+                        changedContent.append(" đã cập nhật ")
+                                .append(annotation.title())
+                                .append(".");
+                    }
+                } else if (!annotation.title().equals("")) {
+                    changedContent.append(" đã cập nhật ")
+                            .append(annotation.title())
+                            .append(".");
                 } else if (className.equals(FileEntity.class.getName())) { // FOR FILE avatar
                     changedContent.append(" đã cập nhật ")
                             .append(annotation.title())
@@ -441,6 +519,17 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                             .append(".");
                 }
             }
+            if (!changedContent.toString().equals("")) {
+                HistoryEntity newHistoryEntity = HistoryEntity
+                        .builder().id(null)
+                        .ObjectId(historyEntity.getObjectId())
+                        .category(historyEntity.getCategory())
+                        .userId(historyEntity.getUserId())
+                        .content(changedContent.toString())
+                        .build();
+                this.historyLogRepository.saveAndFlush(newHistoryEntity);
+            }
+
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             throw new CustomHandleException(373);
