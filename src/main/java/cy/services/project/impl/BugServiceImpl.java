@@ -36,6 +36,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,8 +93,9 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto findById(Long id) {
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
-        List<UserMetaDto> reviewerList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
-        List<UserMetaDto> responsibleList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
+
+        List<UserMetaDto> reviewerList =showListUserInBug( Const.type.TYPE_REVIEWER.name(), id) ;// userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
+        List<UserMetaDto> responsibleList =showListUserInBug( Const.type.TYPE_DEV.name(), id); //userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
         List<TagDto> tagEntityList = new ArrayList<>();
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
@@ -248,9 +250,9 @@ public class BugServiceImpl implements IRequestBugService {
         BugEntity bug = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
         if (bug.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
             try {
-                if (model.getFileUrlsKeeping() != null){
+                if (model.getFileUrlsKeeping() != null) {
                     iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.BUG.name(), model.getId());
-                }else {
+                } else {
                     iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
                 }
                 BugEntity bugEntity = iBugRepository.findById(model.getId()).orElse(null);
@@ -454,7 +456,9 @@ public class BugServiceImpl implements IRequestBugService {
         //chuyển trạng thái Subtask
 
         Date now = Date.from(Instant.now());
-        if (bugEntity.getAssignTo().getUserId() == SecurityUtils.getCurrentUserId()) {//dev fix bug mới có thể đổi trạng thái bug để start
+        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (status) {
                 case 1:
                     //dev bắt đầu fix bug
@@ -551,9 +555,11 @@ public class BugServiceImpl implements IRequestBugService {
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         TaskEntity taskEntity = iTaskRepository.findById(bugEntity.getTask().getId()).orElseThrow(() -> new CustomHandleException(251));
         //chuyển trạng thái Subtask
+        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
         Date now = Date.from(Instant.now());
-        if (bugEntity.getAssignTo().getUserId() == SecurityUtils.getCurrentUserId()) {//dev fix bug mới có thể đổi trạng thái bug để start
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (status) {
                 case 1:
                     //dev bắt đầu fix bug
@@ -605,18 +611,20 @@ public class BugServiceImpl implements IRequestBugService {
         //Lưu dữ liệu vào bảng BugHistory
         return bugDto;
     }
+
     @Autowired
     IProjectRepository iProjectRepository;
     @Autowired
     IFeatureRepository iFeatureRepository;
     @Autowired
     ISubTaskRepository iSubTaskRepository;
+
     @Override
     public AllBugDto getAllBug(Long idProject) {
         AllBugDto projectBugDto = new AllBugDto();
         List<AllBugDto> allBugDtos = new ArrayList<>();
         int countBugOfProject = 0;
-        for (FeatureEntity feature: iFeatureRepository.findByProjectId(idProject)) {
+        for (FeatureEntity feature : iFeatureRepository.findByProjectId(idProject)) {
             AllBugDto featureBugDto = new AllBugDto();
             featureBugDto.setIdObject(feature.getId());
             featureBugDto.setName(feature.getName());
@@ -633,20 +641,20 @@ public class BugServiceImpl implements IRequestBugService {
 
                 List<SubTaskEntity> subTaskEntityList = iSubTaskRepository.getByTaskId(task.getId());
                 List<AllBugDto> listTaskDto = new ArrayList<>();
-                if (subTaskEntityList.size() > 0){
+                if (subTaskEntityList.size() > 0) {
                     int countBugOfTask = 0;
-                    for (SubTaskEntity subTaskEntity : subTaskEntityList){
+                    for (SubTaskEntity subTaskEntity : subTaskEntityList) {
                         AllBugDto subTaskBugDto = new AllBugDto();
                         subTaskBugDto.setIdObject(subTaskEntity.getId());
                         subTaskBugDto.setName(subTaskEntity.getName());
                         subTaskBugDto.setCategory(Const.tableName.SUBTASK.name());
-                        subTaskBugDto.setCountBug(iBugRepository.countAllBySubTask_IdAndIsDeleted(subTaskEntity.getId(),false));
+                        subTaskBugDto.setCountBug(iBugRepository.countAllBySubTask_IdAndIsDeleted(subTaskEntity.getId(), false));
                         listTaskDto.add(subTaskBugDto);
                         countBugOfTask += subTaskBugDto.getCountBug();
                     }
                     taskBugDto.setCountBug(countBugOfTask);
                     taskBugDto.setChildDto(listTaskDto);
-                }else {
+                } else {
                     taskBugDto.setCountBug(iBugRepository.countAllByTask_IdAndIsDeleted(task.getId(), false));
                 }
                 listFeatureDto.add(taskBugDto);
@@ -687,9 +695,14 @@ public class BugServiceImpl implements IRequestBugService {
 
     }
 
+    public List<UserMetaDto> showListUserInBug(String type, Long id) {
+        List<UserMetaDto> userList = userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), type, id);
+        return userList;
+    }
+
     @Override
     public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
-        return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDto(data));
+        return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
 
     @Autowired
