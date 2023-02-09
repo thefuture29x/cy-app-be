@@ -1,9 +1,11 @@
 package cy.dtos.project;
 
 import cy.dtos.UserDto;
+import cy.entities.UserEntity;
 import cy.entities.project.FeatureEntity;
 import lombok.*;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -60,4 +62,18 @@ public class FeatureDto {
     public static List<FeatureDto> toListDto(List<FeatureEntity> featureEntities){
         return featureEntities.stream().map(FeatureDto::toDto).collect(Collectors.toList());
     }
+//    public static void main(String[] args) throws IllegalAccessException {
+//        FeatureEntity featureEntity = new FeatureEntity();
+//        featureEntity.setDevTeam(List.of(new UserEntity()));
+//        Field[] feFields = featureEntity.getClass().getDeclaredFields();
+//
+//
+//        Field devTeam = feFields[3];
+//        devTeam.setAccessible(true);
+//        List<UserEntity> userList = (List<UserEntity>) devTeam.get(featureEntity);
+//        devTeam.setAccessible(false);
+//        System.out.println(feFields[3].getGenericType().getTypeName());
+//        System.out.println(643634);
+//    }
+
 }

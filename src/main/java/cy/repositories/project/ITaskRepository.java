@@ -70,4 +70,7 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
             "WHERE tas.id = ?1 and sub.is_deleted = false AND sub.`status` = 'DONE' ",nativeQuery = true)
     int countSubtaskDone(Long idTask);
 
+    @Query(value = "SELECT `status` FROM tbl_tasks WHERE feature_id  = ?1 AND is_deleted = FALSE GROUP BY `status` ",nativeQuery = true)
+    List<String> getAllStatusTaskByFeatureId(Long idFeature);
+
 }

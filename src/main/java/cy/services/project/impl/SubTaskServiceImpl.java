@@ -686,11 +686,28 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (subTaskEntityExist.getStatus().equals(newStatus.name())) {
             throw new CustomHandleException(205);
         }
+
         subTaskEntityExist.setStatus(newStatus.name());
+        this.changeStatusTask(subTaskEntityExist.getTask().getId());
         SubTaskEntity saveResult = subTaskRepository.save(subTaskEntityExist);
         if(saveResult == null){
             return false;
         }
         return true;
+    }
+
+    public void changeStatusTask(Long idParent){
+        List<String> allStatus = subTaskRepository.getAllStatusSubTaskByTaskId(idParent);
+        if (allStatus.size() == 1){
+            taskRepository.updateStatusTask(idParent,allStatus.get(0));
+        }else if (allStatus.size() == 2
+                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
+                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
+            taskRepository.updateStatusTask(idParent,Const.status.IN_REVIEW.name());
+            return;
+        }else {
+            taskRepository.updateStatusTask(idParent,Const.status.IN_PROGRESS.name());
+            return;
+        }
     }
 }

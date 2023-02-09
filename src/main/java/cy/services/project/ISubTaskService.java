@@ -16,6 +16,6 @@ public interface ISubTaskService extends IBaseService<SubTaskEntity, SubTaskDto,
     Page<SubTaskDto> findAllByTaskId(Long id, String keyword, Pageable pageable);
 
     Page<SubTaskDto> filter(SubTaskModel subTaskModel, Pageable pageable);
+    boolean changeStatus(Long subTaskId, Const.status newStatus);
 
-        boolean changeStatus(Long subTaskId, Const.status newStatus);
 }

@@ -93,8 +93,8 @@ public class FeatureSpecification {
         }
         if (filterModel.getSearchField() != null) {
             specificationList.add(byName(filterModel.getSearchField()));
-            specificationList.add(byDescription(filterModel.getSearchField()));
-            specificationList.add(byCreatorName(filterModel.getSearchField()));
+//            specificationList.add(byDescription(filterModel.getSearchField()));
+//            specificationList.add(byCreatorName(filterModel.getSearchField()));
         }
         if(filterModel.getMaxDate()!= null || filterModel.getMinDate()!=null){
             specificationList.add(byFeatureDate(filterModel.getMinDate(),filterModel.getMaxDate()));
@@ -103,7 +103,7 @@ public class FeatureSpecification {
             if(finalSpecs == null) {
                 finalSpecs = spec;
             } else {
-                finalSpecs = finalSpecs.or(spec);
+                finalSpecs = finalSpecs.and(spec);
             }
         }
         if(firstSpecs!=null){
