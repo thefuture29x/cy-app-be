@@ -704,6 +704,15 @@ public class BugServiceImpl implements IRequestBugService {
     public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
         return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
+    public Page<BugDto> findAllBugOfFeature(Long id, Pageable pageable) {
+        return iBugRepository.findAllBugOfFeature(id, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
+    }
+    public Page<BugDto> findAllBugOfTask(Long id, Pageable pageable) {
+        return iBugRepository.findAllByTaskId(id, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
+    }
+    public Page<BugDto> findAllBugOfSubTask(Long id, Pageable pageable) {
+        return iBugRepository.findAllBySubTaskId(id, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
+    }
 
     @Autowired
     EntityManager manager;

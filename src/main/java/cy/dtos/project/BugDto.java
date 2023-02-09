@@ -93,7 +93,7 @@ public class BugDto {
 //                        ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
 //                .attachFiles(obj.getAttachFiles()!=null
 //                        ? obj.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
-//                .status(obj.getStatus())
+                .status(obj.getStatus())
 //                .tagList(obj.getTagList() != null
 //                        ? obj.getTagList().stream().map(data -> TagDto.toDto(data)).collect(Collectors.toList()) : null)
                 .reviewerList(reviewerList != null ? reviewerList : null)

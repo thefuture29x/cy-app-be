@@ -35,7 +35,39 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
             + "\tWHERE pr.id = ?1 AND bg.is_deleted=0 \n"
             + ")\n", nativeQuery = true)
     Page<BugEntity> findAllBugOfProject(Long idProject, Pageable pageable);
+    @Query(value = "SELECT\n" +
+            "\t* \n" +
+            "FROM\n" +
+            "\ttbl_bugs \n" +
+            "WHERE\n" +
+            "\tid IN (\n" +
+            "\tSELECT\n" +
+            "\t\tbg.id \n" +
+            "\tFROM\n" +
+            "\t\ttbl_bugs bg\n" +
+            "\t\tJOIN tbl_tasks ts ON bg.task_id = ts.id\n" +
+            "\t\tJOIN tbl_features ft ON ts.feature_id = ft.id\n" +
+            "\tWHERE\n" +
+            "\t\tft.id = ?1\n" +
+            "\t\tAND bg.is_deleted = 0 \n" +
+            "\t) \n" +
+            "\tOR id IN (\n" +
+            "\tSELECT\n" +
+            "\t\tbg.id \n" +
+            "\tFROM\n" +
+            "\t\ttbl_bugs bg\n" +
+            "\t\tJOIN tbl_sub_tasks sts ON bg.sub_task_id = sts.id\n" +
+            "\t\tJOIN tbl_tasks ts ON sts.task_id = ts.id\n" +
+            "\t\tJOIN tbl_features ft ON ts.feature_id = ft.id\n" +
+            "\tWHERE\n" +
+            "\tft.id = ?1\n" +
+            "\tAND bg.is_deleted =0)", nativeQuery = true)
+    Page<BugEntity> findAllBugOfFeature(Long idProject, Pageable pageable);
 
+    @Query(value = "SELECT * FROM tbl_bugs bg WHERE bg.task_id=?1",nativeQuery = true)
+    Page<BugEntity> findAllByTaskId(Long idTask, Pageable pageable);
+    @Query(value = "SELECT * FROM tbl_bugs bg WHERE bg.sub_task_id=?1",nativeQuery = true)
+    Page<BugEntity> findAllBySubTaskId(Long idSubTask, Pageable pageable);
     @Query(value = "select * from tbl_bugs where sub_task_id = ?1", nativeQuery = true)
     List<BugEntity> getAllBugBySubTaskId(Long subtaskId);
 
