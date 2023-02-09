@@ -65,9 +65,9 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
     Page<BugEntity> findAllBugOfFeature(Long idProject, Pageable pageable);
 
     @Query(value = "SELECT * FROM tbl_bugs bg WHERE bg.task_id=?1",nativeQuery = true)
-    Page<BugEntity> findAllByTaskId(Long idProject, Pageable pageable);
+    Page<BugEntity> findAllByTaskId(Long idTask, Pageable pageable);
     @Query(value = "SELECT * FROM tbl_bugs bg WHERE bg.sub_task_id=?1",nativeQuery = true)
-    Page<BugEntity> findAllBySubTaskId(Long idProject, Pageable pageable);
+    Page<BugEntity> findAllBySubTaskId(Long idSubTask, Pageable pageable);
     @Query(value = "select * from tbl_bugs where sub_task_id = ?1", nativeQuery = true)
     List<BugEntity> getAllBugBySubTaskId(Long subtaskId);
 
