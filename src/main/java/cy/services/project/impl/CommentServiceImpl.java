@@ -101,7 +101,7 @@ public class CommentServiceImpl implements ICommentService {
                 commentEntity.setAttachFiles(files);
         }
 
-        this.historyLogService.logCreate(commentEntity.getId(), commentEntity, Const.tableName.COMMENT);
+        this.historyLogService.logCreate(commentEntity.getId(), commentEntity, Const.tableName.COMMENT,null);
         return CommentDto.toDto(commentEntity);
     }
 

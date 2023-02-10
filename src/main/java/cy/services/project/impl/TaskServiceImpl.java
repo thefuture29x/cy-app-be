@@ -271,7 +271,7 @@ public class TaskServiceImpl implements ITaskService {
         result.setDevList(devList);
         result.setFollowerList(followerList);
         result.setViewerList(viewerList);
-        iHistoryLogService.logCreate(taskEntity.getId(), taskEntity, Const.tableName.TASK);
+        iHistoryLogService.logCreate(taskEntity.getId(), taskEntity, Const.tableName.TASK,taskEntity.getName());
         return result;
     }
 

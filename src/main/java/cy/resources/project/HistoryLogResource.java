@@ -24,6 +24,6 @@ public class HistoryLogResource {
 
     @GetMapping("/all-history")
     public ResponseDto getHistoryNotOfProjects(@RequestParam Const.tableName category, Pageable page) {
-        return ResponseDto.of(this.historyLogService.filter(page, HistoryLogSpecification.byCategory(category)));
+        return ResponseDto.of(this.historyLogService.getAllHistoryCreateObject(category,page));
     }
 }
