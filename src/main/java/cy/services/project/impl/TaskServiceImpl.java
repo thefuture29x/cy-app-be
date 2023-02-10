@@ -294,6 +294,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
+        List<FileEntity> fileOriginalExist = fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
         if (model.getFileUrlsKeeping() != null) {
             fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.TASK.name(), model.getId());
         } else {
@@ -301,6 +302,16 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         TaskEntity taskExist = (TaskEntity) Const.copy(this.getById(model.getId()));
+        List<UserEntity> listUserDevExist = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), model.getId());
+        List<UserEntity> listUserFollowExist = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());
+        List<TagEntity> listTagExist = tagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.TASK.name());
+
+        taskExist.setDevTeam(listUserDevExist);
+        taskExist.setFollowerTeam(listUserFollowExist);
+        taskExist.setTagList(listTagExist);
+        taskExist.setAttachFiles(fileOriginalExist);
+
+
         TaskEntity taskOld = this.getById(model.getId());
 
         taskOld.setStartDate(model.getStartDate());
@@ -418,6 +429,16 @@ public class TaskServiceImpl implements ITaskService {
 //        result.setFiles(fileAfterSave);
         result.setTagName(tagList);
         result.setDevList(devList);
+
+        List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), model.getId());
+        List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());
+        List<TagEntity> listTag = tagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.TASK.name());
+        List<FileEntity> fileOriginal = fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
+
+        taskupdate.setDevTeam(listUserDev);
+        taskupdate.setFollowerTeam(listUserFollow);
+        taskupdate.setTagList(listTag);
+        taskupdate.setAttachFiles(fileOriginal);
 
         iHistoryLogService.logUpdate(taskupdate.getId(), taskExist, taskupdate, Const.tableName.TASK);
 

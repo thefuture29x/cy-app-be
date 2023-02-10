@@ -216,10 +216,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
         subTaskEntity.setStartDate(model.getStartDate());
         subTaskEntity.setEndDate(model.getEndDate());
-        subTaskEntity.setStatus(Const.status.TO_DO + "");
+        subTaskEntity.setStatus(Const.status.TO_DO.name());
         subTaskEntity.setName(model.getName());
         subTaskEntity.setDescription(model.getDescription());
-        subTaskEntity.setPriority(model.getPriority() + ""); // Default value: MEDIUM
+        subTaskEntity.setPriority(model.getPriority().name()); // Default value: MEDIUM
         subTaskEntity.setTask(taskEntityChecked);
         subTaskEntity.setAttachFiles(fileEntityList);
         subTaskEntity.setAssignTo(null); // Default value: null
@@ -258,6 +258,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
         SubTaskEntity subTaskExisted = this.subTaskRepository.findByIdAndIsDeletedFalse(modelUpdate.getId());
+        List<FileEntity> fileOriginal = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), modelUpdate.getId());
+
         if (subTaskExisted == null) {
             throw new CustomHandleException(197);
         }
@@ -269,6 +271,17 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         // Copy current subTask to compare with new subTask
         SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted);
+        List<UserEntity> userDevOriginal = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_DEV.name(), modelUpdate.getId());
+        List<UserEntity> userFollowOriginal= userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_FOLLOWER.name(), modelUpdate.getId());
+        List<TagEntity> listTagEntityOriginal = tagRepository.getAllByObjectIdAndCategory(modelUpdate.getId(),Const.tableName.SUBTASK.name());
+
+        subTaskEntityOriginal.setDevTeam(userDevOriginal);
+        subTaskEntityOriginal.setFollowerTeam(userFollowOriginal);
+        subTaskEntityOriginal.setTagList(listTagEntityOriginal);
+        subTaskEntityOriginal.setAttachFiles(fileOriginal);
+
+
+
         List<Object> objUpdateList = this.checkIdAndDate(modelUpdate);
         List<FileEntity> fileEntityList = new ArrayList<>();
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objUpdateList.get(1);
@@ -345,6 +358,17 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
+
+        List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_DEV.name(), modelUpdate.getId());
+        List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_FOLLOWER.name(), modelUpdate.getId());
+        List<TagEntity> listTagEntity = tagRepository.getAllByObjectIdAndCategory(modelUpdate.getId(),Const.tableName.SUBTASK.name());
+        List<FileEntity> fileAfterSave = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), modelUpdate.getId());
+
+        saveSubTask.setDevTeam(userDev);
+        saveSubTask.setFollowerTeam(userFollow);
+        saveSubTask.setTagList(listTagEntity);
+        saveSubTask.setAttachFiles(fileAfterSave);
+
 //        subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
         iHistoryLogService.logUpdate(saveSubTask.getId(), subTaskEntityOriginal, saveSubTask, Const.tableName.SUBTASK);
         return subTaskDto;
@@ -363,7 +387,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     private void clearTagList(Long subTaskId) {
-        this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId).forEach(tagRelationEntity -> {
+        this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskId).forEach(tagRelationEntity -> {
             this.tagRelationRepository.deleteByIdNative(tagRelationEntity.getId());
         });
     }
@@ -386,7 +410,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     private void clearAssignedUsers(Long subTaskId) {
-        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK + "", subTaskId).forEach(userProjectEntity -> {
+        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskId).forEach(userProjectEntity -> {
             userProjectRepository.deleteByIdNative(userProjectEntity.getId());
         });
     }
@@ -394,13 +418,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
     private void saveAssignedUsersForProject(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
         Long projectId = subTaskRepository.getProjectIdBySubTaskId(subTaskId);
         for (UserEntity userEntity : userEntitiesAssigned) {
-            if (userProjectRepository.getByAllAttrs(Const.tableName.PROJECT + "", userEntity.getUserId(), projectId, Const.type.TYPE_DEV + "").size() > 0) {
+            if (userProjectRepository.getByAllAttrs(Const.tableName.PROJECT.name(), userEntity.getUserId(), projectId, Const.type.TYPE_DEV.name()).size() > 0) {
                 continue;
             }
             UserProjectEntity userProjectEntity = new UserProjectEntity();
             userProjectEntity.setObjectId(projectId);
             userProjectEntity.setIdUser(userEntity.getUserId());
-            userProjectEntity.setType(Const.type.TYPE_DEV + "");
+            userProjectEntity.setType(Const.type.TYPE_DEV.name());
             userProjectEntity.setCategory(Const.tableName.PROJECT.name());
             this.userProjectRepository.save(userProjectEntity);
         }
@@ -410,14 +434,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (taskEntity.getFeature() != null) {
             Long featureId = taskEntity.getFeature().getId();
             for (UserEntity userEntity : userEntitiesAssigned) {
-                if (userProjectRepository.getByAllAttrs(Const.tableName.FEATURE + "", userEntity.getUserId(), featureId, Const.type.TYPE_DEV + "").size() > 0) {
+                if (userProjectRepository.getByAllAttrs(Const.tableName.FEATURE.name(), userEntity.getUserId(), featureId, Const.type.TYPE_DEV.name()).size() > 0) {
                     continue;
                 }
                 UserProjectEntity userProjectEntity = new UserProjectEntity();
                 userProjectEntity.setObjectId(featureId);
                 userProjectEntity.setIdUser(userEntity.getUserId());
-                userProjectEntity.setType(Const.type.TYPE_DEV + "");
-                userProjectEntity.setCategory(Const.tableName.FEATURE + "");
+                userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                userProjectEntity.setCategory(Const.tableName.FEATURE.name());
                 this.userProjectRepository.save(userProjectEntity);
             }
         }
@@ -426,14 +450,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
     private void saveAssignedUsersForTask(List<UserEntity> userEntitiesAssigned, Long taskId) {
         // taskEntity always not null
         for (UserEntity userEntity : userEntitiesAssigned) {
-            if (userProjectRepository.getByAllAttrs(Const.tableName.TASK + "", userEntity.getUserId(), taskId, Const.type.TYPE_DEV + "").size() > 0) {
+            if (userProjectRepository.getByAllAttrs(Const.tableName.TASK.name(), userEntity.getUserId(), taskId, Const.type.TYPE_DEV.name()).size() > 0) {
                 continue;
             }
             UserProjectEntity userProjectEntity = new UserProjectEntity();
             userProjectEntity.setObjectId(taskId);
             userProjectEntity.setIdUser(userEntity.getUserId());
-            userProjectEntity.setType(Const.type.TYPE_DEV + "");
-            userProjectEntity.setCategory(Const.tableName.TASK + "");
+            userProjectEntity.setType(Const.type.TYPE_DEV.name());
+            userProjectEntity.setCategory(Const.tableName.TASK.name());
             this.userProjectRepository.save(userProjectEntity);
         }
     }
@@ -444,8 +468,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
             UserProjectEntity userProjectEntity = new UserProjectEntity();
             userProjectEntity.setObjectId(subTaskId);
             userProjectEntity.setIdUser(userEntity.getUserId());
-            userProjectEntity.setType(Const.type.TYPE_DEV + "");
-            userProjectEntity.setCategory(Const.tableName.SUBTASK + "");
+            userProjectEntity.setType(Const.type.TYPE_DEV.name());
+            userProjectEntity.setCategory(Const.tableName.SUBTASK.name());
             UserProjectEntity userProjectEntitySave = this.userProjectRepository.save(userProjectEntity);
             userProjectEntityList.add(userProjectEntitySave);
         }
@@ -457,8 +481,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
             UserProjectEntity userProjectEntity = new UserProjectEntity();
             userProjectEntity.setObjectId(subTaskId);
             userProjectEntity.setIdUser(userId);
-            userProjectEntity.setType(Const.type.TYPE_FOLLOWER + "");
-            userProjectEntity.setCategory(Const.tableName.SUBTASK + "");
+            userProjectEntity.setType(Const.type.TYPE_FOLLOWER.name());
+            userProjectEntity.setCategory(Const.tableName.SUBTASK.name());
             UserProjectEntity userProjectEntitySave = this.userProjectRepository.save(userProjectEntity);
             if (userProjectEntitySave == null) {
                 return false;
@@ -528,7 +552,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 }
                 fileEntity.setFileType(fileType);
                 fileEntity.setFileName(fileName + "_" + System.currentTimeMillis());
-                fileEntity.setCategory(Const.tableName.SUBTASK + "");
+                fileEntity.setCategory(Const.tableName.SUBTASK.name());
                 fileEntity.setUploadedBy(SecurityUtils.getCurrentUser().getUser());
                 fileEntityList.add(fileEntity);
             }
@@ -561,7 +585,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             TagRelationEntity tagRelationEntity = new TagRelationEntity();
             tagRelationEntity.setObjectId(subTaskId);
             tagRelationEntity.setIdTag(tagId);
-            tagRelationEntity.setCategory(Const.tableName.SUBTASK + "");
+            tagRelationEntity.setCategory(Const.tableName.SUBTASK.name());
             tagRelationRepository.save(tagRelationEntity);
         }
         return tagDtoList;

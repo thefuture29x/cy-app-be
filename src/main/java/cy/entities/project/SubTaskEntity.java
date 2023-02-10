@@ -47,4 +47,8 @@ public class SubTaskEntity extends ProjectBaseEntity {
     @HistoryLogTitle(title = "danh sách người phụ trách", isListType = true)
     @Transient
     private List<UserEntity> devTeam;
+
+    @HistoryLogTitle(title = "danh sách người theo dõi", isListType = true)
+    @Transient
+    private List<UserEntity> followerTeam;
 }
