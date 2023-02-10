@@ -6,6 +6,7 @@ import cy.dtos.project.*;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.services.project.IHistoryLogService;
@@ -108,7 +109,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             // Set bug list
             setBugList(subTaskDto);
 
-            // Set following user list then set watching user list and set developer user list
+            // Set following user list then set watching user list, developer user list and reviewer user list
             setFollowingUserList(subTaskDto);
         }
         return subTaskDto;
@@ -144,6 +145,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         // Set developer user list
         setDeveloperUserList(subTaskDto);
+
+        // Set reviewer user list
+        setReviewerUserList(subTaskDto);
     }
 
     private void setWatchingUserList(SubTaskDto subTaskDto, Long projectIdBySubTaskId) {
@@ -172,6 +176,19 @@ public class SubTaskServiceImpl implements ISubTaskService {
             userAssigningDtoList.add(UserDto.toDto(userWatchingEntity));
         }
         subTaskDto.setDeveloperUserList(userAssigningDtoList);
+    }
+
+    private void setReviewerUserList(SubTaskDto subTaskDto) {
+        List<UserDto> userReviewerDtoList = new ArrayList<>();
+        // Collect id of user reviewer
+        List<Long> userReviewerIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskDto.getId(), Const.type.TYPE_REVIEWER.name());
+        // Find user entity by id
+        List<UserEntity> userReviewerEntityList = userRepository.findAllById(userReviewerIdList);
+        // Convert Entity to Dto
+        for (UserEntity userReviewerEntity : userReviewerEntityList) {
+            userReviewerDtoList.add(UserDto.toDto(userReviewerEntity));
+        }
+        subTaskDto.setReviewerUserList(userReviewerDtoList);
     }
 
     @Override
@@ -234,7 +251,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskDto.setTagList(tagListSplit);
         subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
 
-        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK,saveSubTask.getName());
+        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK, saveSubTask.getName());
         return subTaskDto;
     }
 
@@ -374,28 +391,26 @@ public class SubTaskServiceImpl implements ISubTaskService {
         });
     }
 
-    private void saveAssignedUsersForProject(List<UserEntity> userEntitiesAssigned, Long subTaskId){
+    private void saveAssignedUsersForProject(List<UserEntity> userEntitiesAssigned, Long subTaskId) {
         Long projectId = subTaskRepository.getProjectIdBySubTaskId(subTaskId);
-            for (UserEntity userEntity : userEntitiesAssigned) {
-                if(userProjectRepository.getByAllAttrs(Const.tableName.PROJECT + "", userEntity.getUserId(), projectId,
-                        Const.type.TYPE_DEV + "").size() > 0){
-                    continue;
-                }
-                UserProjectEntity userProjectEntity = new UserProjectEntity();
-                userProjectEntity.setObjectId(projectId);
-                userProjectEntity.setIdUser(userEntity.getUserId());
-                userProjectEntity.setType(Const.type.TYPE_DEV + "");
-                userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                this.userProjectRepository.save(userProjectEntity);
+        for (UserEntity userEntity : userEntitiesAssigned) {
+            if (userProjectRepository.getByAllAttrs(Const.tableName.PROJECT + "", userEntity.getUserId(), projectId, Const.type.TYPE_DEV + "").size() > 0) {
+                continue;
             }
+            UserProjectEntity userProjectEntity = new UserProjectEntity();
+            userProjectEntity.setObjectId(projectId);
+            userProjectEntity.setIdUser(userEntity.getUserId());
+            userProjectEntity.setType(Const.type.TYPE_DEV + "");
+            userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+            this.userProjectRepository.save(userProjectEntity);
+        }
     }
 
     private void saveAssignedUsersForFeature(List<UserEntity> userEntitiesAssigned, TaskEntity taskEntity) {
         if (taskEntity.getFeature() != null) {
             Long featureId = taskEntity.getFeature().getId();
             for (UserEntity userEntity : userEntitiesAssigned) {
-                if(userProjectRepository.getByAllAttrs(Const.tableName.FEATURE + "", userEntity.getUserId(), featureId,
-                        Const.type.TYPE_DEV + "").size() > 0){
+                if (userProjectRepository.getByAllAttrs(Const.tableName.FEATURE + "", userEntity.getUserId(), featureId, Const.type.TYPE_DEV + "").size() > 0) {
                     continue;
                 }
                 UserProjectEntity userProjectEntity = new UserProjectEntity();
@@ -411,8 +426,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     private void saveAssignedUsersForTask(List<UserEntity> userEntitiesAssigned, Long taskId) {
         // taskEntity always not null
         for (UserEntity userEntity : userEntitiesAssigned) {
-            if(userProjectRepository.getByAllAttrs(Const.tableName.TASK + "", userEntity.getUserId(), taskId,
-                    Const.type.TYPE_DEV + "").size() > 0){
+            if (userProjectRepository.getByAllAttrs(Const.tableName.TASK + "", userEntity.getUserId(), taskId, Const.type.TYPE_DEV + "").size() > 0) {
                 continue;
             }
             UserProjectEntity userProjectEntity = new UserProjectEntity();
@@ -652,7 +666,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (status != null) {
             sql += " AND status = '" + status + "'";
         }
-        if(priority != null) {
+        if (priority != null) {
             sql += " AND priority = '" + priority + "'";
         }
 
@@ -681,33 +695,36 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     @Override
-    public boolean changeStatus(Long subTaskId, Const.status newStatus) {
+    public boolean changeStatus(Long subTaskId, SubTaskUpdateModel subTaskUpdateModel) {
         SubTaskEntity subTaskEntityExist = subTaskRepository.findById(subTaskId).orElseThrow(() -> new CustomHandleException(204));
-        if (subTaskEntityExist.getStatus().equals(newStatus.name())) {
+        if (subTaskEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
             throw new CustomHandleException(205);
         }
-
-        subTaskEntityExist.setStatus(newStatus.name());
-        this.changeStatusTask(subTaskEntityExist.getTask().getId());
+        subTaskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
         SubTaskEntity saveResult = subTaskRepository.save(subTaskEntityExist);
-        if(saveResult == null){
+        if (saveResult == null) {
             return false;
         }
-        return true;
-    }
-
-    public void changeStatusTask(Long idParent){
-        List<String> allStatus = subTaskRepository.getAllStatusSubTaskByTaskId(idParent);
-        if (allStatus.size() == 1){
-            taskRepository.updateStatusTask(idParent,allStatus.get(0));
-        }else if (allStatus.size() == 2
-                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
-                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
-            taskRepository.updateStatusTask(idParent,Const.status.IN_REVIEW.name());
-            return;
-        }else {
-            taskRepository.updateStatusTask(idParent,Const.status.IN_PROGRESS.name());
-            return;
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.IN_REVIEW.name())) {
+            if (subTaskUpdateModel.getReviewerIdList() == null) {
+                throw new CustomHandleException(206);
+            }
+            // Delete old reviewer
+            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
+                    subTaskId, Const.type.TYPE_REVIEWER.name())) {
+                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+            }
+            for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
+                // Check if reviewer is existed
+                userRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.SUBTASK.name());
+                userProjectEntity.setObjectId(subTaskId);
+                userProjectEntity.setIdUser(reviewerId);
+                userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                userProjectRepository.save(userProjectEntity);
+            }
         }
+        return true;
     }
 }
