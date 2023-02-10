@@ -29,5 +29,9 @@ public interface IFeatureRepository extends JpaRepository<FeatureEntity,Long>, J
     @Query(value = "UPDATE `tbl_features` SET status =?1 WHERE id=?2", nativeQuery = true)
     List<FeatureEntity> updateStatusFeature(String status,Long id);
 
+    @Modifying
+    @Query(value = "UPDATE `tbl_features` SET `status` = ?2 WHERE id = ?1", nativeQuery = true)
+    void updateStatusFeature(Long id, String status);
+
 
 }

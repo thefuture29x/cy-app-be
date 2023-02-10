@@ -23,12 +23,12 @@ public class BugEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "mức độ ưu tiên")
     private String priority;
 
-    @HistoryLogTitle(title = "sub task")
+    @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="sub_task_id")
     private SubTaskEntity subTask;
 
-    @HistoryLogTitle(title = "task")
+    @HistoryLogTitle(title = "" ,ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="task_id")
     private TaskEntity task;
@@ -39,28 +39,28 @@ public class BugEntity extends ProjectBaseEntity{
     @Where(clause = "category='BUG'")
     private List<FileEntity> attachFiles;
 
-    @HistoryLogTitle(title = "assign to")
+    @HistoryLogTitle(title = "", ignore = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="id_user_assign")
     private UserEntity assignTo;//người chịu trách nhiệm chính trong fixbug
 
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách tag", isTagFields = true)
     @Transient
     private List<TagEntity> tagList;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người phụ trách", isListType = true)
     @Transient
     private List<UserEntity> responsibleList;//danh sách người phụ trách
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người theo dõi", isListType = true)
     @Transient
     private List<UserEntity> reviewerList;//danh sách người review
 
     @HistoryLogTitle(title = "", ignore = true)
     @OneToMany(mappedBy = "bugId")
     private List<BugHistoryEntity> historyBugList;
-    @HistoryLogTitle(title = "lý do", ignore = true)
+    @HistoryLogTitle(title = "lý do")
     @Transient
     private String reason;
 

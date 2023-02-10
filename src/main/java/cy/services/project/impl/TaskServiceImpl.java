@@ -601,12 +601,12 @@ public class TaskServiceImpl implements ITaskService {
         if (taskSearchModel.getName() != null) {
             q.setParameter("name", "%" + taskSearchModel.getName() + "%");
         }
-        List<TaskDto> querryResult = q.getResultList();
-        querryResult.stream().forEach(data -> {
+        List<TaskDto> queryResult = q.getResultList();
+        queryResult.stream().forEach(data -> {
             data.setCountSubtask(iTaskRepository.countSubtask(data.getId()));
-            data.setCountSubtask(iTaskRepository.countSubtaskDone(data.getId()));
+            data.setCountSubtaskDone(iTaskRepository.countSubtaskDone(data.getId()));
         });
-        return querryResult;
+        return queryResult;
     }
 
     @Override
@@ -617,9 +617,25 @@ public class TaskServiceImpl implements ITaskService {
     public Object updateStatusTask(Long id, String status) {
         try {
             repository.updateStatusTask(id, status);
+            changeStatusFeature(repository.findById(id).get().getFeature().getId());
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+    public void changeStatusFeature(Long idParent){
+        List<String> allStatus = iTaskRepository.getAllStatusTaskByFeatureId(idParent);
+        if (allStatus.size() == 1){
+            featureRepository.updateStatusFeature(idParent,allStatus.get(0));
+            return;
+        }else if (allStatus.size() == 2
+                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
+                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
+            featureRepository.updateStatusFeature(idParent,Const.status.IN_REVIEW.name());
+            return;
+        }else {
+            featureRepository.updateStatusFeature(idParent,Const.status.IN_PROGRESS.name());
+            return;
         }
     }
 

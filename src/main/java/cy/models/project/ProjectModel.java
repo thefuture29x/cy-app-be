@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Date;
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -15,12 +18,17 @@ import java.util.List;
 @AllArgsConstructor
 public class ProjectModel {
     private Long id;
-    @JsonSerialize(as = java.sql.Date.class)
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+
+    @NotNull
+    @FutureOrPresent(message = "Start date must be in the future or present.")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
-    @JsonSerialize(as = java.sql.Date.class)
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+
+    @NotNull
+    @FutureOrPresent(message = "End date must be in the future or present.")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
+
     private String status;
     private Boolean isDeleted;
     private String name;

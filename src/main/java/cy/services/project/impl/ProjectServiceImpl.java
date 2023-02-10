@@ -26,6 +26,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -66,8 +68,8 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public ProjectDto findById(Long id) {
-        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
+//        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+//        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
         ProjectDto projectDto = ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
         if (projectDto == null)
@@ -179,7 +181,7 @@ public class ProjectServiceImpl implements IProjectService {
                 projectEntity = iProjectRepository.save(projectEntity);
             }
 //            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
-            if (projectModel.getFiles().length > 0) {
+            if (projectModel.getFiles() != null) {
                 for (MultipartFile m : projectModel.getFiles()) {
                     if (!m.isEmpty()) {
                         String urlFile = fileUploadProvider.uploadFile("project", m);
@@ -219,6 +221,16 @@ public class ProjectServiceImpl implements IProjectService {
 
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
             ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
+
+            List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+            List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+            List<UserEntity> listUserView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+            List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(),Const.tableName.PROJECT.name());
+            projectOriginal.setViewTeam(listUserView);
+            projectOriginal.setDevTeam(listUserDev);
+            projectOriginal.setFollowTeam(listUserFollow);
+            projectOriginal.setTagList(listTag);
+
             if (projectEntity == null)
                 return null;
             Long userId = SecurityUtils.getCurrentUserId();
@@ -336,8 +348,18 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            iProjectRepository.save(projectEntity);
-            iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal, projectEntity, Const.tableName.PROJECT);
+            iProjectRepository.saveAndFlush(projectEntity);
+            List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+            List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+            List<UserEntity> userView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+            List<TagEntity> listTagEntity = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(),Const.tableName.PROJECT.name());
+
+            projectEntity.setViewTeam(userView);
+            projectEntity.setDevTeam(userDev);
+            projectEntity.setFollowTeam(userFollow);
+            projectEntity.setTagList(listTagEntity);
+
+            iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal,projectEntity, Const.tableName.PROJECT);
             ProjectDto result = ProjectDto.toDto(projectEntity);
             return result;
     }

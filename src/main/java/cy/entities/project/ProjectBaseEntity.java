@@ -40,11 +40,11 @@ public class ProjectBaseEntity {
     @JoinColumn(name = "user_id")
     private UserEntity createBy;
 
-    @HistoryLogTitle(title = "ngày bắt đầu")
+    @HistoryLogTitle(title = "ngày bắt đầu", isDateType = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date startDate;
 
-    @HistoryLogTitle(title = "ngày kết thúc")
+    @HistoryLogTitle(title = "ngày kết thúc", isDateType = true)
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
@@ -65,13 +65,10 @@ public class ProjectBaseEntity {
     @HistoryLogTitle(title = "trạng thái mặc định")
     private Boolean isDefault = false;
 
-    @HistoryLogTitle(title = "", isTagFields = true,ignore = true)
+    @HistoryLogTitle(title = "danh sách tag", isTagFields = true)
     @Transient
     private List<TagEntity> tagList;
 
-//    @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
-//    @Transient
-//    private List<FileEntity> files;
 
 
 }

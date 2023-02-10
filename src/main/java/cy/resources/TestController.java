@@ -14,11 +14,13 @@ import cy.models.project.TaskSearchModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.IBugRepository;
 import cy.repositories.project.IFileRepository;
+import cy.repositories.project.ISubTaskRepository;
 import cy.repositories.project.ITaskRepository;
 import cy.services.attendance.IPayRollService;
 import cy.services.attendance.IRequestAttendService;
 import cy.services.IUserService;
 import cy.services.attendance.impl.RequestAttendServiceImpl;
+import cy.services.project.ISubTaskService;
 import cy.services.project.ITaskService;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
@@ -108,9 +110,17 @@ public class TestController {
     IBugRepository iBugRepository;
     @Autowired
     ITaskService iTaskService;
+    @Autowired
+    ISubTaskRepository iSubTaskRepository;
+    @Autowired
+    ITaskRepository iTaskRepository;
+    @Autowired
+    ISubTaskService iSubTaskService;
 
-    @PostMapping ("upfile")
-    public ResponseDto testUpLoadFile(MultipartFile file) throws IOException {
-        return ResponseDto.of(fileUploadProvider.uploadFile("avatar",file));
+    @PostMapping ("getall")
+    public void testUpLoadFile(Long idParent)  {
+//        List<String> allStatus = iSubTaskRepository.getAllStatusSubTaskByTaskId(idParent);
+//        return ResponseDto.of(iSubTaskRepository.getAllStatusSubTaskByTaskId(7L));
+//        iSubTaskService.changeStatusTask(idParent);
     }
 }
