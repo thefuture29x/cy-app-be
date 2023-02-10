@@ -142,6 +142,18 @@ public class TaskServiceImpl implements ITaskService {
         }
         taskEntity.setViewerTeam(userEntitiesViewer);
 
+        // set reViewerTeam
+        List<UserProjectEntity> userProjectEntitiesReViewer = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_REVIEWER.name());
+        List<Long> idUsersReViewer = userProjectEntitiesReViewer.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
+        List<UserEntity> userEntitiesReViewer = new ArrayList<>();
+        if (idUsersReViewer != null) {
+            for (Long idUser : idUsersReViewer) {
+                UserEntity user = this.userRepository.findById(idUser).orElseThrow(() -> new CustomHandleException(11));
+                userEntitiesReViewer.add(user);
+            }
+        }
+        taskEntity.setReViewerTeam(userEntitiesReViewer);
+
         return TaskDto.toDto(taskEntity);
     }
 
