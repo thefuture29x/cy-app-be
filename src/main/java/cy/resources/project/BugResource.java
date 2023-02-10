@@ -49,16 +49,16 @@ public class BugResource {
         return ResponseDto.of(bugService.findAllBugOfProject(idProject,pageable));
     }
     @GetMapping(value = "findAllBugOfFeature")
-    public ResponseDto findAllBugOfFeature(@RequestParam(name = "id")Long idProject ,Pageable pageable){
-        return ResponseDto.of(bugService.findAllBugOfFeature(idProject,pageable));
+    public ResponseDto findAllBugOfFeature(@RequestParam(name = "id")Long idFeature ,Pageable pageable){
+        return ResponseDto.of(bugService.findAllBugOfFeature(idFeature,pageable));
     }
     @GetMapping(value = "findAllBugOfTask")
-    public ResponseDto findAllBugOfTask(@RequestParam(name = "id")Long idProject ,Pageable pageable){
-        return ResponseDto.of(bugService.findAllBugOfTask(idProject,pageable));
+    public ResponseDto findAllBugOfTask(@RequestParam(name = "id")Long idTask,Pageable pageable){
+        return ResponseDto.of(bugService.findAllBugOfTask(idTask,pageable));
     }
     @GetMapping(value = "findAllBugOfSubTask")
-    public ResponseDto findAllBugOfSubTask(@RequestParam(name = "id")Long idProject ,Pageable pageable){
-        return ResponseDto.of(bugService.findAllBugOfSubTask(idProject,pageable));
+    public ResponseDto findAllBugOfSubTask(@RequestParam(name = "id")Long idSubTask ,Pageable pageable){
+        return ResponseDto.of(bugService.findAllBugOfSubTask(idSubTask,pageable));
     }
     @PostMapping(value = "/findByPage")
     public ResponseDto findByPage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody BugModel bugModel) {

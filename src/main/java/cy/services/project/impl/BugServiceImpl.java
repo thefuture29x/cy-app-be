@@ -94,8 +94,8 @@ public class BugServiceImpl implements IRequestBugService {
     public BugDto findById(Long id) {
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
 
-        List<UserMetaDto> reviewerList =showListUserInBug( Const.type.TYPE_REVIEWER.name(), id) ;// userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
-        List<UserMetaDto> responsibleList =showListUserInBug( Const.type.TYPE_DEV.name(), id); //userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
+        List<UserMetaDto> reviewerList = showListUserInBug(Const.type.TYPE_REVIEWER.name(), id);// userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
+        List<UserMetaDto> responsibleList = showListUserInBug(Const.type.TYPE_DEV.name(), id); //userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), id);
         List<TagDto> tagEntityList = new ArrayList<>();
         for (TagRelationEntity tagRelationEntity : tagRelationEntities) {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
@@ -271,6 +271,7 @@ public class BugServiceImpl implements IRequestBugService {
                 bugEntity.setDescription(model.getDescription());
                 bugEntity.setName(model.getNameBug());
                 bugEntity.setIsDefault(model.getIsDefault());
+                bugEntity.setReason(model.getReason());
                 if (model.getSubTask() != null) {
                     SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(281));
                     bugEntity.setSubTask(subTaskEntity);
@@ -325,13 +326,12 @@ public class BugServiceImpl implements IRequestBugService {
 
                 List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
                 System.out.println(tagRelationEntities);
-
+                //delete tag in tag_relations table
                 if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
                     for (TagRelationEntity tagRelation : tagRelationEntities) {
-                        iTagRelationRepository.deleteByIdNative(tagRelation.getId());
-                        iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
+                        iTagRelationRepository.deleteById(tagRelation.getId());
+                         iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
                     }
-
                 }
                 if (model.getTags() != null && model.getTags().size() > 0) {
                     for (TagModel tagModel : model.getTags()) {
@@ -378,10 +378,8 @@ public class BugServiceImpl implements IRequestBugService {
                 bugEntity.setReviewerList(null);
                 bugEntity.setResponsibleList(null);
                 bugEntity.setTagList(null);
-                bugEntity.setReason(model.getReason());
-
                 iBugRepository.saveAndFlush(bugEntity);
-                iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
+              //  iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
                 return BugDto.entityToDto(bugEntity);
             } catch (Exception e) {
                 System.out.println(e);
@@ -702,16 +700,19 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public Page<BugDto> findAllBugOfProject(Long idProject, Pageable pageable) {
-        return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
+        return iBugRepository.findAllBugOfProject(idProject, pageable).map(data -> BugDto.entityToDtoInProject(data, showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()), showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
+
     public Page<BugDto> findAllBugOfFeature(Long id, Pageable pageable) {
-        return iBugRepository.findAllBugOfFeature(id, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
+        return iBugRepository.findAllBugOfFeature(id, pageable).map(data -> BugDto.entityToDtoInProject(data, showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()), showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
+
     public Page<BugDto> findAllBugOfTask(Long id, Pageable pageable) {
-        return iBugRepository.findAllByTaskId(id, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
+        return iBugRepository.findAllByTaskId(id, pageable).map(data -> BugDto.entityToDtoInProject(data, showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()), showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
+
     public Page<BugDto> findAllBugOfSubTask(Long id, Pageable pageable) {
-        return iBugRepository.findAllBySubTaskId(id, pageable).map(data -> BugDto.entityToDtoInProject(data,showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()),showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
+        return iBugRepository.findAllBySubTaskId(id, pageable).map(data -> BugDto.entityToDtoInProject(data, showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()), showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
 
     @Autowired
