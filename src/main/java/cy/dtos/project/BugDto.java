@@ -76,7 +76,7 @@ public class BugDto {
     public static BugDto entityToDtoInProject(BugEntity obj, List<UserMetaDto> responsibleList,List<UserMetaDto> reviewerList) {
         return BugDto.builder()
                 .id(obj.getId())
-//                .createBy(obj.getCreateBy() != null ? UserMetaDto.toDto(obj.getCreateBy()) : null)
+                .createBy(obj.getCreateBy() != null ? UserMetaDto.toDto(obj.getCreateBy()) : null)
 //                .priority(obj.getPriority())
                 .nameBug(obj.getName())
                 .subTask(obj.getSubTask() != null ? obj.getSubTask().getId() : null)

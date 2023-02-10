@@ -233,7 +233,7 @@ public class BugServiceImpl implements IRequestBugService {
             bugEntity.setResponsibleList(null);
             bugEntity.setTagList(tagEntityList);
             BugDto bugDto = BugDto.entityToDto(bugEntity);
-            iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.BUG, entity.getName());
+//            iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.BUG, entity.getName());
             return bugDto;
         } catch (Exception e) {
             throw new CustomHandleException(312);

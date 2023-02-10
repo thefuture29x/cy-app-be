@@ -10,6 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -18,10 +20,16 @@ import java.util.List;
 @Data
 public class TaskModel {
     private Long id;
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+//    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+//    private Date startDate;
+//    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+//    private Date endDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
+
     private String status;
     private String name;
     private Boolean isDelete;
