@@ -65,7 +65,8 @@ public class TaskResouce {
     public ResponseDto getAllTaskByProjectId(@RequestParam("id") Long id,Pageable pageable){
         return ResponseDto.of(taskService.findAllByProjectId(id,pageable));
     }
-    @GetMapping("/change-status/{taskId}")
+    @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
+    @PutMapping("/change-status/{taskId}")
     public ResponseDto updateStatusTask(@PathVariable Long taskId, @RequestBody SubTaskUpdateModel subTaskUpdateModel){
         return ResponseDto.of(taskService.updateStatusTask(taskId, subTaskUpdateModel) ? "Update status successfully" : "Update status failed");
     }
