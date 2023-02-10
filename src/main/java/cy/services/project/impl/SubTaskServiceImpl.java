@@ -6,6 +6,7 @@ import cy.dtos.project.*;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.services.project.IHistoryLogService;
@@ -681,15 +682,30 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     @Override
-    public boolean changeStatus(Long subTaskId, Const.status newStatus) {
+    public boolean changeStatus(Long subTaskId, SubTaskUpdateModel subTaskUpdateModel) {
         SubTaskEntity subTaskEntityExist = subTaskRepository.findById(subTaskId).orElseThrow(() -> new CustomHandleException(204));
-        if (subTaskEntityExist.getStatus().equals(newStatus.name())) {
+        if (subTaskEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
             throw new CustomHandleException(205);
         }
-        subTaskEntityExist.setStatus(newStatus.name());
+        subTaskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
         SubTaskEntity saveResult = subTaskRepository.save(subTaskEntityExist);
         if(saveResult == null){
             return false;
+        }
+        if(subTaskUpdateModel.getNewStatus().name().equals(Const.status.IN_REVIEW.name())){
+            if(subTaskUpdateModel.getReviewerIdList() == null){
+                throw new CustomHandleException(206);
+            }
+            for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
+                // Check if reviewer is existed
+                userRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.SUBTASK.name());
+                userProjectEntity.setObjectId(subTaskId);
+                userProjectEntity.setIdUser(reviewerId);
+                userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                userProjectRepository.save(userProjectEntity);
+            }
         }
         return true;
     }

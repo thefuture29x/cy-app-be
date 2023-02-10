@@ -3,6 +3,7 @@ package cy.services.project;
 import cy.dtos.project.SubTaskDto;
 import cy.entities.project.SubTaskEntity;
 import cy.models.project.SubTaskModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.services.IBaseService;
 import cy.utils.Const;
 import org.springframework.data.domain.Page;
@@ -17,5 +18,5 @@ public interface ISubTaskService extends IBaseService<SubTaskEntity, SubTaskDto,
 
     Page<SubTaskDto> filter(SubTaskModel subTaskModel, Pageable pageable);
 
-        boolean changeStatus(Long subTaskId, Const.status newStatus);
+    boolean changeStatus(Long subTaskId, SubTaskUpdateModel subTaskUpdateModel);
 }
