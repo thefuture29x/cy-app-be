@@ -109,7 +109,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             // Set bug list
             setBugList(subTaskDto);
 
-            // Set following user list then set watching user list and set developer user list
+            // Set following user list then set watching user list, developer user list and reviewer user list
             setFollowingUserList(subTaskDto);
         }
         return subTaskDto;
@@ -145,6 +145,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         // Set developer user list
         setDeveloperUserList(subTaskDto);
+
+        // Set reviewer user list
+        setReviewerUserList(subTaskDto);
     }
 
     private void setWatchingUserList(SubTaskDto subTaskDto, Long projectIdBySubTaskId) {
@@ -173,6 +176,20 @@ public class SubTaskServiceImpl implements ISubTaskService {
             userAssigningDtoList.add(UserDto.toDto(userWatchingEntity));
         }
         subTaskDto.setDeveloperUserList(userAssigningDtoList);
+    }
+
+    private void setReviewerUserList(SubTaskDto subTaskDto) {
+        List<UserDto> userReviewerDtoList = new ArrayList<>();
+        // Collect id of user reviewer
+        List<Long> userReviewerIdList = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
+                subTaskDto.getId(), Const.type.TYPE_REVIEWER.name());
+        // Find user entity by id
+        List<UserEntity> userReviewerEntityList = userRepository.findAllById(userReviewerIdList);
+        // Convert Entity to Dto
+        for (UserEntity userReviewerEntity : userReviewerEntityList) {
+            userReviewerDtoList.add(UserDto.toDto(userReviewerEntity));
+        }
+        subTaskDto.setReviewerUserList(userReviewerDtoList);
     }
 
     @Override
@@ -235,7 +252,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskDto.setTagList(tagListSplit);
         subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
 
-        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK);
+        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK, saveSubTask.getName());
         return subTaskDto;
     }
 

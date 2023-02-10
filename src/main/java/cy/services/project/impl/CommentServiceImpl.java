@@ -101,7 +101,7 @@ public class CommentServiceImpl implements ICommentService {
                 commentEntity.setAttachFiles(files);
         }
 
-        this.historyLogService.logCreate(commentEntity.getId(), commentEntity, Const.tableName.COMMENT);
+        this.historyLogService.logCreate(commentEntity.getId(), commentEntity, Const.tableName.COMMENT,"");
         return CommentDto.toDto(commentEntity);
     }
 
@@ -114,6 +114,11 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public CommentDto update(CommentModel model) {
+        if (model.getFileUrlsKeeping() != null){
+            fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.COMMENT.name(), model.getId());
+        }else {
+            fileRepository.deleteAllByCategoryAndObjectId(Const.tableName.COMMENT.name(), model.getId());
+        }
         CommentEntity commentEntity = this.getById(model.getId());
         CommentEntity originComment = (CommentEntity) Const.copy(commentEntity);
         Long userId = SecurityUtils.getCurrentUserId();
@@ -130,9 +135,9 @@ public class CommentServiceImpl implements ICommentService {
 
         //   for save file
         List<FileEntity> files = new ArrayList<>();
-        if (commentEntity.getAttachFiles() != null && model.getAttachFiles() != null) {
+        if (!commentEntity.getAttachFiles().isEmpty()) {
             commentEntity.getAttachFiles().forEach(f -> {
-                if (model.getAttachFiles().contains(f.getId()))
+//                if (model.getAttachFiles().contains(f.getId()))
                     files.add(f);
             });
 //            commentEntity.setAttachFiles(null);
@@ -150,7 +155,7 @@ public class CommentServiceImpl implements ICommentService {
         if (files.size() > 0)
             commentEntity.setAttachFiles(files);
 
-        this.commentRepository.saveAndFlush(commentEntity);
+        this.commentRepository.save(commentEntity);
 
         this.historyLogService.logUpdate(commentEntity.getId(), originComment, commentEntity, Const.tableName.COMMENT);
         return CommentDto.toDto(commentEntity);
@@ -158,7 +163,13 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public boolean deleteById(Long id) {
-        return false;
+        try{
+            commentRepository.deleteAllByIdParent_Id(id);
+            commentRepository.deleteById(id);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 
     @Override

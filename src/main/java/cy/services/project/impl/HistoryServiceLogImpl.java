@@ -3,10 +3,7 @@ package cy.services.project.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.HistoryLogDto;
 import cy.entities.UserEntity;
-import cy.entities.project.FileEntity;
-import cy.entities.project.HistoryEntity;
-import cy.entities.project.HistoryLogTitle;
-import cy.entities.project.ProjectBaseEntity;
+import cy.entities.project.*;
 import cy.models.attendance.NotificationModel;
 import cy.repositories.project.IHistoryLogRepository;
 import cy.services.attendance.INotificationService;
@@ -21,7 +18,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.reflect.Modifier.PUBLIC;
@@ -187,7 +188,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
     }
 
     @Override
-    public void logCreate(Long objectId, Object object, Const.tableName category) {
+    public void logCreate(Long objectId, Object object, Const.tableName category, String nameObject) {
         UserEntity user = SecurityUtils.getCurrentUser().getUser();
 
         // annotation on class
@@ -196,11 +197,9 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             throw new CustomHandleException(371);
 
         StringBuilder content = new StringBuilder()
-                .append(user.getFullName())
-                .append(" đã thêm ")
-                .append(annotationClass.title())
-                .append(" mới.");
-
+                .append(" đã thêm mới ")
+                .append(annotationClass.title() + " ")
+                .append(nameObject+".");
 
 
         this.historyLogRepository.saveAndFlush(HistoryEntity
@@ -212,7 +211,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .build());
 
         iNotificationService.add(NotificationModel.builder()
-                .title(user.getFullName() + " đã tạo mới " + annotationClass.title())
+                .title(user.getFullName() + " đã tạo mới " + annotationClass.title() + " " + nameObject)
                 .content(content.toString())
                 .objectId(objectId)
                 .category(category.name())
@@ -245,6 +244,15 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         AtomicInteger changedFiles = new AtomicInteger(0);
         StringBuilder checkFileChangeContent = new StringBuilder();
 
+        HistoryEntity historyEntity = HistoryEntity
+                .builder()
+                .id(null)
+                .ObjectId(objectId)
+                .category(category.name())
+                .userId(user)
+                .build();
+        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
+
         for (int i = 0; i < fieldLength; ++i) {
             changedContent.setLength(0);
             Field field = originalInsFsList.get(i);
@@ -252,12 +260,13 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             if (field.getModifiers() == 9 || field.getModifiers() == 10)
                 continue;
 
-            // IGNORE WHEN CHANGE GT 1
-            if (changedCount.get() > 1)
-                break;
+//            // IGNORE WHEN CHANGE GT 1
+//            if (changedCount.get() > 1)
+//                break;
 
             // annotation on field
             HistoryLogTitle annotationField = field.getAnnotation(HistoryLogTitle.class);
+            ;
             if (annotationField == null) {
                 throw new CustomHandleException(371);
             }
@@ -265,22 +274,22 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 continue;
 
             if (field.getModifiers() == PUBLIC) {
-                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles);
+                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles, historyEntity);
 
             } else {
                 field.setAccessible(true); // open access to private field
-                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles);
+                compareObjectFields(annotationField, field, original, newObj, changedCount, changedContent, checkFileChangeContent, changedFiles, historyEntity);
                 field.setAccessible(false); // close access to restore original
             }
         }
 
-        HistoryEntity historyEntity = HistoryEntity
-                .builder()
-                .ObjectId(objectId)
-                .category(category.name())
-                .userId(user)
-                .build();
-        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
+//        HistoryEntity historyEntity = HistoryEntity
+//                .builder()
+//                .ObjectId(objectId)
+//                .category(category.name())
+//                .userId(user)
+//                .build();
+//        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
 
         if (changedCount.get() == 0)
             return false;
@@ -295,7 +304,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 throw new CustomHandleException(371);
             }
             changedContent.setLength(0);
-            changedContent.append(user.getUserName())
+            changedContent
                     .append(" đã cập nhật ")
                     .append(annotationClass.title())
                     .append(".");
@@ -308,7 +317,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .category(historyEntity.getCategory())
                 .build());
 
-        this.historyLogRepository.saveAndFlush(historyEntity);
+//        this.historyLogRepository.saveAndFlush(historyEntity);
         return true;
     }
 
@@ -324,7 +333,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         }
 
         StringBuilder content = new StringBuilder()
-                .append(user.getFullName())
                 .append(" đã xóa ")
                 .append(category.name().toLowerCase())
                 .append(".");
@@ -358,6 +366,11 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .build());
     }
 
+    @Override
+    public Page<HistoryLogDto> getAllHistoryCreateObject(Const.tableName category, Pageable pageable) {
+        return null;
+    }
+
     private void compareObjectFields(HistoryLogTitle annotation,
                                      Field field,
                                      Object original,
@@ -365,42 +378,43 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                                      AtomicInteger changedCount,
                                      StringBuilder changedContent,
                                      StringBuilder checkFileChangeContent,
-                                     AtomicInteger changedFiles) {
+                                     AtomicInteger changedFiles,
+                                     HistoryEntity historyEntity) {
+
+        //            field.getGenericType().getTypeName()
         String className = field.getType().getName();
 
+
         try {
-            Object val1 = field.get(original);
-            Object val2 = field.get(newObj);
+            Object val1 = field.get(original);  // gia tri gia tri cu
+            Object val2 = field.get(newObj); // gia tri moi
 
             if (val1 == null && val2 == null) { // nothing do
             } else if (val1 == null || val2 == null) { // for only 1 or 2 changed
                 changedCount.incrementAndGet();
                 if (annotation.isMultipleFiles()) {
-                    changedFiles.set(1);
-
-                    if (val1 == null && val2 != null) {
-                        List<FileEntity> newFiles = (List<FileEntity>) field.get(newObj);
-                        checkFileChangeContent.append(" đã cập nhật file đính kèm!");
-                        newFiles.forEach(file -> {
-                            checkFileChangeContent.append(createHtmlATag(file, " đã được thêm"));
-                        });
-
-                    } else {
-                        List<FileEntity> originalFiles = (List<FileEntity>) field.get(original);
-                        checkFileChangeContent.append(" đã xóa file đính kèm!");
-                        originalFiles.forEach(file -> {
-                            checkFileChangeContent.append(createHtmlATag(file, " đã bị xóa"));
-                        });
+                    changedContent = checkMultipleFileUpdate(changedContent,historyEntity,val1,val2);
+                } else if (annotation.isListType()) { // for list user
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.UserEntity>")) {
+                        changedContent = checkUserEntityUpdate(annotation,changedContent,val1,val2);
                     }
-
-                } else if (className.equals(FileEntity.class.getName())) { // for avatar
-                    changedContent.append(" đã cập nhật ")
-                            .append(annotation.title())
-                            .append(".");
-
-                    if (val1 != null) {
-                        changedContent.append(createHtmlATag((FileEntity) field.get(original), " đã bị xóa"));
+                } else if (annotation.isTagFields()) { // for list tag
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.TagEntity>")) {
+                        changedContent = checkTagEntityUpdate(annotation,changedContent,val1,val2);
                     }
+                } else if (annotation.isDateType()) { // for date
+                    changedContent = checkDateUpdate(annotation,changedContent,val1,val2);
+                }
+//                else if (!annotation.title().equals("")) {
+//                    if (!val1.equals(val2)) {
+//                        changedContent = setChangedContentToUpdated(annotation,changedContent);
+//                    }
+//                }
+                else if (className.equals(FileEntity.class.getName())) { // for avatar
+                    changedContent = setChangedContentToUpdated(annotation,changedContent);
+//                    if (val1 != null) {
+//                        changedContent.append(createHtmlATag((FileEntity) field.get(original), " đã bị xóa"));
+//                    }
                 } else {
                     if (val1 == null && val2 != null) {
                         changedContent.append(" đã thêm ")
@@ -412,41 +426,140 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                                 .append(".");
                     }
                 }
-
-
             } else if (!val1.equals(val2)) {
                 changedCount.incrementAndGet();
                 if (annotation.isMultipleFiles()) { // for multiple file
-                    changedFiles.set(1);
-                    List<FileEntity> originalFiles = (List<FileEntity>) field.get(original);
-                    List<FileEntity> newFiles = (List<FileEntity>) field.get(newObj);
-                    checkFileChangeContent.append(" đã cập nhật file đính kèm!");
-                    originalFiles.forEach(file -> {
-                        if (!newFiles.contains(file)) {
-                            checkFileChangeContent.append(createHtmlATag(file, " đã bị xóa"));
-                        }
-                    });
-
-                    newFiles.forEach(file -> {
-                        if (!originalFiles.contains(file)) {
-                            checkFileChangeContent.append(createHtmlATag(file, " đã được thêm"));
-                        }
-                    });
+                    changedContent = checkMultipleFileUpdate(changedContent,historyEntity,val1,val2);
+                } else if (annotation.isListType()) {
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.UserEntity>")) {
+                       changedContent = checkUserEntityUpdate(annotation,changedContent,val1,val2);
+                    }
+                } else if (annotation.isTagFields()) { // for list tag
+                    if (field.getGenericType().getTypeName().equals("java.util.List<cy.entities.project.TagEntity>")) {
+                        changedContent = checkTagEntityUpdate(annotation,changedContent,val1,val2);
+                    }
+                } else if (annotation.isDateType()) { // for date
+                    changedContent = checkDateUpdate(annotation,changedContent,val1,val2);
+                } else if (!annotation.title().equals("")) {
+                    changedContent = setChangedContentToUpdated(annotation,changedContent);
                 } else if (className.equals(FileEntity.class.getName())) { // FOR FILE avatar
-                    changedContent.append(" đã cập nhật ")
-                            .append(annotation.title())
-                            .append(".")
-                            .append(createHtmlATag((FileEntity) field.get(original), " đã bị xóa"));
+                    changedContent = setChangedContentToUpdated(annotation,changedContent);
                 } else {
                     changedContent.append(" đã thay đổi ")
                             .append(annotation.title())
                             .append(".");
                 }
             }
+
+            createNewHistory(historyEntity, changedContent);
+
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             throw new CustomHandleException(373);
         }
+    }
+    private StringBuilder checkUserEntityUpdate(HistoryLogTitle annotation,StringBuilder changedContent, Object val1, Object val2){
+        List<UserEntity> originalUserList = (List<UserEntity>) val1;
+        List<UserEntity> newUserList = (List<UserEntity>) val2;
+        if (!new HashSet<>(originalUserList).equals(new HashSet<>(newUserList))){
+            return changedContent.append(" đã cập nhật ")
+                    .append(annotation.title())
+                    .append(".");
+        }
+        return new StringBuilder();
+    }
+    private StringBuilder checkTagEntityUpdate(HistoryLogTitle annotation,StringBuilder changedContent, Object val1, Object val2){
+        List<TagEntity> originalTagList = (List<TagEntity>) val1;
+        List<TagEntity> newTagList = (List<TagEntity>) val2;
+
+        if (originalTagList.size() == newTagList.size()){
+            List<String> originalTagListName = new ArrayList<>();
+            List<String> newTagListName = new ArrayList<>();
+
+            originalTagList.stream().forEach(data -> originalTagListName.add( data.getName()));
+            newTagList.stream().forEach(data -> newTagListName.add( data.getName()));
+
+            if (!new HashSet<>(originalTagListName).equals(new HashSet<>(newTagListName))){
+                return changedContent.append(" đã cập nhật ")
+                        .append(annotation.title())
+                        .append(".");
+            }
+            return new StringBuilder();
+        }else {
+            return changedContent.append(" đã cập nhật ")
+                    .append(annotation.title())
+                    .append(".");
+        }
+    }
+    private StringBuilder checkDateUpdate(HistoryLogTitle annotation,StringBuilder changedContent, Object val1, Object val2){
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        if (!simpleDateFormat.format(val1).equals(simpleDateFormat.format(val2))) {
+            return changedContent.append(" đã cập nhật ")
+                    .append(annotation.title())
+                    .append(".");
+        }
+        return new StringBuilder();
+    }
+    private StringBuilder checkMultipleFileUpdate(StringBuilder changedContent,HistoryEntity historyEntity, Object val1, Object val2){
+        List<FileEntity> originalFiles = (List<FileEntity>) val1;
+        List<FileEntity> newFiles = (List<FileEntity>) val2;
+
+        if (!new HashSet<>(originalFiles).equals(new HashSet<>(newFiles))){
+            for (FileEntity entity : originalFiles) {
+                boolean haveDeleteFile = false;
+                if (!newFiles.contains(entity)){
+                    changedContent.append(" đã xóa file đính kèm.");
+                    createNewHistory(historyEntity, changedContent);
+                    changedContent.setLength(0);
+                    haveDeleteFile = true;
+                }
+                if(haveDeleteFile) break;
+            }
+            for (FileEntity entity: newFiles) {
+                boolean haveNewFile = false;
+                if (!originalFiles.contains(entity)){
+                    changedContent.append(" đã thêm mới file đính kèm.");
+                    createNewHistory(historyEntity, changedContent);
+                    changedContent.setLength(0);
+                    haveNewFile = true;
+                }
+                if(haveNewFile) break;
+            }
+
+        }
+//        if (val1 == null && val2 != null) {
+//            changedContent.append(" đã cập nhật file đính kèm!");
+//            newFiles.forEach(file -> {
+//                changedContent.append(createHtmlATag(file, " đã được thêm"));
+//            });
+//
+//        } else {
+//            changedContent.append(" đã xóa file đính kèm!");
+//            originalFiles.forEach(file -> {
+//                changedContent.append(createHtmlATag(file, " đã bị xóa"));
+//            });
+//        }
+
+        return new StringBuilder();
+    }
+    private void createNewHistory(HistoryEntity historyEntity, StringBuilder changedContent){
+        if (!changedContent.toString().equals("")) {
+            HistoryEntity newHistoryEntity = HistoryEntity
+                    .builder()
+                    .id(null)
+                    .ObjectId(historyEntity.getObjectId())
+                    .category(historyEntity.getCategory())
+                    .userId(historyEntity.getUserId())
+                    .content(changedContent.toString())
+                    .build();
+            this.historyLogRepository.saveAndFlush(newHistoryEntity);
+        }
+    }
+    private StringBuilder setChangedContentToUpdated(HistoryLogTitle annotation,StringBuilder changedContent){
+        return changedContent.append(" đã cập nhật ")
+                .append(annotation.title())
+                .append(".");
     }
 
     private StringBuilder createHtmlATag(FileEntity file, String suffix) {

@@ -91,7 +91,7 @@ public class UserDto {
             this.birthDate = userEntity.getBirthDate();
             this.createdDate = userEntity.getCreatedDate();
             this.phone = userEntity.getPhone();
-            this.manager = new UserDto(userEntity.getManager());
+//            this.manager = new UserDto(userEntity.getManager());
             this.email = userEntity.getEmail();
             this.sex = userEntity.getSex();
             this.userName = userEntity.getUserName();

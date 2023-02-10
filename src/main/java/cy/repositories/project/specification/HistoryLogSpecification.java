@@ -15,8 +15,16 @@ public class HistoryLogSpecification {
         return (root, query, cb) -> cb.equal(root.get(HistoryEntity_.CATEGORY), category.name());
     }
 
+    public static Specification<HistoryEntity> byContent() {
+        return (root, query, cb) -> cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới project%");
+    }
+
     public static Specification<HistoryEntity> byObjectAndCategory(Long objectId, Const.tableName category) {
         return Specification.where(byObjectId(objectId)).and(byCategory(category));
+    }
+
+    public static Specification<HistoryEntity> byCategoryAndContent(Const.tableName category) {
+        return Specification.where(byCategory(category)).and(byContent());
     }
 
 }

@@ -51,15 +51,15 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
-            "AND'IN_PROGRESS' NOT IN (\n" +
+            "AND 'IN_PROGRESS' NOT IN (\n" +
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
-            "AND'IN_REVIEW' NOT IN (\n" +
+            "AND 'PENDING' NOT IN (\n" +
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")\n" +
-            "AND'FIX_BUG' NOT IN (\n" +
+            "AND 'IN_REVIEW' NOT IN (\n" +
             "\tSELECT `status` FROM `tbl_bugs`\n" +
             "\tWHERE sub_task_id = ?1\n" +
             ")",nativeQuery = true)
@@ -78,4 +78,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
 
     @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.id = :id AND st.isDeleted = false")
     SubTaskEntity findByIdAndIsDeletedFalse(@Param("id") Long id);
+
+    @Query(value = "SELECT `status` FROM tbl_sub_tasks WHERE task_id = ?1 AND is_deleted = FALSE GROUP BY `status` ",nativeQuery = true)
+    List<String> getAllStatusSubTaskByTaskId(Long idTask);
 }

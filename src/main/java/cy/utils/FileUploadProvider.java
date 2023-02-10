@@ -41,13 +41,13 @@ public class FileUploadProvider {
 
     //Upload file to aws s3
     public String uploadFile(String folder, MultipartFile file) throws IOException {
-        StringBuilder checkFileName = new StringBuilder(folder);
+        StringBuilder checkFileName = new StringBuilder(folder+ "/");
         checkFileName.append(file.getOriginalFilename());
         if (isFileExist(checkFileName.toString())) { //Check if file exist, make a copy with increase prefix
 //            int i = 1;
 //            while (true) {
                 checkFileName.setLength(0);
-                checkFileName.append(folder).append(file.getOriginalFilename());
+                checkFileName.append(folder + "/").append(file.getOriginalFilename());
 //                if (!isFileExist(checkFileName.toString()))
 //                    break;
 //            }
@@ -58,12 +58,12 @@ public class FileUploadProvider {
     }
 
     public String uploadFile(String folder, Part file) throws IOException {
-        StringBuilder checkFileName = new StringBuilder(folder);
+        StringBuilder checkFileName = new StringBuilder(folder + "/");
         checkFileName.append(file.getSubmittedFileName());
         if (isFileExist(checkFileName.toString())) { //Check if file exist, make a copy with increase prefix
 //            while (true) {
                 checkFileName.setLength(0);
-                checkFileName.append(folder).append(file.getSubmittedFileName());
+                checkFileName.append(folder+ "/").append(file.getSubmittedFileName());
 //                if (!isFileExist(file.toString()))
 //                    break;
 //            }

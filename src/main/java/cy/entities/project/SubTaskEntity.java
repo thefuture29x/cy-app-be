@@ -34,7 +34,7 @@ public class SubTaskEntity extends ProjectBaseEntity {
     @Where(clause = "category='SUBTASK'")
     private List<FileEntity> attachFiles;
 
-    @HistoryLogTitle(title = "assign to")
+    @HistoryLogTitle(title = "assign to" )
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user_assign")
     private UserEntity assignTo;
@@ -44,7 +44,7 @@ public class SubTaskEntity extends ProjectBaseEntity {
     @JoinColumn(name = "id_tester_assign")
     private UserEntity assignToTester;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người phụ trách", isListType = true)
     @Transient
     private List<UserEntity> devTeam;
 }

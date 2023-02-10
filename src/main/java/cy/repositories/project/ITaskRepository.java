@@ -32,9 +32,45 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE `tbl_tasks` tas \n" + "JOIN `tbl_bugs` bug ON tas.id = bug.task_id\n" + "SET tas.status = 'DONE' \n" + "WHERE tas.id = ?1 \n" + "AND 'TO_DO' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1\n" + ")\n" + "AND'IN_PROGRESS' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1\n" + ")\n" + "AND'IN_REVIEW' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1\n" + ")\n" + "AND'FIX_BUG' NOT IN (\n" + "\tSELECT `status` FROM `tbl_bugs`\n" + "\tWHERE task_id = ?1 \n" + ")", nativeQuery = true)
+    @Query(value = "UPDATE `tbl_tasks` tas \n"
+            + "JOIN `tbl_bugs` bug ON tas.id = bug.task_id\n"
+            + "SET tas.status = 'DONE' \n"
+            + "WHERE tas.id = ?1 \n"
+            + "AND 'TO_DO' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1\n"
+            + ")\n"
+            + "AND 'IN_PROGRESS' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1\n"
+            + ")\n"
+            + "AND 'PENDING' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1\n"
+            + ")\n"
+            + "AND 'IN_REVIEW' NOT IN (\n"
+            + "\tSELECT `status` FROM `tbl_bugs`\n"
+            + "\tWHERE task_id = ?1 \n"
+            + ")", nativeQuery = true)
     void updateStatusTaskAfterAllBugDone(Long id);
 
     @Query(value = "SELECT t FROM TaskEntity t WHERE t.id = :id AND t.isDeleted = false")
     TaskEntity findByIdAndIsDeletedFalse(@Param("id") Long id);
+
+    @Query(value = "SELECT t from  TaskEntity t where t.feature.id = 1")
+    List<TaskEntity> searchAllTask(String sql);
+
+    @Query(value = "SELECT distinct COUNT(sub.id) FROM tbl_sub_tasks sub\n" +
+            "JOIN tbl_tasks tas ON sub.task_id = tas.id\n" +
+            "WHERE tas.id = ?1 and sub.is_deleted = false",nativeQuery = true)
+    int countSubtask(Long idTask);
+
+    @Query(value = "SELECT distinct COUNT(sub.id) FROM tbl_sub_tasks sub\n" +
+            "JOIN tbl_tasks tas ON sub.task_id = tas.id\n" +
+            "WHERE tas.id = ?1 and sub.is_deleted = false AND sub.`status` = 'DONE' ",nativeQuery = true)
+    int countSubtaskDone(Long idTask);
+
+    @Query(value = "SELECT `status` FROM tbl_tasks WHERE feature_id  = ?1 AND is_deleted = FALSE GROUP BY `status` ",nativeQuery = true)
+    List<String> getAllStatusTaskByFeatureId(Long idFeature);
+
 }

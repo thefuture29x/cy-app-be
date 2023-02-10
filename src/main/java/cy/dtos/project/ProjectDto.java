@@ -27,19 +27,16 @@ public class ProjectDto {
     private Boolean isDeleted = false;
     private String name;
     private String description;
-    private List<String> attachFiles;
+    private List<FileDto> attachFiles;
     private String avatar;
     private Boolean isDefault;
     private List<UserDto> userDevs;
     private List<UserDto> userFollows;
     private List<UserDto> userView;
+    private List<String> tagArray = new ArrayList<>();
     public static ProjectDto toDto(ProjectEntity entity){
         if(entity == null)
             return null;
-        List<String> lstFile = new ArrayList<>();
-        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
-            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
-        }
         return ProjectDto.builder()
                 .id(entity.getId())
                 .createdDate(entity.getCreatedDate())
@@ -52,7 +49,8 @@ public class ProjectDto {
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .avatar(entity.getAvatar() == null ? null : entity.getAvatar().getLink())
-                .attachFiles(lstFile)
+                .attachFiles(entity.getAttachFiles()!=null
+                        ? entity.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
                 .userDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
                 .userFollows(entity.getFollowTeam() != null ? entity.getFollowTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
                 .userView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
@@ -60,15 +58,12 @@ public class ProjectDto {
     }
     public ProjectDto(ProjectEntity entity){
         if(entity != null){
-            List<String> lstFile = new ArrayList<>();
-            if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
-                entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
-            }
             this.setId(entity.getId());
             this.setCreatedDate(entity.getCreatedDate());
             this.setCreateBy(UserDto.toDto(entity.getCreateBy()));
             this.setAvatar(entity.getAvatar() == null ? null : entity.getAvatar().getLink());
-            this.setAttachFiles(lstFile);
+            this.setAttachFiles(entity.getAttachFiles()!=null
+                    ? entity.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null);
             this.setDescription(entity.getDescription());
             this.setName(entity.getName());
             this.setIsDefault(entity.getIsDefault());

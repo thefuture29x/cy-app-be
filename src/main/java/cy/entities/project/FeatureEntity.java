@@ -1,5 +1,6 @@
 package cy.entities.project;
 
+import cy.dtos.project.FeatureDto;
 import cy.entities.UserEntity;
 import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
@@ -37,13 +38,16 @@ public class FeatureEntity extends ProjectBaseEntity{
     @Where(clause = "category='FEATURE'")
     private List<FileEntity> attachFiles;
 
-    @HistoryLogTitle(title = "", ignore = true)
+    @HistoryLogTitle(title = "danh sách người phụ trách", isListType = true)
     @Transient
     private List<UserEntity> devTeam = new ArrayList<>();
-    @HistoryLogTitle(title = "", ignore = true)
+
+    @HistoryLogTitle(title = "danh sách người theo dõi", isListType = true)
     @Transient
     private List<UserEntity> followTeam;
-    @HistoryLogTitle(title = "", ignore = true)
+
+    @HistoryLogTitle(title = "danh sách người có thể xem", isListType = true)
     @Transient
     private List<UserEntity> viewTeam;
+
 }

@@ -2,9 +2,11 @@ package cy.services.project.impl;
 
 import cy.dtos.UserDto;
 import cy.dtos.project.ProjectDto;
+import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.ProjectModel;
+import cy.models.project.TaskSearchModel;
 import cy.models.project.UserViewProjectModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
@@ -23,6 +25,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -63,8 +68,8 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public ProjectDto findById(Long id) {
-        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
+//        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+//        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
         ProjectDto projectDto = ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
         if (projectDto == null)
@@ -75,12 +80,12 @@ public class ProjectServiceImpl implements IProjectService {
         projectDto.setUserView(userView);
         projectDto.setUserDevs(userDev);
         projectDto.setUserFollows(userFollow);
+        projectDto.setTagArray(iTagRelationRepository.getNameTagByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId()));
         return projectDto;
     }
 
     @Override
-    public ProjectDto createProject(ProjectModel projectModel) {
-        try {
+    public ProjectDto createProject(ProjectModel projectModel) throws IOException {
             ProjectEntity projectEntity = new ProjectEntity();
             Long userId = SecurityUtils.getCurrentUserId();
             if (userId == null)
@@ -140,7 +145,6 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-//          if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
             if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
                 for (String tagModel : projectModel.getTagArray()) {
                     TagEntity tagEntity = iTagRepository.findByName(tagModel);
@@ -162,20 +166,22 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
+//            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
+            if (projectModel.getAvatar() != null) {
                 String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity = new FileEntity();
                 String fileName = projectModel.getAvatar().getOriginalFilename();
                 fileEntity.setCategory(Const.tableName.PROJECT.name());
                 fileEntity.setUploadedBy(userEntity);
                 fileEntity.setLink(urlAvatar);
-                fileEntity.setObjectId(projectEntity.getId());
+//                fileEntity.setObjectId(projectEntity.getId());
                 fileEntity.setFileName(fileName);
                 fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
                 projectEntity.setAvatar(fileEntity);
                 projectEntity = iProjectRepository.save(projectEntity);
             }
-            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
+//            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
+            if (projectModel.getFiles() != null) {
                 for (MultipartFile m : projectModel.getFiles()) {
                     if (!m.isEmpty()) {
                         String urlFile = fileUploadProvider.uploadFile("project", m);
@@ -191,18 +197,15 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT);
-            return ProjectDto.toDto(projectEntity);
-        } catch (Exception e) {
-            return null;
-        }
+            iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT, projectEntity.getName());
+            ProjectDto result = ProjectDto.toDto(projectEntity);
+            return result;
     }
 
     @Override
-//    @Transactional(dontRollbackOn = Exception.class)
-    public ProjectDto updateProject(ProjectModel projectModel) {
-        try {
+    public ProjectDto updateProject(ProjectModel projectModel) throws IOException {
             List<String> fileUrlsKeeping = new ArrayList<>();
+            List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
             if (projectModel.getFileUrlsKeeping() != null){
                 projectModel.getFileUrlsKeeping().stream().map(url -> fileUrlsKeeping.add(url)).collect(Collectors.toList());
             }
@@ -219,6 +222,17 @@ public class ProjectServiceImpl implements IProjectService {
 
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
             ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
+
+            List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+            List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+            List<UserEntity> listUserView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+            List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(),Const.tableName.PROJECT.name());
+            projectOriginal.setViewTeam(listUserView);
+            projectOriginal.setDevTeam(listUserDev);
+            projectOriginal.setFollowTeam(listUserFollow);
+            projectOriginal.setTagList(listTag);
+            projectOriginal.setAttachFiles(fileOriginal);
+
             if (projectEntity == null)
                 return null;
             Long userId = SecurityUtils.getCurrentUserId();
@@ -284,31 +298,20 @@ public class ProjectServiceImpl implements IProjectService {
             }
 
             List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
-            if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
-                iTagRelationRepository.deleteAll(tagRelationEntities);
-            }
-//            if(projectModel.getTags() != null && projectModel.getTags().size() > 0){
+            iTagRelationRepository.deleteAll(tagRelationEntities);
             if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
                 for (String tagModel : projectModel.getTagArray()) {
-                    TagEntity tagEntity = iTagRepository.findByName(tagModel);
-                    if (tagEntity == null) {
-                        TagEntity tagEntity1 = new TagEntity();
-                        tagEntity1.setName(tagModel);
-                        tagEntity1 = iTagRepository.save(tagEntity1);
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
-                        tagRelationEntity.setIdTag(tagEntity1.getId());
-                        tagRelationEntity.setObjectId(projectEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
-                    } else if (tagEntity != null) {
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
-                        tagRelationEntity.setIdTag(tagEntity.getId());
-                        tagRelationEntity.setObjectId(projectEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
-                    }
+                    TagEntity tagEntity1 = new TagEntity();
+                    tagEntity1.setName(tagModel);
+                    tagEntity1 = iTagRepository.save(tagEntity1);
+                    TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                    tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
+                    tagRelationEntity.setIdTag(tagEntity1.getId());
+                    tagRelationEntity.setObjectId(projectEntity.getId());
+                    iTagRelationRepository.save(tagRelationEntity);
                 }
             }
+
             iFileRepository.delete(projectEntity.getAvatar());
             if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
                 String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
@@ -347,13 +350,20 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            iProjectRepository.save(projectEntity);
-            iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal, projectEntity, Const.tableName.PROJECT);
-            return ProjectDto.toDto(projectEntity);
-        } catch (Exception e) {
-            System.out.println(e);
-            return null;
-        }
+            iProjectRepository.saveAndFlush(projectEntity);
+            List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+            List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+            List<UserEntity> userView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+            List<TagEntity> listTagEntity = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(),Const.tableName.PROJECT.name());
+
+            projectEntity.setViewTeam(userView);
+            projectEntity.setDevTeam(userDev);
+            projectEntity.setFollowTeam(userFollow);
+            projectEntity.setTagList(listTagEntity);
+
+            iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal,projectEntity, Const.tableName.PROJECT);
+            ProjectDto result = ProjectDto.toDto(projectEntity);
+            return result;
     }
 
     @Override
@@ -401,8 +411,25 @@ public class ProjectServiceImpl implements IProjectService {
             sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
             countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
         }
-        sql += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false ";
-        countSQL += " WHERE (up.category like 'PROJECT') and (up.idUser = :currentUserId) AND p.isDeleted = false ";
+        sql += " WHERE (up.category like 'PROJECT') AND p.isDeleted = false ";
+        countSQL += " WHERE (up.category like 'PROJECT') AND p.isDeleted = false ";
+
+        if (projectModel.getTypeUser() != null){
+            sql+= " AND up.type = :typeUser";
+            countSQL+= " AND up.type = :typeUser";
+        }else {
+            sql+= " AND up.type is not null";
+            countSQL+= " AND up.type is not null";
+        }
+
+        if (projectModel.getOtherProject()){
+            sql += " and (up.idUser <> :currentUserId) ";
+            countSQL += " and (up.idUser <> :currentUserId) ";
+        }else {
+            sql += " and (up.idUser = :currentUserId) ";
+            countSQL += " and (up.idUser = :currentUserId) ";
+        }
+
         if (projectModel.getStatus() != null) {
             sql += " AND p.status = :status ";
             countSQL += " AND p.status = :status ";
@@ -424,7 +451,7 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += "AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
             }
         }
-        sql += "order by p.createdDate desc";
+        sql += "order by p.updatedDate desc";
 
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
@@ -447,6 +474,10 @@ public class ProjectServiceImpl implements IProjectService {
         if (projectModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
             qCount.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
+        }
+        if (projectModel.getTypeUser() != null) {
+            q.setParameter("typeUser", projectModel.getTypeUser());
+            qCount.setParameter("typeUser", projectModel.getTypeUser());
         }
 
         q.setFirstResult(pageIndex * pageSize);
