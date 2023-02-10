@@ -10,7 +10,4 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 public interface IHistoryLogRepository extends JpaRepository<HistoryEntity, Long>, JpaSpecificationExecutor<HistoryEntity> {
-
-    @Query(value = "SELECT * FROM `tbl_historys` WHERE category = ?1 AND content LIKE '%đã thêm mới project%'",nativeQuery = true)
-    Page<HistoryEntity> getAllHistoryCreateObject(Const.tableName category, Pageable pageable);
 }

@@ -199,7 +199,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         StringBuilder content = new StringBuilder()
                 .append(" đã thêm mới ")
                 .append(annotationClass.title() + " ")
-                .append(nameObject);
+                .append(nameObject+".");
 
 
         this.historyLogRepository.saveAndFlush(HistoryEntity
@@ -368,7 +368,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
     @Override
     public Page<HistoryLogDto> getAllHistoryCreateObject(Const.tableName category, Pageable pageable) {
-        return historyLogRepository.getAllHistoryCreateObject(category,pageable).map(data -> HistoryLogDto.toDto(data));
+        return null;
     }
 
     private void compareObjectFields(HistoryLogTitle annotation,
@@ -404,11 +404,13 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                     }
                 } else if (annotation.isDateType()) { // for date
                     changedContent = checkDateUpdate(annotation,changedContent,val1,val2);
-                } else if (!annotation.title().equals("")) {
-                    if (!val1.equals(val2)) {
-                        changedContent = setChangedContentToUpdated(annotation,changedContent);
-                    }
-                } else if (className.equals(FileEntity.class.getName())) { // for avatar
+                }
+//                else if (!annotation.title().equals("")) {
+//                    if (!val1.equals(val2)) {
+//                        changedContent = setChangedContentToUpdated(annotation,changedContent);
+//                    }
+//                }
+                else if (className.equals(FileEntity.class.getName())) { // for avatar
                     changedContent = setChangedContentToUpdated(annotation,changedContent);
 //                    if (val1 != null) {
 //                        changedContent.append(createHtmlATag((FileEntity) field.get(original), " đã bị xóa"));

@@ -57,6 +57,8 @@ public class FeatureServiceImp implements IFeatureService {
     ITaskRepository taskRepository;
     @Autowired
     IFileRepository iFileRepository;
+    @Autowired
+    ITagRepository iTagRepository;
 
 
     @Override
@@ -210,9 +212,8 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
+        List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
         //Clear old files
-//        clearFileList(oldFeature)
-
         if (model.getFileUrlsKeeping() != null){
             iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.FEATURE.name(), model.getId());
         }else {
@@ -220,10 +221,14 @@ public class FeatureServiceImp implements IFeatureService {
         }
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
         FeatureEntity featureOriginal = (FeatureEntity) Const.copy(oldFeature);
-//        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), oldFeature.getProject().getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-//        if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
-//            throw new CustomHandleException(2131231);
-//        }
+        List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.FEATURE.name(), Const.type.TYPE_DEV.name(), model.getId());
+        List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.FEATURE.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());
+        List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.FEATURE.name());
+        featureOriginal.setDevTeam(listUserDev);
+        featureOriginal.setFollowTeam(listUserFollow);
+        featureOriginal.setTagList(listTag);
+        featureOriginal.setAttachFiles(fileOriginal);
+
         ProjectEntity projectEntity = oldFeature.getProject();
         Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> currentProjectIdFollows = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
@@ -282,7 +287,7 @@ public class FeatureServiceImp implements IFeatureService {
             newDevTeam.stream().forEach(x -> {
                 newDevTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
                 // add dev to feature
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),oldFeature.getId(),Const.type.TYPE_DEV.name(),x).size() == 0){
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),oldFeature.getId(),Const.type.TYPE_DEV.name(),x).size() == 0){
                     this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
                 }
                 // add dev to project
@@ -300,7 +305,7 @@ public class FeatureServiceImp implements IFeatureService {
         if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
             newFollowTeam.stream().forEach(x -> {
                 newFollowTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),oldFeature.getId(),Const.type.TYPE_FOLLOWER.name(),x).size() == 0){
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),oldFeature.getId(),Const.type.TYPE_FOLLOWER.name(),x).size() == 0){
                     this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_FOLLOWER.name()).build());
                 }
             });

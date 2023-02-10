@@ -19,13 +19,9 @@ import java.util.List;
 public class ProjectModel {
     private Long id;
 
-    @NotNull
-    @FutureOrPresent(message = "Start date must be in the future or present.")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
 
-    @NotNull
-    @FutureOrPresent(message = "End date must be in the future or present.")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date endDate;
 
