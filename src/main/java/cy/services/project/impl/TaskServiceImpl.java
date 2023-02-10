@@ -626,15 +626,46 @@ public class TaskServiceImpl implements ITaskService {
         return this.repository.findAllByProjectId(id, pageable).map(task -> TaskDto.toDto(task));
     }
 
-    public Object updateStatusTask(Long id, String status) {
-        try {
-            repository.updateStatusTask(id, status);
-            changeStatusFeature(repository.findById(id).get().getFeature().getId());
-            return true;
-        } catch (Exception e) {
+    public boolean updateStatusTask(Long taskId, SubTaskUpdateModel subTaskUpdateModel) {
+        TaskEntity taskEntityExist = iTaskRepository.findById(taskId).orElseThrow(() -> new CustomHandleException(253));
+        if (taskEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
+            throw new CustomHandleException(205);
+        }
+
+        // If Task have Subtask -> do not change status of task manually
+        List<SubTaskEntity> getAllSubTask = subTaskRepository.findByTaskId(taskId);
+        if (getAllSubTask.size() > 0) {
+            throw new CustomHandleException(252);
+        }
+
+        taskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
+        TaskEntity saveResult = iTaskRepository.save(taskEntityExist);
+        if (saveResult == null) {
             return false;
         }
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.IN_REVIEW.name())) {
+            if (subTaskUpdateModel.getReviewerIdList() == null) {
+                throw new CustomHandleException(206);
+            }
+            // Delete old reviewer
+            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(),
+                    taskId, Const.type.TYPE_REVIEWER.name())) {
+                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+            }
+            for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
+                // Check if reviewer is existed
+                userRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.TASK.name());
+                userProjectEntity.setObjectId(taskId);
+                userProjectEntity.setIdUser(reviewerId);
+                userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                userProjectRepository.save(userProjectEntity);
+            }
+        }
+        return true;
     }
+
     public void changeStatusFeature(Long idParent){
         List<String> allStatus = iTaskRepository.getAllStatusTaskByFeatureId(idParent);
         if (allStatus.size() == 1){

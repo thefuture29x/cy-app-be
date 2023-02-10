@@ -72,7 +72,7 @@ public class SubTaskResources {
         return ResponseDto.of(result);
     }
 
-    @ApiOperation(value = "Thay đổi trạng thái subtask.", notes = "Trạng thái mới bắt buộc phải nằm trong các giá trị được quy định sẵn.")
+    @ApiOperation(value = "Thay đổi trạng thái subtask.", notes = "- Trạng thái mới bắt buộc phải nằm trong các giá trị được quy định sẵn.\n- Nếu đổi sang trạng thái IN_REVIEW thì phải gửi lên reviewerIdList.")
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE", "ROLE_LEADER", "ROLE_MANAGER", "ROLE_ADMINISTRATOR"})
     @PutMapping(value = "/change-status/{subTaskId}")
     public ResponseDto changeStatus(@PathVariable Long subTaskId, @RequestBody SubTaskUpdateModel subTaskUpdateModel) {

@@ -3,6 +3,7 @@ package cy.resources.project;
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
 import cy.entities.RoleEntity;
+import cy.models.project.SubTaskUpdateModel;
 import cy.models.project.TaskModel;
 import cy.models.project.TaskSearchModel;
 import cy.services.project.ITaskService;
@@ -64,14 +65,13 @@ public class TaskResouce {
     public ResponseDto getAllTaskByProjectId(@RequestParam("id") Long id,Pageable pageable){
         return ResponseDto.of(taskService.findAllByProjectId(id,pageable));
     }
-    @GetMapping("/update-status-task/{id}/{status}")
-    public ResponseDto updateStatusTask(@PathVariable("id") Long id,@PathVariable("status") String status){
-        return ResponseDto.of(taskService.updateStatusTask(id,status));
+    @GetMapping("/change-status/{taskId}")
+    public ResponseDto updateStatusTask(@PathVariable Long taskId, @RequestBody SubTaskUpdateModel subTaskUpdateModel){
+        return ResponseDto.of(taskService.updateStatusTask(taskId, subTaskUpdateModel) ? "Update status successfully" : "Update status failed");
     }
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping(value = "/searchTask")
     public ResponseDto searchTask(@RequestBody TaskSearchModel taskSearchModel) {
         return ResponseDto.of(taskService.searchTask(taskSearchModel));
     }
-
 }
