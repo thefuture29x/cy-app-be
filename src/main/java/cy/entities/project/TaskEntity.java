@@ -44,4 +44,8 @@ public class TaskEntity extends ProjectBaseEntity{
     @HistoryLogTitle(title = "danh sách người có thể xem", isListType = true)
     @Transient
     private List<UserEntity> viewerTeam;
+
+    @HistoryLogTitle(title = "danh sách người review", isListType = true)
+    @Transient
+    private List<UserEntity> reViewerTeam;
 }

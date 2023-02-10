@@ -32,6 +32,7 @@ public class TaskDto {
     private List<UserDto> devList;
     private List<UserDto> followerList;
     private List<UserDto> viewerList;
+    private List<UserDto> reViewerList;
     private List<String> tagName;
     private List<FileDto> files;
     private int countSubtask;
@@ -60,6 +61,8 @@ public class TaskDto {
                 .followerList(entity.getFollowerTeam() != null ? entity.getFollowerTeam().stream().map(UserDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .viewerList(entity.getViewerTeam() != null ? entity.getViewerTeam().stream().map(UserDto::toDto)
+                        .collect(Collectors.toList()) : new ArrayList<>())
+                .reViewerList(entity.getReViewerTeam() != null ? entity.getReViewerTeam().stream().map(UserDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagName(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)
                         .collect(Collectors.toList()) : new ArrayList<>())
