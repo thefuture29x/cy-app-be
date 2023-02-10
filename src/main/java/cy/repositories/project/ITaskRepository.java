@@ -20,7 +20,7 @@ public interface ITaskRepository extends JpaRepository<TaskEntity, Long> {
     @Query(value = "select * from tbl_tasks where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 12 HOUR)))", nativeQuery = true)
     List<TaskEntity> checkTasksDelete();
 
-    @Query(value = "select * from tbl_tasks where feature_id = ?1", nativeQuery = true)
+    @Query(value = "select * from tbl_tasks where feature_id = ?1 and is_deleted = 0", nativeQuery = true)
     List<TaskEntity> findByFeatureId(Long id);
 
     @Query(value = "SELECT tas.* FROM `tbl_projects` pro \n" + "JOIN `tbl_features` fea ON pro.id = fea.project_id\n" + "JOIN `tbl_tasks` tas ON fea.id = tas.feature_id\n" + "WHERE pro.id = ?1", nativeQuery = true)

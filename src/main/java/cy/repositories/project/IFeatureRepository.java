@@ -19,7 +19,7 @@ public interface IFeatureRepository extends JpaRepository<FeatureEntity,Long>, J
     List<FeatureEntity> checkFeatureDelete();
 
 
-    @Query(value = "select * from tbl_features where project_id = ?1", nativeQuery = true)
+    @Query(value = "select * from tbl_features where project_id = ?1 and is_deleted = 0", nativeQuery = true)
     List<FeatureEntity> findByProjectId(Long id);
 
     Page<FeatureEntity> findAll(Specification<FeatureEntity> specification, Pageable pageable);
