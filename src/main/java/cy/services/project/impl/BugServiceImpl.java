@@ -621,7 +621,6 @@ public class BugServiceImpl implements IRequestBugService {
     public AllBugDto getAllBug(Long idProject) {
         AllBugDto projectBugDto = new AllBugDto();
         List<AllBugDto> allBugDtos = new ArrayList<>();
-//        int countBugOfProject = 0;
         for (FeatureEntity feature : iFeatureRepository.findByProjectId(idProject)) {
             AllBugDto featureBugDto = new AllBugDto();
             featureBugDto.setIdObject(feature.getId());
@@ -630,7 +629,6 @@ public class BugServiceImpl implements IRequestBugService {
 
             List<TaskEntity> taskEntityList = iTaskRepository.findByFeatureId(feature.getId());
             List<AllBugDto> listFeatureDto = new ArrayList<>();
-//            int countBugOfFeature = 0;
             for (TaskEntity task : taskEntityList) {
                 AllBugDto taskBugDto = new AllBugDto();
                 taskBugDto.setIdObject(task.getId());
@@ -646,31 +644,12 @@ public class BugServiceImpl implements IRequestBugService {
                     subTaskBugDto.setCategory(Const.tableName.SUBTASK.name());
                     subTaskBugDto.setCountBug(iBugRepository.countAllBySubTask_IdAndIsDeleted(subTaskEntity.getId(), false));
                     listTaskDto.add(subTaskBugDto);
-//                        countBugOfTask += subTaskBugDto.getCountBug();
                 }
                 taskBugDto.setCountBug(iBugRepository.countAllBugOfTaskByTaskId(task.getId()));
                 taskBugDto.setChildDto(listTaskDto);
-//                if (subTaskEntityList.size() > 0) {
-////                    int countBugOfTask = 0;
-//                    for (SubTaskEntity subTaskEntity : subTaskEntityList) {
-//                        AllBugDto subTaskBugDto = new AllBugDto();
-//                        subTaskBugDto.setIdObject(subTaskEntity.getId());
-//                        subTaskBugDto.setName(subTaskEntity.getName());
-//                        subTaskBugDto.setCategory(Const.tableName.SUBTASK.name());
-//                        subTaskBugDto.setCountBug(iBugRepository.countAllBySubTask_IdAndIsDeleted(subTaskEntity.getId(), false));
-//                        listTaskDto.add(subTaskBugDto);
-////                        countBugOfTask += subTaskBugDto.getCountBug();
-//                    }
-//                    taskBugDto.setCountBug(iBugRepository.countAllByTask_IdAndIsDeleted(task.getId()));
-//                    taskBugDto.setChildDto(listTaskDto);
-//                } else {
-//                    taskBugDto.setCountBug(iBugRepository.countAllByTask_IdAndIsDeleted(task.getId()));
-//                }
                 listFeatureDto.add(taskBugDto);
-//                countBugOfFeature += taskBugDto.getCountBug();
             }
             featureBugDto.setCountBug(iBugRepository.countAllBugOfFeatureByFeatureId(feature.getId()));
-//            countBugOfProject += featureBugDto.getCountBug();
             featureBugDto.setChildDto(listFeatureDto);
             allBugDtos.add(featureBugDto);
         }
