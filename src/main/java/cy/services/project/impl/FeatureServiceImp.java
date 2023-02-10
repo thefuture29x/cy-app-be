@@ -188,7 +188,7 @@ public class FeatureServiceImp implements IFeatureService {
 
         }
 //        entity.setProject();
-        iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.FEATURE);
+        iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.FEATURE, entity.getName());
         return FeatureDto.toDto(entity);
     }
 

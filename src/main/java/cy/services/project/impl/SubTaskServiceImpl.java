@@ -234,7 +234,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskDto.setTagList(tagListSplit);
         subTaskDto.setAssignedUser(userProjectEntityList.stream().map(u -> UserProjectDto.toDto(u)).collect(Collectors.toList()));
 
-        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK);
+        iHistoryLogService.logCreate(saveSubTask.getId(), saveSubTask, Const.tableName.SUBTASK,saveSubTask.getName());
         return subTaskDto;
     }
 

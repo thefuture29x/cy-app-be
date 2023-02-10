@@ -197,7 +197,7 @@ public class ProjectServiceImpl implements IProjectService {
                     }
                 }
             }
-            iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT);
+            iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT, projectEntity.getName());
             ProjectDto result = ProjectDto.toDto(projectEntity);
             return result;
     }
@@ -205,6 +205,7 @@ public class ProjectServiceImpl implements IProjectService {
     @Override
     public ProjectDto updateProject(ProjectModel projectModel) throws IOException {
             List<String> fileUrlsKeeping = new ArrayList<>();
+            List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
             if (projectModel.getFileUrlsKeeping() != null){
                 projectModel.getFileUrlsKeeping().stream().map(url -> fileUrlsKeeping.add(url)).collect(Collectors.toList());
             }
@@ -230,6 +231,7 @@ public class ProjectServiceImpl implements IProjectService {
             projectOriginal.setDevTeam(listUserDev);
             projectOriginal.setFollowTeam(listUserFollow);
             projectOriginal.setTagList(listTag);
+            projectOriginal.setAttachFiles(fileOriginal);
 
             if (projectEntity == null)
                 return null;
