@@ -62,10 +62,10 @@ public class ProjectBaseEntity {
     @Column(columnDefinition="TEXT")
     private String description;
 
-    @HistoryLogTitle(title = "trạng thái mặc định")
+    @HistoryLogTitle(title = "")
     private Boolean isDefault = false;
 
-    @HistoryLogTitle(title = "danh sách tag", isTagFields = true)
+    @HistoryLogTitle(title = "từ khóa", isTagFields = true)
     @Transient
     private List<TagEntity> tagList;
 
