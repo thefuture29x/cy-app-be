@@ -10,6 +10,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "project")
 @RestController
@@ -33,7 +34,7 @@ public class ProjectResource {
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/update")
-    public ResponseDto update(@ModelAttribute ProjectModel projectModel) throws IOException {
+    public ResponseDto update(@ModelAttribute ProjectModel projectModel) throws IOException, ParseException {
         return ResponseDto.of(iProjectService.updateProject(projectModel));
     }
 

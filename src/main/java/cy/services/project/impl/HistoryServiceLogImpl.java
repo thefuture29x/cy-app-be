@@ -405,11 +405,19 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 } else if (annotation.isDateType()) { // for date
                     changedContent = checkDateUpdate(annotation,changedContent,val1,val2);
                 }
-//                else if (!annotation.title().equals("")) {
-//                    if (!val1.equals(val2)) {
-//                        changedContent = setChangedContentToUpdated(annotation,changedContent);
-//                    }
-//                }
+                else if (annotation.title().equals("trạng thái")) {
+                    if (!val1.equals(val2)) {
+                        HistoryEntity newHistoryEntity = HistoryEntity
+                                .builder()
+                                .id(null)
+                                .ObjectId(historyEntity.getObjectId())
+                                .category(historyEntity.getCategory())
+                                .userId(null)
+                                .content(" đã được cập nhật trạng thái.")
+                                .build();
+                        this.historyLogRepository.saveAndFlush(newHistoryEntity);
+                    }
+                }
                 else if (className.equals(FileEntity.class.getName())) { // for avatar
                     changedContent = setChangedContentToUpdated(annotation,changedContent);
 //                    if (val1 != null) {
@@ -440,8 +448,18 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                     }
                 } else if (annotation.isDateType()) { // for date
                     changedContent = checkDateUpdate(annotation,changedContent,val1,val2);
-                } else if (!annotation.title().equals("")) {
-                    changedContent = setChangedContentToUpdated(annotation,changedContent);
+                } else if (annotation.title().equals("trạng thái")) {
+                    if (!val1.equals(val2)) {
+                        HistoryEntity newHistoryEntity = HistoryEntity
+                                .builder()
+                                .id(null)
+                                .ObjectId(historyEntity.getObjectId())
+                                .category(historyEntity.getCategory())
+                                .userId(null)
+                                .content(" đã được cập nhật trạng thái.")
+                                .build();
+                        this.historyLogRepository.saveAndFlush(newHistoryEntity);
+                    }
                 } else if (className.equals(FileEntity.class.getName())) { // FOR FILE avatar
                     changedContent = setChangedContentToUpdated(annotation,changedContent);
                 } else {
