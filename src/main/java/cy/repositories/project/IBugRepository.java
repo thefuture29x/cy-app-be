@@ -119,5 +119,9 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
             ")",nativeQuery = true)
     Integer countAllBugOfTaskByTaskId(Long id);
 
+    @Query(value = "SELECT `status` FROM tbl_bugs WHERE task_id = ?1 AND is_deleted = FALSE GROUP BY `status` ",nativeQuery = true)
+    List<String> getAllStatusBugByTaskId(Long idTask);
+    @Query(value = "SELECT `status` FROM tbl_bugs WHERE sub_task_id = ?1 AND is_deleted = FALSE GROUP BY `status` ",nativeQuery = true)
+    List<String> getAllStatusBugBySubTaskId(Long idTask);
 
 }

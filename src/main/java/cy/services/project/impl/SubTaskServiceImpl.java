@@ -767,13 +767,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
             throw new CustomHandleException(208);
         }
         List<String> getAllStatusOfSubTask = subTaskRepository.getAllStatusSubTaskByTaskId(taskEntity.getId());
-        if (getAllStatusOfSubTask.size() == 1) {
+        int countStatus = getAllStatusOfSubTask.size();
+        if (countStatus == 1) {
             // All sub-task have same status
             taskEntity.setStatus(getAllStatusOfSubTask.get(0));
-        } else if (getAllStatusOfSubTask.size() == 2 && getAllStatusOfSubTask.stream().anyMatch(Const.status.DONE.name()::contains) && getAllStatusOfSubTask.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)) {
+        } else if (countStatus == 2 && getAllStatusOfSubTask.stream().anyMatch(Const.status.DONE.name()::contains) && getAllStatusOfSubTask.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)) {
             // All sub-task have status DONE OR IN_REVIEW
             taskEntity.setStatus(Const.status.IN_REVIEW.name());
-        } else {
+        } else if(countStatus != 0){
             taskEntity.setStatus(Const.status.IN_PROGRESS.name());
         }
         taskRepository.save(taskEntity);

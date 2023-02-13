@@ -666,11 +666,12 @@ public class TaskServiceImpl implements ITaskService {
 
     public void changeStatusFeature(Long idParent) {
         List<String> allStatus = iTaskRepository.getAllStatusTaskByFeatureId(idParent);
-        if (allStatus.size() == 1) {
+        int countStatus = allStatus.size();
+        if (countStatus == 1) {
             featureRepository.updateStatusFeature(idParent, allStatus.get(0));
-        } else if (allStatus.size() == 2 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains) && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
+        } else if (countStatus == 2 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains) && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
             featureRepository.updateStatusFeature(idParent, Const.status.IN_REVIEW.name());
-        } else {
+        } else if (countStatus != 0){
             featureRepository.updateStatusFeature(idParent, Const.status.IN_PROGRESS.name());
         }
     }

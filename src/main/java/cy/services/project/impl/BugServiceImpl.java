@@ -499,6 +499,7 @@ public class BugServiceImpl implements IRequestBugService {
                     }).collect(Collectors.toList());
                     iBugRepository.flush();
                     saveDataInHistoryTable(bugEntity.getId(), now, null, files);
+                    changeStatusSubTask(bugEntity.getTask().getId());
                     break;
                 case 2:
                     //dev kết thúc fix bug
@@ -511,12 +512,14 @@ public class BugServiceImpl implements IRequestBugService {
                             iBugHistoryRepository.save(bugHistoryEntity);
                         }
                     }
+                    changeStatusSubTask(bugEntity.getTask().getId());
                     break;
                 case 3:
                     //reviewer oke xong thì chuyển bug sang done
                     bugEntity.setStatus(Const.status.DONE.name());
-                    subTaskRepository.updateStatusSubTaskAfterAllBugDone(bugEntity.getSubTask().getId());
+//                    subTaskRepository.updateStatusSubTaskAfterAllBugDone(bugEntity.getSubTask().getId());
 //                    subTaskEntity.setStatus(Const.status.DONE.name());
+                    changeStatusSubTask(bugEntity.getTask().getId());
                     break;
 
                 case 4:
@@ -526,6 +529,7 @@ public class BugServiceImpl implements IRequestBugService {
                     bugHistoryEntity.setStartDate(Date.from(Instant.now()));
                     bugHistoryEntity.setIsPending(true);
                     iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
+                    changeStatusSubTask(bugEntity.getTask().getId());
                     break;
 
             }
@@ -600,6 +604,7 @@ public class BugServiceImpl implements IRequestBugService {
                     }).collect(Collectors.toList());
                     iBugRepository.flush();
                     saveDataInHistoryTable(bugEntity.getId(), now, null, files);
+                    changeStatusTask(bugEntity.getTask().getId());
                     break;
                 case 2:
                     //dev kết thúc fix bug
@@ -612,11 +617,13 @@ public class BugServiceImpl implements IRequestBugService {
                             iBugHistoryRepository.save(bugHistoryEntity);
                         }
                     }
+                    changeStatusTask(bugEntity.getTask().getId());
                     break;
                 case 3:
                     //reviewer oke xong thì chuyển bug sang done`
                     bugEntity.setStatus(Const.status.DONE.name());
-                    iTaskRepository.updateStatusTaskAfterAllBugDone(bugEntity.getTask().getId());
+//                    iTaskRepository.updateStatusTaskAfterAllBugDone(bugEntity.getTask().getId());
+                    changeStatusTask(bugEntity.getTask().getId());
 //                    taskEntity.setStatus(Const.status.DONE.name());
                     break;
 
@@ -801,4 +808,39 @@ public class BugServiceImpl implements IRequestBugService {
         Page<BugDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
         return result;
     }
+
+    public void changeStatusTask(Long idParent){
+        List<String> allStatus = iBugRepository.getAllStatusBugByTaskId(idParent);
+        int countStatus = allStatus.size();
+        if (countStatus == 1){
+            iTaskRepository.updateStatusTask(idParent,allStatus.get(0));
+            return;
+        }else if (countStatus == 2
+                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
+                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
+            iTaskRepository.updateStatusTask(idParent,Const.status.IN_REVIEW.name());
+            return;
+        }else if(countStatus != 0){
+            iTaskRepository.updateStatusTask(idParent,Const.status.IN_PROGRESS.name());
+            return;
+        }
+    }
+
+    public void changeStatusSubTask(Long idParent){
+        List<String> allStatus = iBugRepository.getAllStatusBugBySubTaskId(idParent);
+        int countStatus = allStatus.size();
+        if (countStatus == 1){
+            iSubTaskRepository.updateStatusSubTask(idParent,allStatus.get(0));
+            return;
+        }else if (countStatus == 2
+                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
+                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
+            iSubTaskRepository.updateStatusSubTask(idParent,Const.status.IN_REVIEW.name());
+            return;
+        }else if (countStatus != 0){
+            iSubTaskRepository.updateStatusSubTask(idParent,Const.status.IN_PROGRESS.name());
+            return;
+        }
+    }
+
 }

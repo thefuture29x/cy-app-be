@@ -12,10 +12,7 @@ import cy.models.UserModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.models.project.TaskSearchModel;
 import cy.repositories.IUserRepository;
-import cy.repositories.project.IBugRepository;
-import cy.repositories.project.IFileRepository;
-import cy.repositories.project.ISubTaskRepository;
-import cy.repositories.project.ITaskRepository;
+import cy.repositories.project.*;
 import cy.services.attendance.IPayRollService;
 import cy.services.attendance.IRequestAttendService;
 import cy.services.IUserService;
@@ -116,11 +113,27 @@ public class TestController {
     ITaskRepository iTaskRepository;
     @Autowired
     ISubTaskService iSubTaskService;
+    @Autowired
+    IFeatureRepository iFeatureRepository;
 
-    @PostMapping ("getall")
+    @PostMapping ("change-status")
     public void testUpLoadFile(Long idParent)  {
-//        List<String> allStatus = iSubTaskRepository.getAllStatusSubTaskByTaskId(idParent);
-//        return ResponseDto.of(iSubTaskRepository.getAllStatusSubTaskByTaskId(7L));
-//        iSubTaskService.changeStatusTask(idParent);
+        List<String> allStatus = iTaskRepository.getAllStatusTaskByFeatureId(idParent);
+        int countStatus  = allStatus.size();
+        if (countStatus == 1){
+            iFeatureRepository.updateStatusFeature(idParent,allStatus.get(0));
+            return;
+        }else if (countStatus == 2
+                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
+                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
+            iFeatureRepository.updateStatusFeature(idParent,Const.status.IN_REVIEW.name());
+            return;
+        }else if(countStatus != 0){
+            iFeatureRepository.updateStatusFeature(idParent,Const.status.IN_PROGRESS.name());
+            return;
+        }
     }
+
+
+
 }
