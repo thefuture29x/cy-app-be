@@ -6,12 +6,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.core.parameters.P;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 public interface IProjectService {
     ProjectDto findById(Long id);
     ProjectDto createProject(ProjectModel projectModel) throws IOException;
-    ProjectDto updateProject(ProjectModel projectModel) throws IOException;
+    ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException;
     Boolean deleteProject(Long id);
     Boolean changIsDeleteById(Long id);
     Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel);
