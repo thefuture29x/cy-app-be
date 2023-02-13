@@ -27,6 +27,7 @@ import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -203,7 +204,7 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     @Override
-    public ProjectDto updateProject(ProjectModel projectModel) throws IOException {
+    public ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException {
             List<String> fileUrlsKeeping = new ArrayList<>();
             List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
             if (projectModel.getFileUrlsKeeping() != null){
@@ -240,14 +241,25 @@ public class ProjectServiceImpl implements IProjectService {
                 return null;
             UserEntity userEntity = userRepository.findById(userId).orElse(null);
             projectEntity.setCreateBy(userEntity);
+            // Format date get only yyyy-MM-dd
             Date currentDate = new Date();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+            String currentDateString = simpleDateFormat.format(currentDate);
+            Date currentDateCheck = simpleDateFormat.parse(currentDateString);
+
+            String startDateString = simpleDateFormat.format(projectModel.getStartDate());
+            Date startDateCheck = simpleDateFormat.parse(startDateString);
+            // End format date get only yyyy-MM-dd
+
             projectEntity.setCreatedDate(currentDate);
             projectEntity.setStartDate(projectModel.getStartDate());
             projectEntity.setEndDate(projectModel.getEndDate());
             projectEntity.setDescription(projectModel.getDescription());
             projectEntity.setName(projectModel.getName());
             projectEntity.setIsDefault(projectModel.getIsDefault());
-            if (projectModel.getStartDate().before(currentDate)) {
+
+            if (startDateCheck.before(currentDateCheck)) {
                 projectEntity.setStatus(Const.status.IN_PROGRESS.name());
             } else {
                 projectEntity.setStatus(Const.status.TO_DO.name());
