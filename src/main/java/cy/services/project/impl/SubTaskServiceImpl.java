@@ -667,13 +667,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public Page<SubTaskDto> findAllByTaskId(Long id, String keyword, Pageable pageable) {
-        Page<SubTaskDto> result = new PageImpl<>(new ArrayList<>());
+        List<SubTaskDto> getAllSubTaskDto = new ArrayList<>();
         Page<SubTaskEntity> findAllSubTask = subTaskRepository.findByTaskIdWithPaging(id, keyword, pageable);
         for(SubTaskEntity subTaskEntity : findAllSubTask) {
             SubTaskDto subTaskDto = SubTaskDto.toDto(subTaskEntity);
             setReviewerUserList(subTaskDto);
+            getAllSubTaskDto.add(subTaskDto);
         }
-        return result;
+        return new PageImpl<>(getAllSubTaskDto, pageable, findAllSubTask.getTotalElements());
     }
 
     @Override
