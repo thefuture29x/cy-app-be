@@ -45,7 +45,7 @@ public class BugEntity extends ProjectBaseEntity{
     private UserEntity assignTo;//người chịu trách nhiệm chính trong fixbug
 
 
-    @HistoryLogTitle(title = "danh sách tag", isTagFields = true)
+    @HistoryLogTitle(title = "từ khóa", isTagFields = true)
     @Transient
     private List<TagEntity> tagList;
 
