@@ -317,7 +317,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.setPriority(modelUpdate.getPriority().name());
 
         // Update default sub task
-        if (modelUpdate.getIsDefault()) {
+        if (modelUpdate.getIsDefault() != null && modelUpdate.getIsDefault()) {
             unsetDefaultSubTask(subTaskExisted.getTask().getId());
             subTaskExisted.setIsDefault(true);
         }
@@ -338,6 +338,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
         this.saveAssignedUsersForFeature(userEntitiesAssigned, subTaskExisted.getTask());
         this.saveAssignedUsersForProject(userEntitiesAssigned, saveSubTask.getId());
 
+        // Clear old following users in UserProject
+        this.clearFollowingUsers(saveSubTask.getId());
+        
         // Save following users to UserProject
         if (modelUpdate.getFollowingUserIdList() != null && modelUpdate.getFollowingUserIdList().size() > 0) {
             boolean saveFollowingUsersResult = this.saveFollowingUsers(modelUpdate.getFollowingUserIdList(), saveSubTask.getId());
@@ -410,8 +413,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     private void clearAssignedUsers(Long subTaskId) {
-        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskId).forEach(userProjectEntity -> {
-            userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_DEV.name()).
+                forEach(userProject -> {
+            userProjectRepository.deleteByIdNative(userProject.getId());
         });
     }
 
@@ -474,6 +478,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
             userProjectEntityList.add(userProjectEntitySave);
         }
         return userProjectEntityList;
+    }
+
+    private void clearFollowingUsers(Long subTaskId) {
+        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_FOLLOWER.name()).
+                forEach(userProject -> {
+            userProjectRepository.deleteByIdNative(userProject.getId());
+        });
     }
 
     private boolean saveFollowingUsers(List<Long> userIdList, Long subTaskId) {
@@ -749,6 +760,63 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 userProjectRepository.save(userProjectEntity);
             }
         }
+
+        // Update status of task
+        updateStatusOfTask(subTaskEntityExist.getTask());
         return true;
+    }
+
+    private void updateStatusOfTask(TaskEntity taskEntity){
+        if(taskEntity == null){
+            throw new CustomHandleException(208);
+        }
+        int countToDo = 0;
+        int countInProgress = 0;
+        int countPending = 0;
+        int countInReview = 0;
+        int countDone = 0;
+        int countFixBug = 0;
+        List<SubTaskEntity> getAllSubTaskByTaskId = subTaskRepository.findByTaskId(taskEntity.getId());
+        for(SubTaskEntity st : getAllSubTaskByTaskId){
+            String status = st.getStatus();
+            switch (status){
+                case "TO_DO":
+                    countToDo++;
+                    break;
+                case "IN_PROGRESS":
+                    countInProgress++;
+                    break;
+                case "PENDING":
+                    countPending++;
+                    break;
+                case "IN_REVIEW":
+                    countInReview++;
+                    break;
+                case "DONE":
+                    countDone++;
+                    break;
+                case "FIX_BUG":
+                    countFixBug++;
+                    break;
+            }
+        }
+        if(countToDo == getAllSubTaskByTaskId.size()){
+            taskEntity.setStatus(Const.status.TO_DO.name());
+        }else if(countInProgress == getAllSubTaskByTaskId.size()){
+            taskEntity.setStatus(Const.status.IN_PROGRESS.name());
+        }else if(countPending == getAllSubTaskByTaskId.size()){
+            taskEntity.setStatus(Const.status.PENDING.name());
+        }else if(countInReview == getAllSubTaskByTaskId.size()){
+            taskEntity.setStatus(Const.status.IN_REVIEW.name());
+        }else if(countDone == getAllSubTaskByTaskId.size()){
+            taskEntity.setStatus(Const.status.DONE.name());
+        }else if(countFixBug == getAllSubTaskByTaskId.size()){
+            taskEntity.setStatus(Const.status.FIX_BUG.name());
+        }else if(countToDo == 0 && countInProgress == 0 && countPending == 0 && countFixBug == 0){
+            taskEntity.setStatus(Const.status.IN_REVIEW.name());
+        }else if(countInProgress > 0 || countToDo > 0){
+            taskEntity.setStatus(Const.status.IN_PROGRESS.name());
+        }
+        taskRepository.save(taskEntity);
     }
 }
