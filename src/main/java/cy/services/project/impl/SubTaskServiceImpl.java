@@ -317,7 +317,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.setPriority(modelUpdate.getPriority().name());
 
         // Update default sub task
-        if (modelUpdate.getIsDefault()) {
+        if (modelUpdate.getIsDefault() != null && modelUpdate.getIsDefault()) {
             unsetDefaultSubTask(subTaskExisted.getTask().getId());
             subTaskExisted.setIsDefault(true);
         }
@@ -338,6 +338,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
         this.saveAssignedUsersForFeature(userEntitiesAssigned, subTaskExisted.getTask());
         this.saveAssignedUsersForProject(userEntitiesAssigned, saveSubTask.getId());
 
+        // Clear old following users in UserProject
+        this.clearFollowingUsers(saveSubTask.getId());
+        
         // Save following users to UserProject
         if (modelUpdate.getFollowingUserIdList() != null && modelUpdate.getFollowingUserIdList().size() > 0) {
             boolean saveFollowingUsersResult = this.saveFollowingUsers(modelUpdate.getFollowingUserIdList(), saveSubTask.getId());
@@ -410,8 +413,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     private void clearAssignedUsers(Long subTaskId) {
-        this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), subTaskId).forEach(userProjectEntity -> {
-            userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_DEV.name()).
+                forEach(userProject -> {
+            userProjectRepository.deleteByIdNative(userProject.getId());
         });
     }
 
@@ -474,6 +478,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
             userProjectEntityList.add(userProjectEntitySave);
         }
         return userProjectEntityList;
+    }
+
+    private void clearFollowingUsers(Long subTaskId) {
+        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_FOLLOWER.name()).
+                forEach(userProject -> {
+            userProjectRepository.deleteByIdNative(userProject.getId());
+        });
     }
 
     private boolean saveFollowingUsers(List<Long> userIdList, Long subTaskId) {
