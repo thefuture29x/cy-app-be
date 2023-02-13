@@ -233,7 +233,7 @@ public class BugServiceImpl implements IRequestBugService {
             bugEntity.setResponsibleList(null);
             bugEntity.setTagList(tagEntityList);
             BugDto bugDto = BugDto.entityToDto(bugEntity);
-//            iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.BUG, entity.getName());
+            iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.BUG, entity.getName());
             return bugDto;
         } catch (Exception e) {
             throw new CustomHandleException(312);
@@ -248,6 +248,8 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto update(BugModel model) {
         BugEntity bug = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
+        List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
+
         if (bug.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
             try {
                 if (model.getFileUrlsKeeping() != null) {
@@ -256,7 +258,18 @@ public class BugServiceImpl implements IRequestBugService {
                     iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
                 }
                 BugEntity bugEntity = iBugRepository.findById(model.getId()).orElse(null);
+
                 BugEntity bugEntityOriginal = (BugEntity) Const.copy(bugEntity);
+
+                List<UserEntity> userDevOriginal = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), model.getId());
+                List<UserEntity> userViewOriginal = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), model.getId());
+                List<TagEntity> listTagEntityOriginal = iTagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.BUG.name());
+
+                bugEntityOriginal.setReviewerList(userViewOriginal);
+                bugEntityOriginal.setResponsibleList(userDevOriginal);
+                bugEntityOriginal.setTagList(listTagEntityOriginal);
+                bugEntityOriginal.setAttachFiles(fileOriginal);
+
                 if (bugEntity == null)
                     return null;
                 Long userId = SecurityUtils.getCurrentUserId();
@@ -378,8 +391,19 @@ public class BugServiceImpl implements IRequestBugService {
                 bugEntity.setReviewerList(null);
                 bugEntity.setResponsibleList(null);
                 bugEntity.setTagList(null);
+                bugEntity.setReason(null);
                 iBugRepository.saveAndFlush(bugEntity);
-              //  iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
+
+                List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), model.getId());
+                List<UserEntity> userView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), model.getId());
+                List<TagEntity> listTagEntity = iTagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.BUG.name());
+                List<FileEntity> file = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
+
+                bugEntity.setReviewerList(userView);
+                bugEntity.setResponsibleList(userDev);
+                bugEntity.setTagList(listTagEntity);
+                bugEntity.setAttachFiles(file);
+                iHistoryLogService.logUpdate(bugEntity.getId(), bugEntityOriginal, bugEntity, Const.tableName.BUG);
                 return BugDto.entityToDto(bugEntity);
             } catch (Exception e) {
                 System.out.println(e);
