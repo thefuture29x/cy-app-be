@@ -190,19 +190,11 @@ public class TaskServiceImpl implements ITaskService {
                 if (tagEntity == null) {
                     TagModel newTagModel = TagModel.builder().name(tagName).build();
                     TagDto newTagDto = this.tagService.add(newTagModel);
-                    TagRelationModel tagRelationModel = TagRelationModel.builder()
-                            .idTag(newTagDto.getId())
-                            .objectId(taskEntity.getId())
-                            .category(Const.tableName.TASK.name())
-                            .build();
+                    TagRelationModel tagRelationModel = TagRelationModel.builder().idTag(newTagDto.getId()).objectId(taskEntity.getId()).category(Const.tableName.TASK.name()).build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(newTagDto.getName());
                 } else {
-                    TagRelationModel tagRelationModel = TagRelationModel.builder()
-                            .idTag(tagEntity.getId())
-                            .objectId(taskEntity.getId())
-                            .category(Const.tableName.TASK.name())
-                            .build();
+                    TagRelationModel tagRelationModel = TagRelationModel.builder().idTag(tagEntity.getId()).objectId(taskEntity.getId()).category(Const.tableName.TASK.name()).build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(tagEntity.getName());
                 }
@@ -283,7 +275,7 @@ public class TaskServiceImpl implements ITaskService {
         result.setDevList(devList);
         result.setFollowerList(followerList);
         result.setViewerList(viewerList);
-        iHistoryLogService.logCreate(taskEntity.getId(), taskEntity, Const.tableName.TASK,taskEntity.getName());
+        iHistoryLogService.logCreate(taskEntity.getId(), taskEntity, Const.tableName.TASK, taskEntity.getName());
         return result;
     }
 
@@ -304,7 +296,7 @@ public class TaskServiceImpl implements ITaskService {
         TaskEntity taskExist = (TaskEntity) Const.copy(this.getById(model.getId()));
         List<UserEntity> listUserDevExist = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), model.getId());
         List<UserEntity> listUserFollowExist = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());
-        List<TagEntity> listTagExist = tagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.TASK.name());
+        List<TagEntity> listTagExist = tagRepository.getAllByObjectIdAndCategory(model.getId(), Const.tableName.TASK.name());
 
         taskExist.setDevTeam(listUserDevExist);
         taskExist.setFollowerTeam(listUserFollowExist);
@@ -350,19 +342,11 @@ public class TaskServiceImpl implements ITaskService {
                 if (tagEntity == null) {
                     TagModel newTagModel = TagModel.builder().name(tagName).build();
                     TagDto newTagDto = this.tagService.add(newTagModel);
-                    TagRelationModel tagRelationModel = TagRelationModel.builder()
-                            .idTag(newTagDto.getId())
-                            .objectId(taskupdate.getId())
-                            .category(Const.tableName.TASK.name())
-                            .build();
+                    TagRelationModel tagRelationModel = TagRelationModel.builder().idTag(newTagDto.getId()).objectId(taskupdate.getId()).category(Const.tableName.TASK.name()).build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(newTagDto.getName());
                 } else {
-                    TagRelationModel tagRelationModel = TagRelationModel.builder()
-                            .idTag(tagEntity.getId())
-                            .objectId(taskupdate.getId())
-                            .category(Const.tableName.TASK.name())
-                            .build();
+                    TagRelationModel tagRelationModel = TagRelationModel.builder().idTag(tagEntity.getId()).objectId(taskupdate.getId()).category(Const.tableName.TASK.name()).build();
                     this.tagRelationService.add(tagRelationModel);
                     tagList.add(tagEntity.getName());
                 }
@@ -432,7 +416,7 @@ public class TaskServiceImpl implements ITaskService {
 
         List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), model.getId());
         List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());
-        List<TagEntity> listTag = tagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.TASK.name());
+        List<TagEntity> listTag = tagRepository.getAllByObjectIdAndCategory(model.getId(), Const.tableName.TASK.name());
         List<FileEntity> fileOriginal = fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
 
         taskupdate.setDevTeam(listUserDev);
@@ -483,11 +467,7 @@ public class TaskServiceImpl implements ITaskService {
     public UserProjectEntity addDev(Long id, String type, String category) {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
-        UserProjectEntity userProject = UserProjectEntity.builder()
-                .idUser(userEntity.getUserId())
-                .type(type)
-                .category(category)
-                .build();
+        UserProjectEntity userProject = UserProjectEntity.builder().idUser(userEntity.getUserId()).type(type).category(category).build();
 
         return this.userProjectRepository.saveAndFlush(userProject);
     }
@@ -495,11 +475,7 @@ public class TaskServiceImpl implements ITaskService {
     public UserProjectEntity addFollower(Long id) {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
-        UserProjectEntity userProject = UserProjectEntity.builder()
-                .idUser(userEntity.getUserId())
-                .type(Const.type.TYPE_FOLLOWER.name())
-                .category(Const.tableName.TASK.name())
-                .build();
+        UserProjectEntity userProject = UserProjectEntity.builder().idUser(userEntity.getUserId()).type(Const.type.TYPE_FOLLOWER.name()).category(Const.tableName.TASK.name()).build();
 
         return this.userProjectRepository.saveAndFlush(userProject);
     }
@@ -507,11 +483,7 @@ public class TaskServiceImpl implements ITaskService {
     public UserProjectEntity addViewer(Long id) {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
-        UserProjectEntity userProject = UserProjectEntity.builder()
-                .idUser(userEntity.getUserId())
-                .type(Const.type.TYPE_VIEWER.name())
-                .category(Const.tableName.TASK.name())
-                .build();
+        UserProjectEntity userProject = UserProjectEntity.builder().idUser(userEntity.getUserId()).type(Const.type.TYPE_VIEWER.name()).category(Const.tableName.TASK.name()).build();
 
         return this.userProjectRepository.saveAndFlush(userProject);
     }
@@ -664,17 +636,18 @@ public class TaskServiceImpl implements ITaskService {
         if (saveResult == null) {
             return false;
         }
+
+        // If new status is in review -> add reviewer
         if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.IN_REVIEW.name())) {
             if (subTaskUpdateModel.getReviewerIdList() == null) {
                 throw new CustomHandleException(206);
             }
             // Delete old reviewer
-            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(),
-                    taskId, Const.type.TYPE_REVIEWER.name())) {
+            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name())) {
                 userProjectRepository.deleteByIdNative(userProjectEntity.getId());
             }
             for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
-                // Check if reviewer is existed
+                // Check if reviewer user is not existed
                 userRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
                 UserProjectEntity userProjectEntity = new UserProjectEntity();
                 userProjectEntity.setCategory(Const.tableName.TASK.name());
@@ -684,22 +657,22 @@ public class TaskServiceImpl implements ITaskService {
                 userProjectRepository.save(userProjectEntity);
             }
         }
+
+        // Update status of feature
+        changeStatusFeature(taskEntityExist.getFeature().getId());
+
         return true;
     }
 
-    public void changeStatusFeature(Long idParent){
+    public void changeStatusFeature(Long idParent) {
         List<String> allStatus = iTaskRepository.getAllStatusTaskByFeatureId(idParent);
-        if (allStatus.size() == 1){
-            featureRepository.updateStatusFeature(idParent,allStatus.get(0));
-            return;
-        }else if (allStatus.size() == 2
-                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
-                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
-            featureRepository.updateStatusFeature(idParent,Const.status.IN_REVIEW.name());
-            return;
-        }else {
-            featureRepository.updateStatusFeature(idParent,Const.status.IN_PROGRESS.name());
-            return;
+        int countStatus = allStatus.size();
+        if (countStatus == 1) {
+            featureRepository.updateStatusFeature(idParent, allStatus.get(0));
+        } else if (countStatus == 2 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains) && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
+            featureRepository.updateStatusFeature(idParent, Const.status.IN_REVIEW.name());
+        } else if (countStatus != 0){
+            featureRepository.updateStatusFeature(idParent, Const.status.IN_PROGRESS.name());
         }
     }
 
