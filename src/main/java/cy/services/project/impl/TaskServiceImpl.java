@@ -355,7 +355,7 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         // delete dev old
-        List<UserProjectEntity> oldUserProjects = this.userProjectRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), taskOld.getId());
+        List<UserProjectEntity> oldUserProjects = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskOld.getId(), Const.type.TYPE_DEV.name());
         oldUserProjects.stream().forEach(oldUserProject -> this.userProjectRepository.delete(oldUserProject));
         // add dev
         List<UserDto> devList = new ArrayList<>();
