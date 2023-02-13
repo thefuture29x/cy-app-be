@@ -272,14 +272,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Copy current subTask to compare with new subTask
         SubTaskEntity subTaskEntityOriginal = (SubTaskEntity) Const.copy(subTaskExisted);
         List<UserEntity> userDevOriginal = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_DEV.name(), modelUpdate.getId());
-        List<UserEntity> userFollowOriginal= userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_FOLLOWER.name(), modelUpdate.getId());
-        List<TagEntity> listTagEntityOriginal = tagRepository.getAllByObjectIdAndCategory(modelUpdate.getId(),Const.tableName.SUBTASK.name());
+        List<UserEntity> userFollowOriginal = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_FOLLOWER.name(), modelUpdate.getId());
+        List<TagEntity> listTagEntityOriginal = tagRepository.getAllByObjectIdAndCategory(modelUpdate.getId(), Const.tableName.SUBTASK.name());
 
         subTaskEntityOriginal.setDevTeam(userDevOriginal);
         subTaskEntityOriginal.setFollowerTeam(userFollowOriginal);
         subTaskEntityOriginal.setTagList(listTagEntityOriginal);
         subTaskEntityOriginal.setAttachFiles(fileOriginal);
-
 
 
         List<Object> objUpdateList = this.checkIdAndDate(modelUpdate);
@@ -340,7 +339,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         // Clear old following users in UserProject
         this.clearFollowingUsers(saveSubTask.getId());
-        
+
         // Save following users to UserProject
         if (modelUpdate.getFollowingUserIdList() != null && modelUpdate.getFollowingUserIdList().size() > 0) {
             boolean saveFollowingUsersResult = this.saveFollowingUsers(modelUpdate.getFollowingUserIdList(), saveSubTask.getId());
@@ -364,7 +363,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_DEV.name(), modelUpdate.getId());
         List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_FOLLOWER.name(), modelUpdate.getId());
-        List<TagEntity> listTagEntity = tagRepository.getAllByObjectIdAndCategory(modelUpdate.getId(),Const.tableName.SUBTASK.name());
+        List<TagEntity> listTagEntity = tagRepository.getAllByObjectIdAndCategory(modelUpdate.getId(), Const.tableName.SUBTASK.name());
         List<FileEntity> fileAfterSave = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), modelUpdate.getId());
 
         saveSubTask.setDevTeam(userDev);
@@ -413,8 +412,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     private void clearAssignedUsers(Long subTaskId) {
-        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_DEV.name()).
-                forEach(userProject -> {
+        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_DEV.name()).forEach(userProject -> {
             userProjectRepository.deleteByIdNative(userProject.getId());
         });
     }
@@ -481,8 +479,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     }
 
     private void clearFollowingUsers(Long subTaskId) {
-        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_FOLLOWER.name()).
-                forEach(userProject -> {
+        this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_FOLLOWER.name()).forEach(userProject -> {
             userProjectRepository.deleteByIdNative(userProject.getId());
         });
     }
@@ -745,8 +742,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 throw new CustomHandleException(206);
             }
             // Delete old reviewer
-            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(),
-                    subTaskId, Const.type.TYPE_REVIEWER.name())) {
+            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_REVIEWER.name())) {
                 userProjectRepository.deleteByIdNative(userProjectEntity.getId());
             }
             for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
@@ -766,55 +762,19 @@ public class SubTaskServiceImpl implements ISubTaskService {
         return true;
     }
 
-    private void updateStatusOfTask(TaskEntity taskEntity){
-        if(taskEntity == null){
+    private void updateStatusOfTask(TaskEntity taskEntity) {
+        if (taskEntity == null) {
             throw new CustomHandleException(208);
         }
-        int countToDo = 0;
-        int countInProgress = 0;
-        int countPending = 0;
-        int countInReview = 0;
-        int countDone = 0;
-        int countFixBug = 0;
-        List<SubTaskEntity> getAllSubTaskByTaskId = subTaskRepository.findByTaskId(taskEntity.getId());
-        for(SubTaskEntity st : getAllSubTaskByTaskId){
-            String status = st.getStatus();
-            switch (status){
-                case "TO_DO":
-                    countToDo++;
-                    break;
-                case "IN_PROGRESS":
-                    countInProgress++;
-                    break;
-                case "PENDING":
-                    countPending++;
-                    break;
-                case "IN_REVIEW":
-                    countInReview++;
-                    break;
-                case "DONE":
-                    countDone++;
-                    break;
-                case "FIX_BUG":
-                    countFixBug++;
-                    break;
-            }
-        }
-        if(countToDo == getAllSubTaskByTaskId.size()){
-            taskEntity.setStatus(Const.status.TO_DO.name());
-        }else if(countInProgress == getAllSubTaskByTaskId.size()){
-            taskEntity.setStatus(Const.status.IN_PROGRESS.name());
-        }else if(countPending == getAllSubTaskByTaskId.size()){
-            taskEntity.setStatus(Const.status.PENDING.name());
-        }else if(countInReview == getAllSubTaskByTaskId.size()){
+        List<String> getAllStatusOfSubTask = subTaskRepository.getAllStatusSubTaskByTaskId(taskEntity.getId());
+        int countStatus = getAllStatusOfSubTask.size();
+        if (countStatus == 1) {
+            // All sub-task have same status
+            taskEntity.setStatus(getAllStatusOfSubTask.get(0));
+        } else if (countStatus == 2 && getAllStatusOfSubTask.stream().anyMatch(Const.status.DONE.name()::contains) && getAllStatusOfSubTask.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)) {
+            // All sub-task have status DONE OR IN_REVIEW
             taskEntity.setStatus(Const.status.IN_REVIEW.name());
-        }else if(countDone == getAllSubTaskByTaskId.size()){
-            taskEntity.setStatus(Const.status.DONE.name());
-        }else if(countFixBug == getAllSubTaskByTaskId.size()){
-            taskEntity.setStatus(Const.status.FIX_BUG.name());
-        }else if(countToDo == 0 && countInProgress == 0 && countPending == 0 && countFixBug == 0){
-            taskEntity.setStatus(Const.status.IN_REVIEW.name());
-        }else if(countInProgress > 0 || countToDo > 0){
+        } else if(countStatus != 0){
             taskEntity.setStatus(Const.status.IN_PROGRESS.name());
         }
         taskRepository.save(taskEntity);

@@ -79,6 +79,6 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     @Query(value = "SELECT st FROM SubTaskEntity st WHERE st.id = :id AND st.isDeleted = false")
     SubTaskEntity findByIdAndIsDeletedFalse(@Param("id") Long id);
 
-    @Query(value = "SELECT `status` FROM tbl_sub_tasks WHERE task_id = ?1 AND is_deleted = FALSE GROUP BY `status` ",nativeQuery = true)
+    @Query(value = "SELECT `status` FROM tbl_sub_tasks WHERE task_id = ?1 AND is_deleted = FALSE GROUP BY `status` ", nativeQuery = true)
     List<String> getAllStatusSubTaskByTaskId(Long idTask);
 }
