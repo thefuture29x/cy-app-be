@@ -35,7 +35,6 @@ public class BugResource {
     public ResponseDto deleteFile(@RequestParam(name = "idFile")Long idFile ,@RequestParam(name = "id")Long id) {
         return ResponseDto.of(bugService.deleteOnlyFile(idFile,id));
     }
-
     @PutMapping(value = "/updateStatusSubTaskToBug")
     public ResponseDto updateStatusSubTaskToBug(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
         return ResponseDto.of(bugService.updateStatusSubTaskToBug(id,status));

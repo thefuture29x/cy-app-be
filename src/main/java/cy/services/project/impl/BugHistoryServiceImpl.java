@@ -2,17 +2,21 @@ package cy.services.project.impl;
 
 import cy.dtos.project.BugHistoryDto;
 import cy.dtos.project.FileDto;
+import cy.entities.UserEntity;
 import cy.entities.project.BugEntity;
 import cy.entities.project.BugHistoryEntity;
 import cy.entities.project.FileEntity;
+import cy.entities.project.HistoryEntity;
 import cy.models.project.BugHistoryModel;
 import cy.models.project.FileModel;
 import cy.repositories.project.IBugHistoryRepository;
 import cy.repositories.project.IBugRepository;
 import cy.repositories.project.IFileRepository;
+import cy.repositories.project.IHistoryLogRepository;
 import cy.services.project.IBugHistoryService;
 import cy.services.project.IFileService;
 import cy.utils.Const;
+import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +41,8 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
     IFileRepository iFileRepository;
     @Autowired
     IFileService iFileService;
+    @Autowired
+    IHistoryLogRepository iHistoryLogRepository;
 
     @Override
     public List<BugHistoryDto> findAll() {
@@ -72,6 +78,7 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
     public BugHistoryDto add(BugHistoryModel model) {
 
         Date now = Date.from(Instant.now());
+        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
 
         BugHistoryEntity bugHistoryEntity = new BugHistoryEntity();
         bugHistoryEntity.setBugId(model.getBugId());
@@ -90,6 +97,17 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
         bugEntity.setStatus(Const.status.TO_DO.name());
         iBugRepository.save(bugEntity);
+
+        HistoryEntity newHistoryEntity = HistoryEntity
+                .builder()
+                .id(null)
+                .ObjectId(model.getBugId())
+                .category(Const.tableName.BUG.name())
+                .userId(userEntity)
+                .content(" đã mở lại bug \"" + iBugRepository.findById(model.getBugId()).get().getName() +"\"")
+                .build();
+        iHistoryLogRepository.saveAndFlush(newHistoryEntity);
+
         return bugHistoryEntityAfterSave;
     }
 
