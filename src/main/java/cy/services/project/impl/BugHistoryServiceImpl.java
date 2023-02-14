@@ -77,6 +77,7 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setBugId(model.getBugId());
         bugHistoryEntity.setStartDate(now);
         bugHistoryEntity.setEndDate(null);
+        bugHistoryEntity.setDetail(model.getDetail());
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
         for (MultipartFile file : model.getFiles()) {
@@ -117,7 +118,7 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
                 iFileService.add(fileModel);
             }
         }
-
+        iBugHistoryRepository.updateDetailHistoryBug(model.getDetail(),model.getId());
         iBugHistoryRepository.flush();
         return null;
     }
