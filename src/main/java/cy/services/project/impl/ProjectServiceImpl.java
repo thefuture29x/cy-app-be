@@ -69,8 +69,8 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public ProjectDto findById(Long id) {
-//        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-//        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
+        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
         ProjectDto projectDto = ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
         if (projectDto == null)
