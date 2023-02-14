@@ -17,9 +17,15 @@ public class HistoryLogSpecification {
 
     public static Specification<HistoryEntity> byContent(String category) {
         if (category.equals("PROJECT")){
-            return (root, query, cb) -> cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới project%");
+            return (root, query, cb) -> cb.or(
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới project%"),
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã cập nhật project%"),
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã xóa project%"));
         }else {
-            return (root, query, cb) -> cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới bug%");
+            return (root, query, cb) -> cb.or(
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới bug%"),
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã cập nhật bug%"),
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã xóa bug%"));
         }
     }
 
