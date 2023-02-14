@@ -107,6 +107,16 @@ public class ProjectServiceImpl implements IProjectService {
             }
             projectEntity.setUpdatedDate(currentDate);
             projectEntity = iProjectRepository.save(projectEntity);
+
+            if (!projectModel.getUserDev().stream().anyMatch(userId::equals)){
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                userProjectEntity.setObjectId(projectEntity.getId());
+                userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                userProjectEntity.setIdUser(userId);
+                iUserProjectRepository.save(userProjectEntity);
+            }
+
             if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
                 for (Long userDev : projectModel.getUserDev()) {
                     UserEntity user = userRepository.findById(userDev).orElse(null);
