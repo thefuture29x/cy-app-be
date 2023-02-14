@@ -334,7 +334,10 @@ public class ProjectServiceImpl implements IProjectService {
                 }
             }
 
-            iFileRepository.delete(projectEntity.getAvatar());
+            if (projectEntity.getAvatar() != null){
+                iFileRepository.delete(projectEntity.getAvatar());
+            }
+
             if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
                 String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
                 FileEntity fileEntity = new FileEntity();

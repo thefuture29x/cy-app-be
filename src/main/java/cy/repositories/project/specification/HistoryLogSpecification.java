@@ -28,7 +28,6 @@ public class HistoryLogSpecification {
                     cb.like(root.get(HistoryEntity_.CONTENT),"%đã xóa bug%"));
         }
     }
-
     public static Specification<HistoryEntity> byObjectAndCategory(Long objectId, Const.tableName category) {
         return Specification.where(byObjectId(objectId)).and(byCategory(category));
     }
