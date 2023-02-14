@@ -42,5 +42,9 @@ public class ProjectModel {
     private List<Long> userViewer;
     private String typeUser;
     private Boolean otherProject;
+    private String monthFilter;
+    private String yearFilter;
+
+
 
 }
