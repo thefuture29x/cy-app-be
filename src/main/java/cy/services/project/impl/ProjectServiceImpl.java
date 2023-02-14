@@ -459,13 +459,13 @@ public class ProjectServiceImpl implements IProjectService {
             sql += " AND p.status = :status ";
             countSQL += " AND p.status = :status ";
         }
-        if (projectModel.getStartDate() != null) {
-            sql += " AND p.startDate >= :startDate ";
-            countSQL += "AND p.startDate >= :startDate ";
+        if (projectModel.getMonthFilter() != null) {
+            sql += " AND MONTH(p.startDate) = :monthFilter ";
+            countSQL += "AND MONTH(p.startDate) = :monthFilter ";
         }
-        if (projectModel.getEndDate() != null) {
-            sql += " AND p.endDate <= :endDate ";
-            countSQL += "AND p.endDate <= :endDate ";
+        if (projectModel.getYearFilter() != null) {
+            sql += " AND YEAR(p.startDate) = :yearFilter ";
+            countSQL += "AND YEAR(p.startDate) = :yearFilter ";
         }
         if (projectModel.getTextSearch() != null) {
             if (projectModel.getTextSearch().charAt(0) == '#') {
@@ -488,13 +488,13 @@ public class ProjectServiceImpl implements IProjectService {
             q.setParameter("status", projectModel.getStatus());
             qCount.setParameter("status", projectModel.getStatus());
         }
-        if (projectModel.getStartDate() != null) {
-            q.setParameter("startDate", projectModel.getStartDate());
-            qCount.setParameter("startDate", projectModel.getStartDate());
+        if (projectModel.getMonthFilter() != null) {
+            q.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()) );
+            qCount.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()));
         }
-        if (projectModel.getEndDate() != null) {
-            q.setParameter("endDate", projectModel.getEndDate());
-            qCount.setParameter("endDate", projectModel.getEndDate());
+        if (projectModel.getYearFilter() != null) {
+            q.setParameter("yearFilter", Integer.parseInt(projectModel.getYearFilter()));
+            qCount.setParameter("yearFilter", Integer.parseInt(projectModel.getYearFilter()));
         }
         if (projectModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");

@@ -87,12 +87,14 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setDetail(model.getDetail());
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
-        for (MultipartFile file : model.getFiles()) {
-            FileModel fileModel = new FileModel();
-            fileModel.setFile(file);
-            fileModel.setObjectId(bugHistoryEntityAfterSave.getId());
-            fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
-            iFileService.add(fileModel);
+        if (model.getFiles() != null){
+            for (MultipartFile file : model.getFiles()) {
+                FileModel fileModel = new FileModel();
+                fileModel.setFile(file);
+                fileModel.setObjectId(bugHistoryEntityAfterSave.getId());
+                fileModel.setCategory(Const.tableName.BUG_HISTORY.name());
+                iFileService.add(fileModel);
+            }
         }
         BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
         bugEntity.setStatus(Const.status.TO_DO.name());
