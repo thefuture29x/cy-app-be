@@ -450,6 +450,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                     changedContent = checkDateUpdate(annotation,changedContent,val1,val2);
                 } else if (annotation.title().equals("trạng thái")) {
                     if (!val1.equals(val2)) {
+
                         HistoryEntity newHistoryEntity = HistoryEntity
                                 .builder()
                                 .id(null)
