@@ -398,14 +398,20 @@ public class TaskServiceImpl implements ITaskService {
             }
         }
         // add follower
+        // delete dev old
+        List<UserProjectEntity> oldUserFollowerProject = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskOld.getId(), Const.type.TYPE_FOLLOWER.name());
+        if (oldUserFollowerProject.size() != 0){
+            oldUserFollowerProject.stream().forEach(oldUserProject -> this.userProjectRepository.delete(oldUserProject));
+        }
 //        List<UserDto> followerList = new ArrayList<>();
         if (model.getFollowerIds() != null && model.getFollowerIds().size() > 0) {
             for (Long followerId : model.getFollowerIds()) {
-                UserProjectEntity userProject = this.addFollower(followerId);
-                userProject.setObjectId(taskupdate.getId());
-                this.userProjectRepository.saveAndFlush(userProject);
-                UserEntity userEntity2 = this.userRepository.findById(followerId).orElseThrow(() -> new CustomHandleException(11));
-//                followerList.add(UserDto.toDto(userEntity2));
+                // add follower to task
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.TASK.name(), taskupdate.getId(), Const.type.TYPE_FOLLOWER.name(), followerId).size() == 0) {
+                    UserProjectEntity userProjectTask = this.addFollower(followerId);
+                    userProjectTask.setObjectId(taskupdate.getId());
+                    this.userProjectRepository.saveAndFlush(userProjectTask);
+                }
             }
         }
 
@@ -476,15 +482,13 @@ public class TaskServiceImpl implements ITaskService {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         UserProjectEntity userProject = UserProjectEntity.builder().idUser(userEntity.getUserId()).type(Const.type.TYPE_FOLLOWER.name()).category(Const.tableName.TASK.name()).build();
-
-        return this.userProjectRepository.saveAndFlush(userProject);
+        return userProject;
     }
 
     public UserProjectEntity addViewer(Long id) {
         // objectId not save yet => be will add task
         UserEntity userEntity = this.userRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         UserProjectEntity userProject = UserProjectEntity.builder().idUser(userEntity.getUserId()).type(Const.type.TYPE_VIEWER.name()).category(Const.tableName.TASK.name()).build();
-
         return this.userProjectRepository.saveAndFlush(userProject);
     }
 
