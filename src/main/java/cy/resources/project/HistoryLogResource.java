@@ -23,7 +23,12 @@ public class HistoryLogResource {
     }
 
     @GetMapping("/all-history")
-    public ResponseDto getHistoryNotOfProjects(@RequestParam Const.tableName category, Pageable page) {
+    public ResponseDto getAllHistoryOfProject(@RequestParam Const.tableName category, Pageable page) {
         return ResponseDto.of(this.historyLogService.filter(page, HistoryLogSpecification.byCategoryAndContent(category)));
     }
+    @GetMapping("/all-history-of-bug")
+    public ResponseDto getAllHistoryOfBug(@RequestParam Long idProject, Pageable page) {
+        return ResponseDto.of(this.historyLogService.getAllHistoryOfBug(idProject,page));
+    }
+
 }

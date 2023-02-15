@@ -371,6 +371,11 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         return null;
     }
 
+    @Override
+    public Page<HistoryLogDto> getAllHistoryOfBug(Long idProject, Pageable pageable) {
+        return this.historyLogRepository.getAllHistoryOfBug(idProject,pageable).map(data -> HistoryLogDto.toDto(data));
+    }
+
     private void compareObjectFields(HistoryLogTitle annotation,
                                      Field field,
                                      Object original,

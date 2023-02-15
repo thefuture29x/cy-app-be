@@ -23,4 +23,7 @@ public interface IHistoryLogService extends IBaseService<HistoryEntity, HistoryL
     void log(Long objectId, String content, Const.tableName category);
 
     Page<HistoryLogDto> getAllHistoryCreateObject(Const.tableName category,Pageable pageable);
+    Page<HistoryLogDto> getAllHistoryOfBug(Long idProject,Pageable pageable);
+
+
 }
