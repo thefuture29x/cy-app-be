@@ -283,14 +283,6 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             }
         }
 
-//        HistoryEntity historyEntity = HistoryEntity
-//                .builder()
-//                .ObjectId(objectId)
-//                .category(category.name())
-//                .userId(user)
-//                .build();
-//        HistoryLogTitle annotationClass = original.getClass().getAnnotation(HistoryLogTitle.class);
-
         if (changedCount.get() == 0)
             return false;
 
@@ -483,22 +475,13 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         }
     }
     private StringBuilder checkUserEntityUpdate(HistoryLogTitle annotation,StringBuilder changedContent, Object val1, Object val2){
-        List<UserEntity> originalUserList = (List<UserEntity>) val1;
-        List<UserEntity> newUserList = (List<UserEntity>) val2;
-        if (originalUserList != null){
-            if (!new HashSet<>(originalUserList).equals(new HashSet<>(newUserList))){
-                return changedContent.append(" đã cập nhật ")
-                        .append(annotation.title())
-                        .append(".");
-            }
-        }else {
-            if (!new HashSet<>(newUserList).equals(new HashSet<>(originalUserList))){
-                return changedContent.append(" đã cập nhật ")
-                        .append(annotation.title())
-                        .append(".");
-            }
+        List<UserEntity> originalUserList = val1 != null ? (List<UserEntity>) val1 : new ArrayList<>();
+        List<UserEntity> newUserList = val2 != null  ? (List<UserEntity>) val1 : new ArrayList<>();
+        if (!new HashSet<>(originalUserList).equals(new HashSet<>(newUserList))){
+            return changedContent.append(" đã cập nhật ")
+                    .append(annotation.title())
+                    .append(".");
         }
-
         return new StringBuilder();
     }
     private StringBuilder checkTagEntityUpdate(HistoryLogTitle annotation,StringBuilder changedContent, Object val1, Object val2){
@@ -561,6 +544,19 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             }
 
         }
+//        if (val1 == null && val2 != null) {
+//            changedContent.append(" đã cập nhật file đính kèm!");
+//            newFiles.forEach(file -> {
+//                changedContent.append(createHtmlATag(file, " đã được thêm"));
+//            });
+//
+//        } else {
+//            changedContent.append(" đã xóa file đính kèm!");
+//            originalFiles.forEach(file -> {
+//                changedContent.append(createHtmlATag(file, " đã bị xóa"));
+//            });
+//        }
+
         return new StringBuilder();
     }
     private void createNewHistory(HistoryEntity historyEntity, StringBuilder changedContent){
