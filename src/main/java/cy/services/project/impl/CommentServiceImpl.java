@@ -72,6 +72,7 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public CommentEntity getById(Long id) {
+        if (commentRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         return this.commentRepository.findById(id).orElseThrow(() -> new CustomHandleException(401));
     }
 
@@ -114,6 +115,7 @@ public class CommentServiceImpl implements ICommentService {
 
     @Override
     public CommentDto update(CommentModel model) {
+        if (commentRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
         if (model.getFileUrlsKeeping() != null){
             fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.COMMENT.name(), model.getId());
         }else {
