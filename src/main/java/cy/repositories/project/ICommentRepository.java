@@ -16,6 +16,4 @@ public interface ICommentRepository extends JpaRepository<CommentEntity, Long>, 
 
     void deleteAllByIdParent_Id(Long id);
 
-    @Query(value = "SELECT is_deleted FROM `tbl_comments` WHERE id = ?1", nativeQuery = true)
-    boolean checkIsDeleted(Long id);
 }
