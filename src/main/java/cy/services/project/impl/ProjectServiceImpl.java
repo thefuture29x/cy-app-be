@@ -71,6 +71,7 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public ProjectDto findById(Long id) {
+        if (iProjectRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
         iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);

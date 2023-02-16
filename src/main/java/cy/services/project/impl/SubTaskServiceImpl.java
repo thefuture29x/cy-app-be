@@ -81,6 +81,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto findById(Long id) {
+        if (subTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         SubTaskEntity subTaskEntity = this.subTaskRepository.findByIdAndIsDeletedFalse(id);
         SubTaskDto subTaskDto = new SubTaskDto();
         if (subTaskEntity != null) {
@@ -257,6 +258,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
+        if (subTaskRepository.checkIsDeleted(modelUpdate.getId())) throw new CustomHandleException(491);
         SubTaskEntity subTaskExisted = this.subTaskRepository.findByIdAndIsDeletedFalse(modelUpdate.getId());
         List<FileEntity> fileOriginal = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), modelUpdate.getId());
 

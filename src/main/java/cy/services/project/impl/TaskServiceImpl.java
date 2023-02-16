@@ -92,6 +92,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto findById(Long id) {
+        if (iTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         TaskEntity taskEntity = this.getById(id);
 
         // set Tag
@@ -159,6 +160,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskEntity getById(Long id) {
+        if (iTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         return this.repository.findById(id).orElseThrow(() -> new CustomHandleException(251));
     }
 
@@ -286,6 +288,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
+        if (iTaskRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
         List<FileEntity> fileOriginalExist = fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
         if (model.getFileUrlsKeeping() != null) {
             fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.TASK.name(), model.getId());
