@@ -4,6 +4,7 @@ import cy.configs.FrontendConfiguration;
 import cy.configs.excel.PayRollExcelExporter;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
+import cy.dtos.CustomHandleException;
 import cy.dtos.attendance.PayRollDto;
 import cy.dtos.attendance.RequestAttendDto;
 import cy.dtos.ResponseDto;
@@ -137,6 +138,7 @@ public class TestController {
     }
     @PostMapping ("check-deleted")
     public void testCheckDeleted(Long idParent)  {
+        if(iProjectRepository.checkIsDeleted(idParent)) throw new CustomHandleException(491);
         System.out.println(iProjectRepository.checkIsDeleted(idParent));
     }
 

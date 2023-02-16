@@ -64,11 +64,17 @@ public class BugServiceImpl implements IRequestBugService {
     IUserRepository userRepository;
     @Autowired
     IHistoryLogService iHistoryLogService;
-    Date now = Date.from(Instant.now());
     @Autowired
     IUserProjectRepository userProjectRepository;
     @Autowired
     ITaskRepository iTaskRepository;
+    @Autowired
+    IProjectRepository iProjectRepository;
+    @Autowired
+    IFeatureRepository iFeatureRepository;
+    @Autowired
+    ISubTaskRepository iSubTaskRepository;
+
 
     @Override
     public List<BugDto> findAll() {
@@ -92,6 +98,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto findById(Long id) {
+        if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), id);
 
         List<UserMetaDto> reviewerList = showListUserInBug(Const.type.TYPE_REVIEWER.name(), id);// userRepository.getByCategoryAndTypeAndObjectIdUserMetaDto(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), id);
@@ -247,6 +254,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto update(BugModel model) {
+        if (iBugRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
         BugEntity bug = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
         List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
 
@@ -441,6 +449,7 @@ public class BugServiceImpl implements IRequestBugService {
      **/
     @Override
     public BugDto updateStatusBugToSubTask(Long id, int status) {
+        if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(11));
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
@@ -473,6 +482,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto updateStatusSubTaskToBug(Long id, int status) {
+        if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
@@ -548,6 +558,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto updateStatusBugToTask(Long id, int status) {
+        if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         TaskEntity taskEntity = iTaskRepository.findById(bugEntity.getTask().getId()).orElseThrow(() -> new CustomHandleException(251));
         //chuyển trạng thái Subtask
@@ -578,6 +589,7 @@ public class BugServiceImpl implements IRequestBugService {
 
     @Override
     public BugDto updateStatusTaskToBug(Long id, int status) {
+        if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         TaskEntity taskEntity = iTaskRepository.findById(bugEntity.getTask().getId()).orElseThrow(() -> new CustomHandleException(251));
         //chuyển trạng thái Subtask
@@ -640,14 +652,6 @@ public class BugServiceImpl implements IRequestBugService {
         //Lưu dữ liệu vào bảng BugHistory
         return bugDto;
     }
-
-    @Autowired
-    IProjectRepository iProjectRepository;
-    @Autowired
-    IFeatureRepository iFeatureRepository;
-    @Autowired
-    ISubTaskRepository iSubTaskRepository;
-
     @Override
     public AllBugDto getAllBug(Long idProject) {
         AllBugDto projectBugDto = new AllBugDto();

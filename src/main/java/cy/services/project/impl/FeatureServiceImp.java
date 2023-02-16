@@ -83,6 +83,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto findById(Long id) {
+        if (featureRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         FeatureEntity featureEntity = this.featureRepository.findById(id).orElseThrow(() -> new CustomHandleException(23));
         featureEntity.setTagList(tagRelationService.findTagByCategoryAndObject(Const.tableName.FEATURE.name(), id).stream().map(x -> x.getIdTag()).collect(Collectors.toList()).stream().map(y -> this.tagService.getById(y)).collect(Collectors.toList()));
         featureEntity.setDevTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.FEATURE.name(), id, Const.type.TYPE_DEV.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
@@ -212,6 +213,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
+        if (featureRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
         List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
         //Clear old files
         if (model.getFileUrlsKeeping() != null){
