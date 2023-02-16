@@ -18,7 +18,7 @@ public interface IHistoryLogRepository extends JpaRepository<HistoryEntity, Long
             "\tJOIN `tbl_tasks` ts ON sts.task_id = ts.id\n" +
             "\tJOIN `tbl_features` ft ON ts.feature_id = ft.id \n" +
             "\tJOIN `tbl_projects` pr ON ft.project_id = pr.id \n" +
-            "\tWHERE pr.id = ?1  AND bg.is_deleted= 0 AND ts.is_deleted = 0 AND sts.is_deleted = 0 AND ft.is_deleted = 0 AND pr.is_deleted = 0\n" +
+            "\tWHERE pr.id = ?1\n" +
             ")\n" +
             "AND (content LIKE '%đã thêm mới bug%' OR content LIKE '%đã cập nhật bug%' OR content LIKE '%đã xóa bug%')\n",nativeQuery = true)
     Page<HistoryEntity> getAllHistoryOfBug(Long idProject,Pageable pageable);

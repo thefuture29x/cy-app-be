@@ -1,5 +1,6 @@
 package cy.services.project.impl;
 
+import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.dtos.project.ProjectDto;
 import cy.dtos.project.TaskDto;
@@ -32,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -234,6 +236,22 @@ public class ProjectServiceImpl implements IProjectService {
             ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
             ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
 
+            Set<Long> currentProjectUIDs = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+            Set<Long> currentProjectIdFollows = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+            int countError = 0;
+            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
+                countError += 1;
+            }
+            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectIdFollows::contains)) {
+                countError += 1;
+            }
+            if(SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()){
+                countError += 1;
+            }
+            if (countError == 3){
+                throw new CustomHandleException(11);
+            }
+
             List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
             List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
             List<UserEntity> listUserView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
@@ -279,6 +297,17 @@ public class ProjectServiceImpl implements IProjectService {
             if (userProjectEntities != null && userProjectEntities.size() > 0) {
                 iUserProjectRepository.deleteAllInBatch(userProjectEntities);
             }
+
+            if (!projectModel.getUserDev().stream().anyMatch(userId::equals)){
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                userProjectEntity.setObjectId(projectEntity.getId());
+                userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                userProjectEntity.setIdUser(userId);
+                iUserProjectRepository.save(userProjectEntity);
+            }
+
+
             if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
                 for (Long userDev : projectModel.getUserDev()) {
                     UserEntity user = userRepository.findById(userDev).orElse(null);
