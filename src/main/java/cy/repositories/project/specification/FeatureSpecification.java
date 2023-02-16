@@ -118,9 +118,9 @@ public class FeatureSpecification {
         try {
             Date parsedDate = localeIta.parse(date);
             result = new Timestamp(parsedDate.getTime());
-            result.setHours(0);
-            result.setMinutes(0);
-            result.setSeconds(0);
+//            result.setHours(0);
+//            result.setMinutes(0);
+//            result.setSeconds(0);
             return result;
         } catch (Exception e) {
             e.printStackTrace();
