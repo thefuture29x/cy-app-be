@@ -655,7 +655,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             // Unset default sub task (if it is default sub task)
             subTaskDeleting.setIsDefault(false);
             this.subTaskRepository.save(subTaskDeleting);
-            iHistoryLogService.logDelete(id, subTaskDeleting, Const.tableName.SUBTASK);
+            iHistoryLogService.logDelete(id, subTaskDeleting, Const.tableName.SUBTASK, subTaskDeleting.getName());
         }
         return true;
     }

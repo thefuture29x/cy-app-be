@@ -365,7 +365,7 @@ public class FeatureServiceImp implements IFeatureService {
         FeatureEntity oldFeature = this.getById(id);
         oldFeature.setIsDeleted(true);
         this.featureRepository.saveAndFlush(oldFeature);
-        iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE);
+        iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE,oldFeature.getName());
         return true;
     }
 

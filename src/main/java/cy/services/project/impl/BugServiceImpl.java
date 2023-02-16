@@ -697,7 +697,7 @@ public class BugServiceImpl implements IRequestBugService {
             BugEntity bugEntity = iBugRepository.findById(id).get();
             bugEntity.setIsDeleted(true);
             iBugRepository.save(bugEntity);
-            iHistoryLogService.logDelete(id, bugEntity, Const.tableName.BUG);
+            iHistoryLogService.logDelete(id, bugEntity, Const.tableName.BUG,bugEntity.getName());
             return true;
         } catch (Exception e) {
             return false;
