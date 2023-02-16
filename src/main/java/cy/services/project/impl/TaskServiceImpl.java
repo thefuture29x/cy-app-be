@@ -551,12 +551,12 @@ public class TaskServiceImpl implements ITaskService {
             qCount.setParameter("featureId", taskModel.getFeatureId());
         }
         if (taskModel.getStartDate() != null) {
-            q.setParameter("startDate", taskModel.getStartDate());
-            qCount.setParameter("startDate", taskModel.getStartDate());
+            q.setParameter("startDate", taskModel.getStartDate() +"00:00:00");
+            qCount.setParameter("startDate", taskModel.getStartDate() +"00:00:00");
         }
         if (taskModel.getEndDate() != null) {
-            q.setParameter("endDate", taskModel.getEndDate());
-            qCount.setParameter("endDate", taskModel.getEndDate());
+            q.setParameter("endDate", taskModel.getEndDate() +"23:59:59");
+            qCount.setParameter("endDate", taskModel.getEndDate() +"23:59:59");
         }
         if (taskModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + taskModel.getTextSearch() + "%");
