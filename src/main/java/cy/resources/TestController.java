@@ -115,6 +115,8 @@ public class TestController {
     ISubTaskService iSubTaskService;
     @Autowired
     IFeatureRepository iFeatureRepository;
+    @Autowired
+    IProjectRepository iProjectRepository;
 
     @PostMapping ("change-status")
     public void testUpLoadFile(Long idParent)  {
@@ -132,6 +134,10 @@ public class TestController {
             iFeatureRepository.updateStatusFeature(idParent,Const.status.IN_PROGRESS.name());
             return;
         }
+    }
+    @PostMapping ("check-deleted")
+    public void testCheckDeleted(Long idParent)  {
+        System.out.println(iProjectRepository.checkIsDeleted(idParent));
     }
 
 

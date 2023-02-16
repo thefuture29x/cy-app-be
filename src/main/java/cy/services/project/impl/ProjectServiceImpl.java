@@ -217,6 +217,7 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException {
+            if (iProjectRepository.checkIsDeleted(projectModel.getId())) throw new CustomHandleException(491);
             List<String> fileUrlsKeeping = new ArrayList<>();
             List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
             if (projectModel.getFileUrlsKeeping() != null){
@@ -449,7 +450,7 @@ public class ProjectServiceImpl implements IProjectService {
         ProjectEntity oldProject = this.iProjectRepository.findById(id).orElseThrow(() -> new RuntimeException("Project not exist!!"));
         oldProject.setIsDeleted(true);
         this.iProjectRepository.saveAndFlush(oldProject);
-        iHistoryLogService.logDelete(id, oldProject, Const.tableName.PROJECT);
+        iHistoryLogService.logDelete(id, oldProject, Const.tableName.PROJECT, oldProject.getName());
         return true;
     }
 

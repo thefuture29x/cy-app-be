@@ -18,7 +18,7 @@ public interface IHistoryLogService extends IBaseService<HistoryEntity, HistoryL
 
     boolean logUpdate(Long objectId, Object original, Object newObj, Const.tableName category);
 
-    void logDelete(Long objectId, Object object, Const.tableName category);
+    void logDelete(Long objectId, Object object, Const.tableName category, String nameObject);
 
     void log(Long objectId, String content, Const.tableName category);
 
