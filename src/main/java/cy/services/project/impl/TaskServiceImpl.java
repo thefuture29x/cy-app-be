@@ -631,7 +631,7 @@ public class TaskServiceImpl implements ITaskService {
             throw new CustomHandleException(252);
         }
         // check only reviewer can change status to done
-        if (taskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())){
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.DONE.name())){
             Set<Long> idReviewer = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId,Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
             if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(idReviewer::contains)) {
                 throw new CustomHandleException(254);
