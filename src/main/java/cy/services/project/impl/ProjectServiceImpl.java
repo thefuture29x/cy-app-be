@@ -483,11 +483,6 @@ public class ProjectServiceImpl implements IProjectService {
         if (projectModel.getOtherProject()){
             sql += " and (up.idUser <> :idUserFilter) ";
             countSQL += " and (up.idUser <> :idUserFilter) ";
-        }else {
-            if (projectModel.getIdUserFilter() != null){
-                sql += " and (up.idUser = :idUserFilter) ";
-                countSQL += " and (up.idUser = :idUserFilter) ";
-            }
         }
 
         if (projectModel.getStatus() != null) {
@@ -516,10 +511,6 @@ public class ProjectServiceImpl implements IProjectService {
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        if (projectModel.getIdUserFilter() != null) {
-            q.setParameter("idUserFilter", projectModel.getIdUserFilter());
-            qCount.setParameter("idUserFilter", projectModel.getIdUserFilter());
-        }
 
         if (projectModel.getStatus() != null) {
             q.setParameter("status", projectModel.getStatus());
