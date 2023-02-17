@@ -217,7 +217,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
         subTaskEntity.setStartDate(model.getStartDate());
         subTaskEntity.setEndDate(model.getEndDate());
-        subTaskEntity.setStatus(Const.status.TO_DO.name());
+//        subTaskEntity.setStatus(Const.status.TO_DO.name());
         subTaskEntity.setName(model.getName());
         subTaskEntity.setDescription(model.getDescription());
         subTaskEntity.setPriority(model.getPriority().name()); // Default value: MEDIUM
@@ -225,6 +225,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskEntity.setAttachFiles(fileEntityList);
         subTaskEntity.setAssignTo(null); // Default value: null
         subTaskEntity.setIsDefault(model.getIsDefault());
+
+        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
+        Date currentDate = new Date();
+        if (model.getStartDate().before(currentDate)) {
+            subTaskEntity.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            subTaskEntity.setStatus(Const.status.TO_DO.name());
+        }
         SubTaskEntity saveSubTask = this.subTaskRepository.save(subTaskEntity);
 
         // Save assigned users to UserProject
@@ -317,6 +325,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
         subTaskExisted.setEndDate(modelUpdate.getEndDate());
         subTaskExisted.setPriority(modelUpdate.getPriority().name());
 
+        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
+        Date currentDate = new Date();
+        if (modelUpdate.getStartDate().before(currentDate)) {
+            subTaskExisted.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            subTaskExisted.setStatus(Const.status.TO_DO.name());
+        }
+
         // Update default sub task
         if (modelUpdate.getIsDefault() != null && modelUpdate.getIsDefault()) {
             unsetDefaultSubTask(subTaskExisted.getTask().getId());
@@ -363,6 +379,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         SubTaskDto subTaskDto = SubTaskDto.toDto(saveSubTask);
         subTaskDto.setTagList(tagListSplit);
 
+        // Get all list user dev, user follower, tag and file after save
         List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_DEV.name(), modelUpdate.getId());
         List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_FOLLOWER.name(), modelUpdate.getId());
         List<TagEntity> listTagEntity = tagRepository.getAllByObjectIdAndCategory(modelUpdate.getId(), Const.tableName.SUBTASK.name());
