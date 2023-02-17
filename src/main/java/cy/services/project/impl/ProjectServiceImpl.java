@@ -459,7 +459,7 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel) {
-//        Long userIdd = SecurityUtils.getCurrentUserId();
+        Long userIdd = SecurityUtils.getCurrentUserId();
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         String sql = "SELECT distinct new cy.dtos.project.ProjectDto(p) FROM ProjectEntity p " +
                 "inner join UserProjectEntity up on up.objectId = p.id ";
@@ -481,8 +481,8 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         if (projectModel.getOtherProject()){
-            sql += " and (up.idUser <> :idUserFilter) ";
-            countSQL += " and (up.idUser <> :idUserFilter) ";
+            sql += " and (up.idUser <> :currentUserId) ";
+            countSQL += " and (up.idUser <> :currentUserId) ";
         }
 
         if (projectModel.getStatus() != null) {
@@ -503,7 +503,7 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
             } else {
                 sql += " AND (p.name LIKE :textSearch ) ";
-                countSQL += " AND (p.name LIKE :textSearch ) ";
+                countSQL += "AND (p.name LIKE :textSearch ) ";
             }
         }
         sql += " order by p.updatedDate desc";
@@ -511,6 +511,8 @@ public class ProjectServiceImpl implements IProjectService {
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
 
+        q.setParameter("currentUserId", userIdd);
+        qCount.setParameter("currentUserId", userIdd);
 
         if (projectModel.getStatus() != null) {
             q.setParameter("status", projectModel.getStatus());
