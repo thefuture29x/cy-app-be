@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -141,7 +138,6 @@ public class FeatureServiceImp implements IFeatureService {
                 startDate(model.getStartDate())
                 .endDate(model.getEndDate())
                 .createBy(SecurityUtils.getCurrentUser().getUser())
-                .status(Const.status.TO_DO.name())
                 .description(model.getDescription())
                 .name(model.getName())
                 .project(projectEntity)
@@ -151,6 +147,15 @@ public class FeatureServiceImp implements IFeatureService {
                 .isDefault(model.getIsDefault())
 //                .priority(model.getPriority().name())
                 .build();
+
+        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
+        Date currentDate = new Date();
+        if (model.getStartDate().before(currentDate)) {
+            entity.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            entity.setStatus(Const.status.TO_DO.name());
+        }
+
         this.featureRepository.saveAndFlush(entity);
 
         //Add Tags
@@ -253,6 +258,15 @@ public class FeatureServiceImp implements IFeatureService {
         oldFeature.setStartDate(model.getStartDate());
         oldFeature.setEndDate(model.getEndDate());
         oldFeature.setIsDefault(model.getIsDefault());
+
+        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
+        Date currentDate = new Date();
+        if (model.getStartDate().before(currentDate)) {
+            oldFeature.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            oldFeature.setStatus(Const.status.TO_DO.name());
+        }
+
 //        oldFeature.setPriority(model.getPriority().name());
         //Clear old tags
         clearTagList(oldFeature);

@@ -103,6 +103,8 @@ public class ProjectServiceImpl implements IProjectService {
             projectEntity.setDescription(projectModel.getDescription());
             projectEntity.setName(projectModel.getName());
             projectEntity.setIsDefault(projectModel.getIsDefault());
+
+            // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
             if (projectModel.getStartDate().before(currentDate)) {
                 projectEntity.setStatus(Const.status.IN_PROGRESS.name());
             } else {
@@ -457,7 +459,7 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel) {
-        Long userIdd = SecurityUtils.getCurrentUserId();
+//        Long userIdd = SecurityUtils.getCurrentUserId();
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         String sql = "SELECT distinct new cy.dtos.project.ProjectDto(p) FROM ProjectEntity p " +
                 "inner join UserProjectEntity up on up.objectId = p.id ";
@@ -479,11 +481,13 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         if (projectModel.getOtherProject()){
-            sql += " and (up.idUser <> :currentUserId) ";
-            countSQL += " and (up.idUser <> :currentUserId) ";
+            sql += " and (up.idUser <> :idUserFilter) ";
+            countSQL += " and (up.idUser <> :idUserFilter) ";
         }else {
-            sql += " and (up.idUser = :currentUserId) ";
-            countSQL += " and (up.idUser = :currentUserId) ";
+            if (projectModel.getIdUserFilter() != null){
+                sql += " and (up.idUser = :idUserFilter) ";
+                countSQL += " and (up.idUser = :idUserFilter) ";
+            }
         }
 
         if (projectModel.getStatus() != null) {
@@ -500,11 +504,11 @@ public class ProjectServiceImpl implements IProjectService {
         }
         if (projectModel.getTextSearch() != null) {
             if (projectModel.getTextSearch().charAt(0) == '#') {
-                sql += " AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'PROJECT') ";
-                countSQL += "AND (t.name LIKE :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+                countSQL += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
             } else {
-                sql += " AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
-                countSQL += "AND (p.name LIKE :textSearch or p.createBy.fullName LIKE :textSearch ) ";
+                sql += " AND (p.name LIKE :textSearch ) ";
+                countSQL += "AND (p.name LIKE :textSearch ) ";
             }
         }
         sql += "order by p.updatedDate desc";
@@ -512,8 +516,10 @@ public class ProjectServiceImpl implements IProjectService {
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        q.setParameter("currentUserId", userIdd);
-        qCount.setParameter("currentUserId", userIdd);
+        if (projectModel.getIdUserFilter() != null) {
+            q.setParameter("idUserFilter", projectModel.getIdUserFilter());
+            qCount.setParameter("idUserFilter", projectModel.getIdUserFilter());
+        }
 
         if (projectModel.getStatus() != null) {
             q.setParameter("status", projectModel.getStatus());
@@ -528,8 +534,14 @@ public class ProjectServiceImpl implements IProjectService {
             qCount.setParameter("yearFilter", Integer.parseInt(projectModel.getYearFilter()));
         }
         if (projectModel.getTextSearch() != null) {
-            q.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
-            qCount.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
+            if (projectModel.getTextSearch().charAt(0) == '#') {
+                String textSearch = projectModel.getTextSearch().substring(1);
+                q.setParameter("textSearch", textSearch);
+                qCount.setParameter("textSearch", textSearch);
+            }else {
+                q.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
+                qCount.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
+            }
         }
         if (projectModel.getTypeUser() != null) {
             q.setParameter("typeUser", projectModel.getTypeUser());
