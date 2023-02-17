@@ -44,8 +44,5 @@ public class ProjectModel {
     private Boolean otherProject;
     private String monthFilter;
     private String yearFilter;
-    private Long idUserFilter;
-
-
 
 }
