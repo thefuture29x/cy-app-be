@@ -3,9 +3,11 @@ package cy.services.project.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.project.FileDto;
 import cy.entities.project.FileEntity;
+import cy.entities.project.HistoryEntity;
 import cy.models.project.FileModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.IFileRepository;
+import cy.repositories.project.IHistoryLogRepository;
 import cy.services.project.IFileService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
@@ -33,6 +35,8 @@ public class FileServiceImpl implements IFileService {
     private IUserRepository userRepository;
     @Autowired
     private FileUploadProvider fileUploadProvider;
+    @Autowired
+    private IHistoryLogRepository iHistoryLogRepository;
 
     @Override
     public List<FileDto> findAll() {
@@ -151,7 +155,17 @@ public class FileServiceImpl implements IFileService {
     @Override
     public boolean deleteById(Long id) {
         try {
+            FileEntity fileEntity = fileRepository.findById(id).get();
             fileRepository.deleteById(id);
+            HistoryEntity newHistoryEntity = HistoryEntity
+                    .builder()
+                    .id(null)
+                    .ObjectId(fileEntity.getObjectId())
+                    .category(fileEntity.getCategory())
+                    .userId(fileEntity.getUploadedBy())
+                    .content(" <p>đã xóa file đính kèm.</p>")
+                    .build();
+            iHistoryLogRepository.saveAndFlush(newHistoryEntity);
             return true;
         } catch (Exception e){
             return false;

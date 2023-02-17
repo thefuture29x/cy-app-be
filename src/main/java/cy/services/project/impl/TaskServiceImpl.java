@@ -324,12 +324,12 @@ public class TaskServiceImpl implements ITaskService {
         taskOld.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
 
         // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-        Date currentDate = new Date();
-        if (model.getStartDate().before(currentDate)) {
-            taskOld.setStatus(Const.status.IN_PROGRESS.name());
-        } else {
-            taskOld.setStatus(Const.status.TO_DO.name());
-        }
+//        Date currentDate = new Date();
+//        if (model.getStartDate().before(currentDate)) {
+//            taskOld.setStatus(Const.status.IN_PROGRESS.name());
+//        } else {
+//            taskOld.setStatus(Const.status.TO_DO.name());
+//        }
 
         TaskEntity taskupdate = this.repository.saveAndFlush(taskOld);
 

@@ -516,7 +516,7 @@ public class ProjectServiceImpl implements IProjectService {
 
         q.setParameter("currentUserId", userIdd);
         qCount.setParameter("currentUserId", userIdd);
-        
+
         if (projectModel.getStatus() != null) {
             q.setParameter("status", projectModel.getStatus());
             qCount.setParameter("status", projectModel.getStatus());
