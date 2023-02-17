@@ -491,11 +491,11 @@ public class ProjectServiceImpl implements IProjectService {
         }
         if (projectModel.getMonthFilter() != null) {
             sql += " AND MONTH(p.startDate) = :monthFilter ";
-            countSQL += "AND MONTH(p.startDate) = :monthFilter ";
+            countSQL += " AND MONTH(p.startDate) = :monthFilter ";
         }
         if (projectModel.getYearFilter() != null) {
             sql += " AND YEAR(p.startDate) = :yearFilter ";
-            countSQL += "AND YEAR(p.startDate) = :yearFilter ";
+            countSQL += " AND YEAR(p.startDate) = :yearFilter ";
         }
         if (projectModel.getTextSearch() != null) {
             if (projectModel.getTextSearch().charAt(0) == '#') {
@@ -506,7 +506,7 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += " AND (p.name LIKE :textSearch ) ";
             }
         }
-        sql += "order by p.updatedDate desc";
+        sql += " order by p.updatedDate desc";
 
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
@@ -525,13 +525,13 @@ public class ProjectServiceImpl implements IProjectService {
             qCount.setParameter("yearFilter", Integer.parseInt(projectModel.getYearFilter()));
         }
         if (projectModel.getTextSearch() != null) {
+            String textSearch = projectModel.getTextSearch();
             if (projectModel.getTextSearch().charAt(0) == '#') {
-                String textSearch = projectModel.getTextSearch().substring(1);
-                q.setParameter("textSearch", textSearch);
-                qCount.setParameter("textSearch", textSearch);
+                q.setParameter("textSearch", textSearch.substring(1));
+                qCount.setParameter("textSearch", textSearch.substring(1));
             }else {
-                q.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
-                qCount.setParameter("textSearch", "%" + projectModel.getTextSearch() + "%");
+                q.setParameter("textSearch", "%" + textSearch + "%");
+                qCount.setParameter("textSearch", "%" + textSearch + "%");
             }
         }
         if (projectModel.getTypeUser() != null) {
