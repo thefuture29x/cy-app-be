@@ -514,13 +514,13 @@ public class ProjectServiceImpl implements IProjectService {
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        if (projectModel.getOtherProject()){
-            q.setParameter("currentUserId", userIdd);
-            qCount.setParameter("currentUserId", userIdd);
-        }
-        q.setParameter("status", projectModel.getStatus());
-        qCount.setParameter("status", projectModel.getStatus());
+        q.setParameter("currentUserId", userIdd);
+        qCount.setParameter("currentUserId", userIdd);
         
+        if (projectModel.getStatus() != null) {
+            q.setParameter("status", projectModel.getStatus());
+            qCount.setParameter("status", projectModel.getStatus());
+        }
         if (projectModel.getMonthFilter() != null) {
             q.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()) );
             qCount.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()));
