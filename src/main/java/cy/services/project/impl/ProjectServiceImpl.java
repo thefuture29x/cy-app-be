@@ -483,6 +483,9 @@ public class ProjectServiceImpl implements IProjectService {
         if (projectModel.getOtherProject()){
             sql += " and (up.idUser <> :currentUserId) ";
             countSQL += " and (up.idUser <> :currentUserId) ";
+        }else {
+            sql += " and (up.idUser = :currentUserId) ";
+            countSQL += " and (up.idUser = :currentUserId) ";
         }
 
         if (projectModel.getStatus() != null) {
@@ -515,10 +518,9 @@ public class ProjectServiceImpl implements IProjectService {
             q.setParameter("currentUserId", userIdd);
             qCount.setParameter("currentUserId", userIdd);
         }
-        if (projectModel.getStatus() != null) {
-            q.setParameter("status", projectModel.getStatus());
-            qCount.setParameter("status", projectModel.getStatus());
-        }
+        q.setParameter("status", projectModel.getStatus());
+        qCount.setParameter("status", projectModel.getStatus());
+        
         if (projectModel.getMonthFilter() != null) {
             q.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()) );
             qCount.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()));
