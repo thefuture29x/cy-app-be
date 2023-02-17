@@ -95,6 +95,9 @@ public class ProjectServiceImpl implements IProjectService {
             if (userId == null)
                 return null;
             UserEntity userEntity = userRepository.findById(userId).orElse(null);
+            // check name already exists
+            if (iProjectRepository.getAllByNameAndIsDeleted(projectModel.getName(), false).size() > 0) throw new CustomHandleException(190);
+
             projectEntity.setCreateBy(userEntity);
             Date currentDate = new Date();
             projectEntity.setCreatedDate(currentDate);

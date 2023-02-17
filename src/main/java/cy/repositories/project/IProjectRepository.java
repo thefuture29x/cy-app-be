@@ -19,4 +19,6 @@ public interface IProjectRepository  extends JpaRepository<ProjectEntity, Long> 
 
     @Query(value = "SELECT is_deleted FROM `tbl_projects` WHERE id = ?1", nativeQuery = true)
     boolean checkIsDeleted(Long id);
+
+    List<ProjectEntity> getAllByNameAndIsDeleted(String name, Boolean isDeleted);
 }
