@@ -163,7 +163,7 @@ public class FileServiceImpl implements IFileService {
                     .ObjectId(fileEntity.getObjectId())
                     .category(fileEntity.getCategory())
                     .userId(fileEntity.getUploadedBy())
-                    .content(" <p>đã xóa file đính kèm.</p>")
+                    .content("<p> đã xóa file đính kèm.</p>")
                     .build();
             iHistoryLogRepository.saveAndFlush(newHistoryEntity);
             return true;

@@ -409,7 +409,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                                 .ObjectId(historyEntity.getObjectId())
                                 .category(historyEntity.getCategory())
                                 .userId(null)
-                                .content(" <p>đã được cập nhật trạng thái.</p>")
+                                .content("<p> đã được cập nhật trạng thái.</p>")
                                 .build();
                         this.historyLogRepository.saveAndFlush(newHistoryEntity);
                     }
@@ -453,7 +453,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                                 .ObjectId(historyEntity.getObjectId())
                                 .category(historyEntity.getCategory())
                                 .userId(null)
-                                .content(" <p>đã được cập nhật trạng thái.</p.")
+                                .content("<p> đã được cập nhật trạng thái.</p.")
                                 .build();
                         this.historyLogRepository.saveAndFlush(newHistoryEntity);
                     }
@@ -477,7 +477,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         List<UserEntity> originalUserList = val1 != null ? (List<UserEntity>) val1 : new ArrayList<>();
         List<UserEntity> newUserList = val2 != null  ? (List<UserEntity>) val1 : new ArrayList<>();
         if (!new HashSet<>(originalUserList).equals(new HashSet<>(newUserList))){
-            return changedContent.append(" <p>đã cập nhật ")
+            return changedContent.append("<p> đã cập nhật ")
                     .append(annotation.title())
                     .append(".</p>");
         }
@@ -495,13 +495,13 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             newTagList.stream().forEach(data -> newTagListName.add( data.getName()));
 
             if (!new HashSet<>(originalTagListName).equals(new HashSet<>(newTagListName))){
-                return changedContent.append(" <p>đã cập nhật ")
+                return changedContent.append("<p> đã cập nhật ")
                         .append(annotation.title())
                         .append(".</p>");
             }
             return new StringBuilder();
         }else {
-            return changedContent.append(" <p>đã cập nhật ")
+            return changedContent.append("<p> đã cập nhật ")
                     .append(annotation.title())
                     .append(".</p>");
         }
@@ -510,7 +510,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         String pattern = "yyyy-MM-dd HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         if (!simpleDateFormat.format(val1).equals(simpleDateFormat.format(val2))) {
-            return changedContent.append(" <p>đã cập nhật ")
+            return changedContent.append("<p> đã cập nhật ")
                     .append(annotation.title())
                     .append(".</p>");
         }
@@ -524,7 +524,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             for (FileEntity entity : originalFiles) {
                 boolean haveDeleteFile = false;
                 if (!newFiles.contains(entity)){
-                    changedContent.append(" <p>đã xóa file đính kèm.</p>");
+                    changedContent.append("<p> đã xóa file đính kèm.</p>");
                     createNewHistory(historyEntity, changedContent);
                     changedContent.setLength(0);
                     haveDeleteFile = true;
@@ -534,7 +534,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
             for (FileEntity entity: newFiles) {
                 boolean haveNewFile = false;
                 if (!originalFiles.contains(entity)){
-                    changedContent.append(" <p>đã thêm mới file đính kèm.</p>");
+                    changedContent.append("<p> đã thêm mới file đính kèm.</p>");
                     createNewHistory(historyEntity, changedContent);
                     changedContent.setLength(0);
                     haveNewFile = true;
@@ -572,7 +572,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         }
     }
     private StringBuilder setChangedContentToUpdated(HistoryLogTitle annotation,StringBuilder changedContent){
-        return changedContent.append(" <p>đã cập nhật ")
+        return changedContent.append("<p> đã cập nhật ")
                 .append(annotation.title())
                 .append(".</p>");
     }
