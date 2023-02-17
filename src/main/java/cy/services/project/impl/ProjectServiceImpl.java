@@ -511,9 +511,10 @@ public class ProjectServiceImpl implements IProjectService {
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        q.setParameter("currentUserId", userIdd);
-        qCount.setParameter("currentUserId", userIdd);
-
+        if (projectModel.getOtherProject()){
+            q.setParameter("currentUserId", userIdd);
+            qCount.setParameter("currentUserId", userIdd);
+        }
         if (projectModel.getStatus() != null) {
             q.setParameter("status", projectModel.getStatus());
             qCount.setParameter("status", projectModel.getStatus());
