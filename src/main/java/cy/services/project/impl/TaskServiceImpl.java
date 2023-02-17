@@ -28,6 +28,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -322,14 +323,6 @@ public class TaskServiceImpl implements ITaskService {
 
         // feature save
         taskOld.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
-
-        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-//        Date currentDate = new Date();
-//        if (model.getStartDate().before(currentDate)) {
-//            taskOld.setStatus(Const.status.IN_PROGRESS.name());
-//        } else {
-//            taskOld.setStatus(Const.status.TO_DO.name());
-//        }
 
         TaskEntity taskupdate = this.repository.saveAndFlush(taskOld);
 
@@ -636,6 +629,13 @@ public class TaskServiceImpl implements ITaskService {
         List<SubTaskEntity> getAllSubTask = subTaskRepository.findByTaskId(taskId);
         if (getAllSubTask.size() > 0) {
             throw new CustomHandleException(252);
+        }
+        // check only reviewer can change status to done
+        if (taskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())){
+            Set<Long> idReviewer = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId,Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(idReviewer::contains)) {
+                throw new CustomHandleException(254);
+            }
         }
 
         taskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
