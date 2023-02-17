@@ -503,7 +503,7 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
             } else {
                 sql += " AND (p.name LIKE :textSearch ) ";
-                countSQL += "AND (p.name LIKE :textSearch ) ";
+                countSQL += " AND (p.name LIKE :textSearch ) ";
             }
         }
         sql += "order by p.updatedDate desc";
