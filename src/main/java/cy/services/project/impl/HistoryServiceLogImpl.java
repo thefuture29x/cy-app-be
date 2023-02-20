@@ -475,7 +475,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
     }
     private StringBuilder checkUserEntityUpdate(HistoryLogTitle annotation,StringBuilder changedContent, Object val1, Object val2){
         List<UserEntity> originalUserList = val1 != null ? (List<UserEntity>) val1 : new ArrayList<>();
-        List<UserEntity> newUserList = val2 != null  ? (List<UserEntity>) val1 : new ArrayList<>();
+        List<UserEntity> newUserList = val2 != null  ? (List<UserEntity>) val2 : new ArrayList<>();
         if (!new HashSet<>(originalUserList).equals(new HashSet<>(newUserList))){
             return changedContent.append("<p> đã cập nhật ")
                     .append(annotation.title())
