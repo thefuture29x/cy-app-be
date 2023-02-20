@@ -223,8 +223,10 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException {
-            if (iProjectRepository.checkIsDeleted(projectModel.getId())) throw new CustomHandleException(491);
-            List<String> fileUrlsKeeping = new ArrayList<>();
+        if (iProjectRepository.checkIsDeleted(projectModel.getId())) throw new CustomHandleException(491);
+        if (iProjectRepository.getAllByNameAndIsDeleted(projectModel.getName(), false).size() > 0) throw new CustomHandleException(190);
+
+        List<String> fileUrlsKeeping = new ArrayList<>();
             List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
             if (projectModel.getFileUrlsKeeping() != null){
                 projectModel.getFileUrlsKeeping().stream().map(url -> fileUrlsKeeping.add(url)).collect(Collectors.toList());
