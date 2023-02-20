@@ -90,277 +90,85 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public ProjectDto createProject(ProjectModel projectModel) throws IOException {
-            ProjectEntity projectEntity = new ProjectEntity();
-            Long userId = SecurityUtils.getCurrentUserId();
-            if (userId == null)
-                return null;
-            UserEntity userEntity = userRepository.findById(userId).orElse(null);
-            // check name already exists
-            if (iProjectRepository.getAllByNameAndIsDeleted(projectModel.getName(), false).size() > 0) throw new CustomHandleException(190);
+        ProjectEntity projectEntity = new ProjectEntity();
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null)
+            return null;
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        // check name already exists
+        if (iProjectRepository.getAllByNameAndIsDeleted(projectModel.getName(), false).size() > 0)
+            throw new CustomHandleException(190);
 
-            projectEntity.setCreateBy(userEntity);
-            Date currentDate = new Date();
-            projectEntity.setCreatedDate(currentDate);
-            projectEntity.setStartDate(projectModel.getStartDate());
-            projectEntity.setEndDate(projectModel.getEndDate());
-            projectEntity.setDescription(projectModel.getDescription());
-            projectEntity.setName(projectModel.getName());
-            projectEntity.setIsDefault(projectModel.getIsDefault());
+        projectEntity.setCreateBy(userEntity);
+        Date currentDate = new Date();
+        projectEntity.setCreatedDate(currentDate);
+        projectEntity.setStartDate(projectModel.getStartDate());
+        projectEntity.setEndDate(projectModel.getEndDate());
+        projectEntity.setDescription(projectModel.getDescription());
+        projectEntity.setName(projectModel.getName());
+        projectEntity.setIsDefault(projectModel.getIsDefault());
 
-            // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-            if (projectModel.getStartDate().before(currentDate)) {
-                projectEntity.setStatus(Const.status.IN_PROGRESS.name());
-            } else {
-                projectEntity.setStatus(Const.status.TO_DO.name());
-            }
-            projectEntity.setUpdatedDate(currentDate);
-            projectEntity = iProjectRepository.save(projectEntity);
+        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
+        if (projectModel.getStartDate().before(currentDate)) {
+            projectEntity.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            projectEntity.setStatus(Const.status.TO_DO.name());
+        }
+        projectEntity.setUpdatedDate(currentDate);
+        projectEntity = iProjectRepository.save(projectEntity);
 
-            if (!projectModel.getUserDev().stream().anyMatch(userId::equals)){
-                UserProjectEntity userProjectEntity = new UserProjectEntity();
-                userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                userProjectEntity.setObjectId(projectEntity.getId());
-                userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                userProjectEntity.setIdUser(userId);
-                iUserProjectRepository.save(userProjectEntity);
-            }
+        if (!projectModel.getUserDev().stream().anyMatch(userId::equals)) {
+            UserProjectEntity userProjectEntity = new UserProjectEntity();
+            userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+            userProjectEntity.setObjectId(projectEntity.getId());
+            userProjectEntity.setType(Const.type.TYPE_DEV.name());
+            userProjectEntity.setIdUser(userId);
+            iUserProjectRepository.save(userProjectEntity);
+        }
 
-            if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
-                for (Long userDev : projectModel.getUserDev()) {
-                    UserEntity user = userRepository.findById(userDev).orElse(null);
-                    if (user != null) {
-                        UserProjectEntity userProjectEntity = new UserProjectEntity();
-                        userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                        userProjectEntity.setObjectId(projectEntity.getId());
-                        userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                        userProjectEntity.setIdUser(user.getUserId());
-                        iUserProjectRepository.save(userProjectEntity);
-                    }
+        if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
+            for (Long userDev : projectModel.getUserDev()) {
+                UserEntity user = userRepository.findById(userDev).orElse(null);
+                if (user != null) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectEntity.getId());
+                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                    userProjectEntity.setIdUser(user.getUserId());
+                    iUserProjectRepository.save(userProjectEntity);
                 }
             }
-            if (projectModel.getUserFollow() != null && projectModel.getUserFollow().size() > 0) {
-                for (Long userFollow : projectModel.getUserFollow()) {
-                    UserEntity user = userRepository.findById(userFollow).orElse(null);
-                    if (user != null) {
-                        UserProjectEntity userProjectEntity = new UserProjectEntity();
-                        userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                        userProjectEntity.setObjectId(projectEntity.getId());
-                        userProjectEntity.setType(Const.type.TYPE_FOLLOWER.name());
-                        userProjectEntity.setIdUser(user.getUserId());
-                        iUserProjectRepository.save(userProjectEntity);
-                    }
+        }
+        if (projectModel.getUserFollow() != null && projectModel.getUserFollow().size() > 0) {
+            for (Long userFollow : projectModel.getUserFollow()) {
+                UserEntity user = userRepository.findById(userFollow).orElse(null);
+                if (user != null) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectEntity.getId());
+                    userProjectEntity.setType(Const.type.TYPE_FOLLOWER.name());
+                    userProjectEntity.setIdUser(user.getUserId());
+                    iUserProjectRepository.save(userProjectEntity);
                 }
             }
-            if (projectModel.getUserViewer() != null && projectModel.getUserViewer().size() > 0) {
-                for (Long userFollow : projectModel.getUserViewer()) {
-                    UserEntity user = userRepository.findById(userFollow).orElse(null);
-                    if (user != null) {
-                        UserProjectEntity userProjectEntity = new UserProjectEntity();
-                        userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                        userProjectEntity.setObjectId(projectEntity.getId());
-                        userProjectEntity.setType(Const.type.TYPE_VIEWER.name());
-                        userProjectEntity.setIdUser(user.getUserId());
-                        iUserProjectRepository.save(userProjectEntity);
-                    }
+        }
+        if (projectModel.getUserViewer() != null && projectModel.getUserViewer().size() > 0) {
+            for (Long userFollow : projectModel.getUserViewer()) {
+                UserEntity user = userRepository.findById(userFollow).orElse(null);
+                if (user != null) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectEntity.getId());
+                    userProjectEntity.setType(Const.type.TYPE_VIEWER.name());
+                    userProjectEntity.setIdUser(user.getUserId());
+                    iUserProjectRepository.save(userProjectEntity);
                 }
             }
-            if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
-                for (String tagModel : projectModel.getTagArray()) {
-                    TagEntity tagEntity = iTagRepository.findByName(tagModel);
-                    if (tagEntity == null) {
-                        TagEntity tagEntity1 = new TagEntity();
-                        tagEntity1.setName(tagModel);
-                        tagEntity1 = iTagRepository.save(tagEntity1);
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
-                        tagRelationEntity.setIdTag(tagEntity1.getId());
-                        tagRelationEntity.setObjectId(projectEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
-                    } else if (tagEntity != null) {
-                        TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
-                        tagRelationEntity.setIdTag(tagEntity.getId());
-                        tagRelationEntity.setObjectId(projectEntity.getId());
-                        iTagRelationRepository.save(tagRelationEntity);
-                    }
-                }
-            }
-//            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
-            if (projectModel.getAvatar() != null) {
-                String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
-                FileEntity fileEntity = new FileEntity();
-                String fileName = projectModel.getAvatar().getOriginalFilename();
-                fileEntity.setCategory(Const.tableName.PROJECT.name());
-                fileEntity.setUploadedBy(userEntity);
-                fileEntity.setLink(urlAvatar);
-//                fileEntity.setObjectId(projectEntity.getId());
-                fileEntity.setFileName(fileName);
-                fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
-                projectEntity.setAvatar(fileEntity);
-                projectEntity = iProjectRepository.save(projectEntity);
-            }
-//            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
-            if (projectModel.getFiles() != null) {
-                for (MultipartFile m : projectModel.getFiles()) {
-                    if (!m.isEmpty()) {
-                        String urlFile = fileUploadProvider.uploadFile("project", m);
-                        FileEntity fileEntity = new FileEntity();
-                        String fileName = m.getOriginalFilename();
-                        fileEntity.setLink(urlFile);
-                        fileEntity.setFileName(fileName);
-                        fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
-                        fileEntity.setCategory(Const.tableName.PROJECT.name());
-                        fileEntity.setUploadedBy(userEntity);
-                        fileEntity.setObjectId(projectEntity.getId());
-                        iFileRepository.saveAndFlush(fileEntity);
-                    }
-                }
-            }
-            iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT, projectEntity.getName());
-            ProjectDto result = ProjectDto.toDto(projectEntity);
-            return result;
-    }
-
-    @Override
-    public ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException {
-        if (iProjectRepository.checkIsDeleted(projectModel.getId())) throw new CustomHandleException(491);
-        if (iProjectRepository.getAllByNameAndIsDeleted(projectModel.getName(), false).size() > 0) throw new CustomHandleException(190);
-
-        List<String> fileUrlsKeeping = new ArrayList<>();
-            List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
-            if (projectModel.getFileUrlsKeeping() != null){
-                projectModel.getFileUrlsKeeping().stream().map(url -> fileUrlsKeeping.add(url)).collect(Collectors.toList());
-            }
-            if (projectModel.getAvatarUrl() != null){
-                fileUrlsKeeping.add(projectModel.getAvatarUrl());
-            }
-            
-            if (fileUrlsKeeping.size() > 0){
-                iFileRepository.deleteFileExistInObject(fileUrlsKeeping, Const.tableName.PROJECT.name(), projectModel.getId());
-            }
-            else {
-                iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
-            }
-
-            ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
-            ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
-
-            Set<Long> currentProjectUIDs = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-            Set<Long> currentProjectIdFollows = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-            int countError = 0;
-            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
-                countError += 1;
-            }
-            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectIdFollows::contains)) {
-                countError += 1;
-            }
-            if(SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()){
-                countError += 1;
-            }
-            if (countError == 3){
-                throw new CustomHandleException(11);
-            }
-
-            List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
-            List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
-            List<UserEntity> listUserView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
-            List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(),Const.tableName.PROJECT.name());
-            projectOriginal.setViewTeam(listUserView);
-            projectOriginal.setDevTeam(listUserDev);
-            projectOriginal.setFollowTeam(listUserFollow);
-            projectOriginal.setTagList(listTag);
-            projectOriginal.setAttachFiles(fileOriginal);
-
-            if (projectEntity == null)
-                return null;
-            Long userId = SecurityUtils.getCurrentUserId();
-            if (userId == null)
-                return null;
-            UserEntity userEntity = userRepository.findById(userId).orElse(null);
-            projectEntity.setCreateBy(userEntity);
-            // Format date get only yyyy-MM-dd
-            Date currentDate = new Date();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-            String currentDateString = simpleDateFormat.format(currentDate);
-            Date currentDateCheck = simpleDateFormat.parse(currentDateString);
-
-            String startDateString = simpleDateFormat.format(projectModel.getStartDate());
-            Date startDateCheck = simpleDateFormat.parse(startDateString);
-            // End format date get only yyyy-MM-dd
-
-            projectEntity.setCreatedDate(currentDate);
-            projectEntity.setStartDate(projectModel.getStartDate());
-            projectEntity.setEndDate(projectModel.getEndDate());
-            projectEntity.setDescription(projectModel.getDescription());
-            projectEntity.setName(projectModel.getName());
-            projectEntity.setIsDefault(projectModel.getIsDefault());
-
-            if (startDateCheck.before(currentDateCheck)) {
-                projectEntity.setStatus(Const.status.IN_PROGRESS.name());
-            } else {
-                projectEntity.setStatus(Const.status.TO_DO.name());
-            }
-            projectEntity.setUpdatedDate(currentDate);
-            List<UserProjectEntity> userProjectEntities = iUserProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
-            if (userProjectEntities != null && userProjectEntities.size() > 0) {
-                iUserProjectRepository.deleteAllInBatch(userProjectEntities);
-            }
-
-            if (!projectModel.getUserDev().stream().anyMatch(userId::equals)){
-                UserProjectEntity userProjectEntity = new UserProjectEntity();
-                userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                userProjectEntity.setObjectId(projectEntity.getId());
-                userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                userProjectEntity.setIdUser(userId);
-                iUserProjectRepository.save(userProjectEntity);
-            }
-
-
-            if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
-                for (Long userDev : projectModel.getUserDev()) {
-                    UserEntity user = userRepository.findById(userDev).orElse(null);
-                    if (user != null) {
-                        UserProjectEntity userProjectEntity = new UserProjectEntity();
-                        userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                        userProjectEntity.setObjectId(projectEntity.getId());
-                        userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                        userProjectEntity.setIdUser(user.getUserId());
-                        iUserProjectRepository.save(userProjectEntity);
-                    }
-                }
-            }
-            if (projectModel.getUserFollow() != null && projectModel.getUserFollow().size() > 0) {
-                for (Long userFollow : projectModel.getUserFollow()) {
-                    UserEntity user = userRepository.findById(userFollow).orElse(null);
-                    if (user != null) {
-                        UserProjectEntity userProjectEntity = new UserProjectEntity();
-                        userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                        userProjectEntity.setObjectId(projectEntity.getId());
-                        userProjectEntity.setType(Const.type.TYPE_FOLLOWER.name());
-                        userProjectEntity.setIdUser(user.getUserId());
-                        iUserProjectRepository.save(userProjectEntity);
-                    }
-                }
-            }
-            if (projectModel.getUserViewer() != null && projectModel.getUserViewer().size() > 0) {
-                for (Long userFollow : projectModel.getUserViewer()) {
-                    UserEntity user = userRepository.findById(userFollow).orElse(null);
-                    if (user != null) {
-                        UserProjectEntity userProjectEntity = new UserProjectEntity();
-                        userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                        userProjectEntity.setObjectId(projectEntity.getId());
-                        userProjectEntity.setType(Const.type.TYPE_VIEWER.name());
-                        userProjectEntity.setIdUser(user.getUserId());
-                        iUserProjectRepository.save(userProjectEntity);
-                    }
-                }
-            }
-
-            List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
-            iTagRelationRepository.deleteAll(tagRelationEntities);
-            if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
-                for (String tagModel : projectModel.getTagArray()) {
+        }
+        if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
+            for (String tagModel : projectModel.getTagArray()) {
+                TagEntity tagEntity = iTagRepository.findByName(tagModel);
+                if (tagEntity == null) {
                     TagEntity tagEntity1 = new TagEntity();
                     tagEntity1.setName(tagModel);
                     tagEntity1 = iTagRepository.save(tagEntity1);
@@ -369,64 +177,259 @@ public class ProjectServiceImpl implements IProjectService {
                     tagRelationEntity.setIdTag(tagEntity1.getId());
                     tagRelationEntity.setObjectId(projectEntity.getId());
                     iTagRelationRepository.save(tagRelationEntity);
+                } else if (tagEntity != null) {
+                    TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                    tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
+                    tagRelationEntity.setIdTag(tagEntity.getId());
+                    tagRelationEntity.setObjectId(projectEntity.getId());
+                    iTagRelationRepository.save(tagRelationEntity);
                 }
             }
-
-            if (projectEntity.getAvatar() != null){
-                iFileRepository.delete(projectEntity.getAvatar());
-            }
-
-            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
-                String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
-                FileEntity fileEntity = new FileEntity();
-                String fileName = projectModel.getAvatar().getOriginalFilename();
-                fileEntity.setCategory(Const.tableName.PROJECT.name());
-                fileEntity.setUploadedBy(userEntity);
-                fileEntity.setLink(urlAvatar);
+        }
+//            if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
+        if (projectModel.getAvatar() != null) {
+            String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
+            FileEntity fileEntity = new FileEntity();
+            String fileName = projectModel.getAvatar().getOriginalFilename();
+            fileEntity.setCategory(Const.tableName.PROJECT.name());
+            fileEntity.setUploadedBy(userEntity);
+            fileEntity.setLink(urlAvatar);
 //                fileEntity.setObjectId(projectEntity.getId());
-                fileEntity.setFileName(fileName);
-                fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
-                projectEntity.setAvatar(fileEntity);
+            fileEntity.setFileName(fileName);
+            fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+            projectEntity.setAvatar(fileEntity);
+            projectEntity = iProjectRepository.save(projectEntity);
+        }
+//            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
+        if (projectModel.getFiles() != null) {
+            for (MultipartFile m : projectModel.getFiles()) {
+                if (!m.isEmpty()) {
+                    String urlFile = fileUploadProvider.uploadFile("project", m);
+                    FileEntity fileEntity = new FileEntity();
+                    String fileName = m.getOriginalFilename();
+                    fileEntity.setLink(urlFile);
+                    fileEntity.setFileName(fileName);
+                    fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+                    fileEntity.setCategory(Const.tableName.PROJECT.name());
+                    fileEntity.setUploadedBy(userEntity);
+                    fileEntity.setObjectId(projectEntity.getId());
+                    iFileRepository.saveAndFlush(fileEntity);
+                }
+            }
+        }
+        iHistoryLogService.logCreate(projectEntity.getId(), projectEntity, Const.tableName.PROJECT, projectEntity.getName());
+        ProjectDto result = ProjectDto.toDto(projectEntity);
+        return result;
+    }
+
+    @Override
+    public ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException {
+        if (iProjectRepository.checkIsDeleted(projectModel.getId())) throw new CustomHandleException(491);
+
+        List<String> fileUrlsKeeping = new ArrayList<>();
+        List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
+        if (projectModel.getFileUrlsKeeping() != null) {
+            projectModel.getFileUrlsKeeping().stream().map(url -> fileUrlsKeeping.add(url)).collect(Collectors.toList());
+        }
+        if (projectModel.getAvatarUrl() != null) {
+            fileUrlsKeeping.add(projectModel.getAvatarUrl());
+        }
+
+        if (fileUrlsKeeping.size() > 0) {
+            iFileRepository.deleteFileExistInObject(fileUrlsKeeping, Const.tableName.PROJECT.name(), projectModel.getId());
+        } else {
+            iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectModel.getId());
+        }
+
+        ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
+        if (!projectEntity.getName().equals(projectModel.getName())){
+            if (iProjectRepository.getAllByNameAndIsDeleted(projectModel.getName(), false).size() > 0)
+                throw new CustomHandleException(190);
+        }
+        ProjectEntity projectOriginal = (ProjectEntity) Const.copy(projectEntity);
+
+        Set<Long> currentProjectUIDs = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectIdFollows = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        int countError = 0;
+        if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
+            countError += 1;
+        }
+        if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectIdFollows::contains)) {
+            countError += 1;
+        }
+        if (SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()) {
+            countError += 1;
+        }
+        if (countError == 3) {
+            throw new CustomHandleException(11);
+        }
+
+        List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+        List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+        List<UserEntity> listUserView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+        List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(), Const.tableName.PROJECT.name());
+        projectOriginal.setViewTeam(listUserView);
+        projectOriginal.setDevTeam(listUserDev);
+        projectOriginal.setFollowTeam(listUserFollow);
+        projectOriginal.setTagList(listTag);
+        projectOriginal.setAttachFiles(fileOriginal);
+
+        if (projectEntity == null)
+            return null;
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null)
+            return null;
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        projectEntity.setCreateBy(userEntity);
+        // Format date get only yyyy-MM-dd
+        Date currentDate = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        String currentDateString = simpleDateFormat.format(currentDate);
+        Date currentDateCheck = simpleDateFormat.parse(currentDateString);
+
+        String startDateString = simpleDateFormat.format(projectModel.getStartDate());
+        Date startDateCheck = simpleDateFormat.parse(startDateString);
+        // End format date get only yyyy-MM-dd
+
+        projectEntity.setCreatedDate(currentDate);
+        projectEntity.setStartDate(projectModel.getStartDate());
+        projectEntity.setEndDate(projectModel.getEndDate());
+        projectEntity.setDescription(projectModel.getDescription());
+        projectEntity.setName(projectModel.getName());
+        projectEntity.setIsDefault(projectModel.getIsDefault());
+
+        if (startDateCheck.before(currentDateCheck)) {
+            projectEntity.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            projectEntity.setStatus(Const.status.TO_DO.name());
+        }
+        projectEntity.setUpdatedDate(currentDate);
+        List<UserProjectEntity> userProjectEntities = iUserProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
+        if (userProjectEntities != null && userProjectEntities.size() > 0) {
+            iUserProjectRepository.deleteAllInBatch(userProjectEntities);
+        }
+
+        if (!projectModel.getUserDev().stream().anyMatch(userId::equals)) {
+            UserProjectEntity userProjectEntity = new UserProjectEntity();
+            userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+            userProjectEntity.setObjectId(projectEntity.getId());
+            userProjectEntity.setType(Const.type.TYPE_DEV.name());
+            userProjectEntity.setIdUser(userId);
+            iUserProjectRepository.save(userProjectEntity);
+        }
+
+
+        if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
+            for (Long userDev : projectModel.getUserDev()) {
+                UserEntity user = userRepository.findById(userDev).orElse(null);
+                if (user != null) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectEntity.getId());
+                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                    userProjectEntity.setIdUser(user.getUserId());
+                    iUserProjectRepository.save(userProjectEntity);
+                }
+            }
+        }
+        if (projectModel.getUserFollow() != null && projectModel.getUserFollow().size() > 0) {
+            for (Long userFollow : projectModel.getUserFollow()) {
+                UserEntity user = userRepository.findById(userFollow).orElse(null);
+                if (user != null) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectEntity.getId());
+                    userProjectEntity.setType(Const.type.TYPE_FOLLOWER.name());
+                    userProjectEntity.setIdUser(user.getUserId());
+                    iUserProjectRepository.save(userProjectEntity);
+                }
+            }
+        }
+        if (projectModel.getUserViewer() != null && projectModel.getUserViewer().size() > 0) {
+            for (Long userFollow : projectModel.getUserViewer()) {
+                UserEntity user = userRepository.findById(userFollow).orElse(null);
+                if (user != null) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectEntity.getId());
+                    userProjectEntity.setType(Const.type.TYPE_VIEWER.name());
+                    userProjectEntity.setIdUser(user.getUserId());
+                    iUserProjectRepository.save(userProjectEntity);
+                }
+            }
+        }
+
+        List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
+        iTagRelationRepository.deleteAll(tagRelationEntities);
+        if (projectModel.getTagArray() != null && projectModel.getTagArray().length > 0) {
+            for (String tagModel : projectModel.getTagArray()) {
+                TagEntity tagEntity1 = new TagEntity();
+                tagEntity1.setName(tagModel);
+                tagEntity1 = iTagRepository.save(tagEntity1);
+                TagRelationEntity tagRelationEntity = new TagRelationEntity();
+                tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
+                tagRelationEntity.setIdTag(tagEntity1.getId());
+                tagRelationEntity.setObjectId(projectEntity.getId());
+                iTagRelationRepository.save(tagRelationEntity);
+            }
+        }
+
+        if (projectEntity.getAvatar() != null) {
+            iFileRepository.delete(projectEntity.getAvatar());
+        }
+
+        if (projectModel.getAvatar() != null && !projectModel.getAvatar().isEmpty()) {
+            String urlAvatar = fileUploadProvider.uploadFile("avatar", projectModel.getAvatar());
+            FileEntity fileEntity = new FileEntity();
+            String fileName = projectModel.getAvatar().getOriginalFilename();
+            fileEntity.setCategory(Const.tableName.PROJECT.name());
+            fileEntity.setUploadedBy(userEntity);
+            fileEntity.setLink(urlAvatar);
+//                fileEntity.setObjectId(projectEntity.getId());
+            fileEntity.setFileName(fileName);
+            fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+            projectEntity.setAvatar(fileEntity);
 //                projectEntity = iProjectRepository.save(projectEntity);
-            } else {
-                if (projectModel.getAvatarUrl() != null) {
-                    if(projectOriginal.getAvatar().getLink().equals(projectModel.getAvatarUrl())){
-                        projectEntity.setAvatar(projectOriginal.getAvatar());
-                    }
+        } else {
+            if (projectModel.getAvatarUrl() != null) {
+                if (projectOriginal.getAvatar().getLink().equals(projectModel.getAvatarUrl())) {
+                    projectEntity.setAvatar(projectOriginal.getAvatar());
                 }
             }
+        }
 
-            if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
-                for (MultipartFile m : projectModel.getFiles()) {
-                    if (!m.isEmpty()) {
-                        String urlFile = fileUploadProvider.uploadFile("project", m);
-                        FileEntity fileEntity = new FileEntity();
-                        String fileName = m.getOriginalFilename();
-                        fileEntity.setLink(urlFile);
-                        fileEntity.setFileName(fileName);
-                        fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
-                        fileEntity.setCategory(Const.tableName.PROJECT.name());
-                        fileEntity.setUploadedBy(userEntity);
-                        fileEntity.setObjectId(projectEntity.getId());
-                        iFileRepository.saveAndFlush(fileEntity);
-                        projectEntity.getAttachFiles().add(fileEntity);
-                    }
+        if (projectModel.getFiles() != null && projectModel.getFiles().length > 0) {
+            for (MultipartFile m : projectModel.getFiles()) {
+                if (!m.isEmpty()) {
+                    String urlFile = fileUploadProvider.uploadFile("project", m);
+                    FileEntity fileEntity = new FileEntity();
+                    String fileName = m.getOriginalFilename();
+                    fileEntity.setLink(urlFile);
+                    fileEntity.setFileName(fileName);
+                    fileEntity.setFileType(fileName.substring(fileName.lastIndexOf(".") + 1));
+                    fileEntity.setCategory(Const.tableName.PROJECT.name());
+                    fileEntity.setUploadedBy(userEntity);
+                    fileEntity.setObjectId(projectEntity.getId());
+                    iFileRepository.saveAndFlush(fileEntity);
+                    projectEntity.getAttachFiles().add(fileEntity);
                 }
             }
-            iProjectRepository.saveAndFlush(projectEntity);
-            List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
-            List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
-            List<UserEntity> userView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
-            List<TagEntity> listTagEntity = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(),Const.tableName.PROJECT.name());
+        }
+        iProjectRepository.saveAndFlush(projectEntity);
+        List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
+        List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
+        List<UserEntity> userView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
+        List<TagEntity> listTagEntity = iTagRepository.getAllByObjectIdAndCategory(projectEntity.getId(), Const.tableName.PROJECT.name());
 
-            projectEntity.setViewTeam(userView);
-            projectEntity.setDevTeam(userDev);
-            projectEntity.setFollowTeam(userFollow);
-            projectEntity.setTagList(listTagEntity);
+        projectEntity.setViewTeam(userView);
+        projectEntity.setDevTeam(userDev);
+        projectEntity.setFollowTeam(userFollow);
+        projectEntity.setTagList(listTagEntity);
 
-            iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal,projectEntity, Const.tableName.PROJECT);
-            ProjectDto result = ProjectDto.toDto(projectEntity);
-            return result;
+        iHistoryLogService.logUpdate(projectEntity.getId(), projectOriginal, projectEntity, Const.tableName.PROJECT);
+        ProjectDto result = ProjectDto.toDto(projectEntity);
+        return result;
     }
 
     @Override
@@ -477,18 +480,18 @@ public class ProjectServiceImpl implements IProjectService {
         sql += " WHERE (up.category like 'PROJECT') AND p.isDeleted = false ";
         countSQL += " WHERE (up.category like 'PROJECT') AND p.isDeleted = false ";
 
-        if (projectModel.getTypeUser() != null){
-            sql+= " AND up.type = :typeUser";
-            countSQL+= " AND up.type = :typeUser";
-        }else {
-            sql+= " AND up.type is not null";
-            countSQL+= " AND up.type is not null";
+        if (projectModel.getTypeUser() != null) {
+            sql += " AND up.type = :typeUser";
+            countSQL += " AND up.type = :typeUser";
+        } else {
+            sql += " AND up.type is not null";
+            countSQL += " AND up.type is not null";
         }
 
-        if (projectModel.getOtherProject()){
+        if (projectModel.getOtherProject()) {
             sql += " and (up.idUser <> :currentUserId) ";
             countSQL += " and (up.idUser <> :currentUserId) ";
-        }else {
+        } else {
             sql += " and (up.idUser = :currentUserId) ";
             countSQL += " and (up.idUser = :currentUserId) ";
         }
@@ -527,7 +530,7 @@ public class ProjectServiceImpl implements IProjectService {
             qCount.setParameter("status", projectModel.getStatus());
         }
         if (projectModel.getMonthFilter() != null) {
-            q.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()) );
+            q.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()));
             qCount.setParameter("monthFilter", Integer.parseInt(projectModel.getMonthFilter()));
         }
         if (projectModel.getYearFilter() != null) {
@@ -539,7 +542,7 @@ public class ProjectServiceImpl implements IProjectService {
             if (projectModel.getTextSearch().charAt(0) == '#') {
                 q.setParameter("textSearch", textSearch.substring(1));
                 qCount.setParameter("textSearch", textSearch.substring(1));
-            }else {
+            } else {
                 q.setParameter("textSearch", "%" + textSearch + "%");
                 qCount.setParameter("textSearch", "%" + textSearch + "%");
             }
