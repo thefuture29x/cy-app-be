@@ -296,6 +296,7 @@ public class BugServiceImpl implements IRequestBugService {
                 if (model.getSubTask() != null) {
                     SubTaskEntity subTaskEntity = subTaskRepository.findById(model.getSubTask()).orElseThrow(() -> new CustomHandleException(281));
                     bugEntity.setSubTask(subTaskEntity);
+                    bugEntity.setTask(subTaskEntity);
 //                chuyển trạng thái Subtask sang IN_PROGRESS
                     subTaskEntity.setStatus(Const.status.IN_PROGRESS.name());
                     subTaskRepository.saveAndFlush(subTaskEntity);
@@ -304,6 +305,7 @@ public class BugServiceImpl implements IRequestBugService {
                 if (model.getTask() != null) {
                     TaskEntity taskEntity = iTaskRepository.findById(model.getTask()).orElseThrow(() -> new CustomHandleException(251));
                     bugEntity.setTask(taskEntity);
+                    bugEntity.setSubTask(null);
                     //chuyển trạng thái Task sang IN_PROGRESS
                     taskEntity.setStatus(Const.status.IN_PROGRESS.name());
                     iTaskRepository.saveAndFlush(taskEntity);
