@@ -30,10 +30,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -575,15 +572,17 @@ public class ProjectServiceImpl implements IProjectService {
 //        UserDto userDtoCheck = UserDto.toDto(SecurityUtils.getCurrentUser().getUser());
 
 
-        result.stream().map(data -> {
-            List<UserEntity> listViewer = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), data.getId());
-            if (listViewer.stream().anyMatch(SecurityUtils.getCurrentUser().getUser()::equals)){
-                System.out.println("terst");
+        result.stream().forEach(data -> {
+            List<Long> listIdViewer = userRepository.getAllIdViewerByCategoryAndObjectId(Const.tableName.PROJECT.name(), data.getId());
+            List<Long> listViewerCheck = listIdViewer != null ? listIdViewer : new ArrayList<>();
+            if (listViewerCheck.stream().anyMatch(userIdd::equals)){
+                data.setEditable(false);
+            }else {
+                data.setEditable(true);
             }
-            System.out.println("hjaahsdfh");
-            data.setEditable(true);
-            return data;
         });
+
+
         return result;
     }
 }
