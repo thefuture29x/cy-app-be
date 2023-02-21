@@ -491,9 +491,6 @@ public class ProjectServiceImpl implements IProjectService {
         if (projectModel.getOtherProject()) {
             sql += " and (up.idUser <> :currentUserId) ";
             countSQL += " and (up.idUser <> :currentUserId) ";
-        } else {
-            sql += " and (up.idUser = :currentUserId) ";
-            countSQL += " and (up.idUser = :currentUserId) ";
         }
 
         if (projectModel.getStatus() != null) {
@@ -538,9 +535,10 @@ public class ProjectServiceImpl implements IProjectService {
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        q.setParameter("currentUserId", userIdd);
-        qCount.setParameter("currentUserId", userIdd);
-
+        if (projectModel.getOtherProject()) {
+            q.setParameter("currentUserId", userIdd);
+            qCount.setParameter("currentUserId", userIdd);
+        }
         if (projectModel.getStatus() != null) {
             q.setParameter("status", projectModel.getStatus());
             qCount.setParameter("status", projectModel.getStatus());
@@ -573,6 +571,19 @@ public class ProjectServiceImpl implements IProjectService {
 
         Long numberResult = (Long) qCount.getSingleResult();
         Page<ProjectDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
+
+//        UserDto userDtoCheck = UserDto.toDto(SecurityUtils.getCurrentUser().getUser());
+
+
+        result.stream().map(data -> {
+            List<UserEntity> listViewer = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), data.getId());
+            if (listViewer.stream().anyMatch(SecurityUtils.getCurrentUser().getUser()::equals)){
+                System.out.println("terst");
+            }
+            System.out.println("hjaahsdfh");
+            data.setEditable(true);
+            return data;
+        });
         return result;
     }
 }

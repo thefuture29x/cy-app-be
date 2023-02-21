@@ -59,8 +59,8 @@ public class BeanConfiguration {
                                 "http://192.168.1.236:5173",
                                 "http://43.200.3.80",
                                 "http://43.200.3.80:3000",
-                                "http://54.180.94.249:3000",
-                                "http://54.180.94.249"
+                                "http://13.125.225.104:3000",
+                                "http://13.125.225.104"
                                 )
                         .allowedOriginPatterns("*.*.*.*:*")
                         .allowCredentials(true)
