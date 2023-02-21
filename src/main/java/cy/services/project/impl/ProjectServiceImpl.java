@@ -531,6 +531,8 @@ public class ProjectServiceImpl implements IProjectService {
         }
         if (sortType != null){
             sql += " " + sortType;
+        }else {
+            sql += " desc";
         }
 
         Query q = manager.createQuery(sql, ProjectDto.class);
