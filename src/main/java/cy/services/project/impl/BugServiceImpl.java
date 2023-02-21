@@ -511,7 +511,7 @@ public class BugServiceImpl implements IRequestBugService {
                     }).collect(Collectors.toList());
                     iBugRepository.flush();
                     saveDataInHistoryTable(bugEntity.getId(), now, null, files);
-                    changeStatusSubTask(bugEntity.getTask().getId());
+                    changeStatusSubTask(bugEntity.getSubTask().getId());
                     break;
                 case 2:
                     //dev kết thúc fix bug
@@ -524,14 +524,14 @@ public class BugServiceImpl implements IRequestBugService {
                             iBugHistoryRepository.save(bugHistoryEntity);
                         }
                     }
-                    changeStatusSubTask(bugEntity.getTask().getId());
+                    changeStatusSubTask(bugEntity.getSubTask().getId());
                     break;
                 case 3:
                     //reviewer oke xong thì chuyển bug sang done
                     bugEntity.setStatus(Const.status.DONE.name());
 //                    subTaskRepository.updateStatusSubTaskAfterAllBugDone(bugEntity.getSubTask().getId());
 //                    subTaskEntity.setStatus(Const.status.DONE.name());
-                    changeStatusSubTask(bugEntity.getTask().getId());
+                    changeStatusSubTask(bugEntity.getSubTask().getId());
                     break;
 
                 case 4:
@@ -541,7 +541,7 @@ public class BugServiceImpl implements IRequestBugService {
                     bugHistoryEntity.setStartDate(Date.from(Instant.now()));
                     bugHistoryEntity.setIsPending(true);
                     iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
-                    changeStatusSubTask(bugEntity.getTask().getId());
+                    changeStatusSubTask(bugEntity.getSubTask().getId());
                     break;
 
             }
