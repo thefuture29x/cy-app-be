@@ -466,7 +466,7 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     @Override
-    public Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel) {
+    public Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize,String sortBy, String sortType, ProjectModel projectModel) {
         Long userIdd = SecurityUtils.getCurrentUserId();
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         String sql = "SELECT distinct new cy.dtos.project.ProjectDto(p) FROM ProjectEntity p " +
@@ -517,7 +517,21 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += "AND (p.name LIKE :textSearch ) ";
             }
         }
-        sql += " order by p.updatedDate desc";
+        if (sortBy != null){
+            switch (sortBy){
+                case "startDate":
+                    sql += " order by p.startDate";
+                    break;
+                case "endDate":
+                    sql += " order by p.endDate";
+                    break;
+            }
+        }else {
+            sql += " order by p.updatedDate";
+        }
+        if (sortType != null){
+            sql += " " + sortType;
+        }
 
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);

@@ -15,6 +15,6 @@ public interface IProjectService {
     ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException;
     Boolean deleteProject(Long id);
     Boolean changIsDeleteById(Long id);
-    Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize, ProjectModel projectModel);
+    Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize,String sortBy,String sortType, ProjectModel projectModel);
 
 }
