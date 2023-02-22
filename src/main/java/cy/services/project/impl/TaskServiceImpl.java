@@ -175,14 +175,7 @@ public class TaskServiceImpl implements ITaskService {
         // feature save
         taskEntity.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
 
-        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-        Date currentDate = new Date();
-        if (model.getStartDate().before(currentDate)) {
-            taskEntity.setStatus(Const.status.IN_PROGRESS.name());
-        } else {
-            taskEntity.setStatus(Const.status.TO_DO.name());
-        }
-
+        taskEntity.setStatus(Const.status.TO_DO.name());
         taskEntity = this.repository.saveAndFlush(taskEntity);
 
         // add tag
@@ -493,7 +486,7 @@ public class TaskServiceImpl implements ITaskService {
         TaskEntity oldTask = this.getById(id);
         oldTask.setIsDeleted(true);
         this.repository.saveAndFlush(oldTask);
-        changeStatusFeature(id);
+//        changeStatusFeature(id);
         iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK,oldTask.getName());
         return true;
     }
@@ -667,7 +660,7 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         // Update status of feature
-        changeStatusFeature(taskEntityExist.getFeature().getId());
+//        changeStatusFeature(taskEntityExist.getFeature().getId());
 
         return true;
     }
