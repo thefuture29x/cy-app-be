@@ -511,7 +511,7 @@ public class ProjectServiceImpl implements IProjectService {
                 countSQL += "AND (p.name LIKE :textSearch ) ";
             }
         }
-        if (sortBy != null){
+        if (sortBy != ""){
             switch (sortBy){
                 case "startDate":
                     sql += " order by p.startDate";
@@ -523,7 +523,7 @@ public class ProjectServiceImpl implements IProjectService {
         }else {
             sql += " order by p.updatedDate";
         }
-        if (sortType != null){
+        if (sortType != ""){
             sql += " " + sortType;
         }else {
             sql += " desc";
@@ -570,11 +570,12 @@ public class ProjectServiceImpl implements IProjectService {
         Page<ProjectDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
 
         result.stream().forEach(data -> {
-            List<Long> listIdViewer = userRepository.getAllIdViewerByCategoryAndObjectId(Const.tableName.PROJECT.name(), data.getId());
-            List<Long> listViewerCheck = listIdViewer != null ? listIdViewer : new ArrayList<>();
-            if (listViewerCheck.stream().anyMatch(userIdd::equals)){
-                data.setEditable(false);
-            }else {
+            List<Long> listIdDevAndFollower = userRepository.getAllIdDevAndFollowerByTypeAndObjectId(Const.tableName.PROJECT.name(), data.getId());
+            List<Long> listIdDevAndFollowerCheck = listIdDevAndFollower != null ? listIdDevAndFollower : new ArrayList<>();
+
+            data.setEditable(false);
+
+            if (listIdDevAndFollowerCheck.stream().anyMatch(userIdd::equals)){
                 data.setEditable(true);
             }
         });

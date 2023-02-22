@@ -493,6 +493,7 @@ public class TaskServiceImpl implements ITaskService {
         TaskEntity oldTask = this.getById(id);
         oldTask.setIsDeleted(true);
         this.repository.saveAndFlush(oldTask);
+        changeStatusFeature(id);
         iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK,oldTask.getName());
         return true;
     }
