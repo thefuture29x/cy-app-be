@@ -765,7 +765,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
 
         // Update status of task
-        updateStatusOfTask(subTaskEntityExist.getTask());
+//        updateStatusOfTask(subTaskEntityExist.getTask());
         return true;
     }
 
