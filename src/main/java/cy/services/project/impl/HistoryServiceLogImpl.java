@@ -404,16 +404,18 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 else if (annotation.title().equals("trạng thái")) {
                     if (!val1.equals(val2)) {
                         String title = annotation.getClass().getAnnotation(HistoryLogTitle.class).title();
-                        if (!title.equals("project") && !title.equals("feature")){
-                            HistoryEntity newHistoryEntity = HistoryEntity
-                                    .builder()
-                                    .id(null)
-                                    .ObjectId(historyEntity.getObjectId())
-                                    .category(historyEntity.getCategory())
-                                    .userId(null)
-                                    .content("<p> đã được cập nhật trạng thái.</p>")
-                                    .build();
-                            this.historyLogRepository.saveAndFlush(newHistoryEntity);
+                        if (!title.equals("project")){
+                            if (!title.equals("feature")){
+                                HistoryEntity newHistoryEntity = HistoryEntity
+                                        .builder()
+                                        .id(null)
+                                        .ObjectId(historyEntity.getObjectId())
+                                        .category(historyEntity.getCategory())
+                                        .userId(null)
+                                        .content("<p> đã được cập nhật trạng thái.</p>")
+                                        .build();
+                                this.historyLogRepository.saveAndFlush(newHistoryEntity);
+                            }
                         }
                     }
                 }
