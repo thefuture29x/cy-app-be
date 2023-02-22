@@ -38,7 +38,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
             "JOIN `tbl_features` fea ON pro.id = fea.project_id\n" +
             "JOIN `tbl_tasks` tas ON fea.id = tas.feature_id\n" +
             "JOIN `tbl_sub_tasks` sub ON tas.id = sub.task_id\n" +
-            "WHERE pro.id = ?1",nativeQuery = true)
+            "WHERE pro.id = ?1 AND sub.is_deleted= 0 AND tas.is_deleted = 0 AND fea.is_deleted = 0 AND pro.is_deleted = 0",nativeQuery = true)
     Page<SubTaskEntity> findAllByProjectId(Long id,Pageable pageable);
 
     @Modifying
@@ -81,4 +81,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
 
     @Query(value = "SELECT `status` FROM tbl_sub_tasks WHERE task_id = ?1 AND is_deleted = FALSE GROUP BY `status` ", nativeQuery = true)
     List<String> getAllStatusSubTaskByTaskId(Long idTask);
+    @Query(value = "SELECT is_deleted FROM `tbl_sub_tasks` WHERE id = ?1", nativeQuery = true)
+    boolean checkIsDeleted(Long id);
+
 }

@@ -4,6 +4,7 @@ import cy.configs.FrontendConfiguration;
 import cy.configs.excel.PayRollExcelExporter;
 import cy.configs.jwt.JwtLoginResponse;
 import cy.configs.jwt.JwtUserLoginModel;
+import cy.dtos.CustomHandleException;
 import cy.dtos.attendance.PayRollDto;
 import cy.dtos.attendance.RequestAttendDto;
 import cy.dtos.ResponseDto;
@@ -115,6 +116,8 @@ public class TestController {
     ISubTaskService iSubTaskService;
     @Autowired
     IFeatureRepository iFeatureRepository;
+    @Autowired
+    IProjectRepository iProjectRepository;
 
     @PostMapping ("change-status")
     public void testUpLoadFile(Long idParent)  {
@@ -132,6 +135,11 @@ public class TestController {
             iFeatureRepository.updateStatusFeature(idParent,Const.status.IN_PROGRESS.name());
             return;
         }
+    }
+    @PostMapping ("check-deleted")
+    public void testCheckDeleted(Long idParent)  {
+        if(iProjectRepository.checkIsDeleted(idParent)) throw new CustomHandleException(491);
+        System.out.println(iProjectRepository.checkIsDeleted(idParent));
     }
 
 

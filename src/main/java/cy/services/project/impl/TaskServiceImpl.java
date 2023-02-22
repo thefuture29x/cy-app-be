@@ -28,6 +28,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,6 +93,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto findById(Long id) {
+        if (iTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         TaskEntity taskEntity = this.getById(id);
 
         // set Tag
@@ -159,6 +161,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskEntity getById(Long id) {
+        if (iTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         return this.repository.findById(id).orElseThrow(() -> new CustomHandleException(251));
     }
 
@@ -286,6 +289,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto update(TaskModel model) {
+        if (iTaskRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
         List<FileEntity> fileOriginalExist = fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
         if (model.getFileUrlsKeeping() != null) {
             fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.TASK.name(), model.getId());
@@ -319,14 +323,6 @@ public class TaskServiceImpl implements ITaskService {
 
         // feature save
         taskOld.setFeature(this.featureRepository.findById(model.getFeatureId()).orElseThrow(() -> new RuntimeException("Feature not exist !!!")));
-
-        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-        Date currentDate = new Date();
-        if (model.getStartDate().before(currentDate)) {
-            taskOld.setStatus(Const.status.IN_PROGRESS.name());
-        } else {
-            taskOld.setStatus(Const.status.TO_DO.name());
-        }
 
         TaskEntity taskupdate = this.repository.saveAndFlush(taskOld);
 
@@ -497,7 +493,8 @@ public class TaskServiceImpl implements ITaskService {
         TaskEntity oldTask = this.getById(id);
         oldTask.setIsDeleted(true);
         this.repository.saveAndFlush(oldTask);
-        iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK);
+        changeStatusFeature(id);
+        iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK,oldTask.getName());
         return true;
     }
 
@@ -551,12 +548,12 @@ public class TaskServiceImpl implements ITaskService {
             qCount.setParameter("featureId", taskModel.getFeatureId());
         }
         if (taskModel.getStartDate() != null) {
-            q.setParameter("startDate", taskModel.getStartDate());
-            qCount.setParameter("startDate", taskModel.getStartDate());
+            q.setParameter("startDate", taskModel.getStartDate() +"00:00:00");
+            qCount.setParameter("startDate", taskModel.getStartDate() +"00:00:00");
         }
         if (taskModel.getEndDate() != null) {
-            q.setParameter("endDate", taskModel.getEndDate());
-            qCount.setParameter("endDate", taskModel.getEndDate());
+            q.setParameter("endDate", taskModel.getEndDate() +"23:59:59");
+            qCount.setParameter("endDate", taskModel.getEndDate() +"23:59:59");
         }
         if (taskModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + taskModel.getTextSearch() + "%");
@@ -633,6 +630,13 @@ public class TaskServiceImpl implements ITaskService {
         List<SubTaskEntity> getAllSubTask = subTaskRepository.findByTaskId(taskId);
         if (getAllSubTask.size() > 0) {
             throw new CustomHandleException(252);
+        }
+        // check only reviewer can change status to done
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.DONE.name())){
+            Set<Long> idReviewer = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId,Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(idReviewer::contains)) {
+                throw new CustomHandleException(254);
+            }
         }
 
         taskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());

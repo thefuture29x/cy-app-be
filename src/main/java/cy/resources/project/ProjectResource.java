@@ -46,8 +46,12 @@ public class ProjectResource {
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/findBypage")
-    public ResponseDto findByPage(@RequestParam(name = "pageIndex") Integer pageIndex, @RequestParam(name = "pageSize") Integer pageSize, @RequestBody ProjectModel projectModel) {
-        return ResponseDto.of(iProjectService.findByPage(pageIndex,pageSize,projectModel));
+    public ResponseDto findByPage(@RequestParam(name = "pageIndex") Integer pageIndex,
+                                  @RequestParam(name = "pageSize") Integer pageSize,
+                                  @RequestParam(name = "sortBy") String sortBy,
+                                  @RequestParam(name = "sortType") String sortType,
+                                  @RequestBody ProjectModel projectModel) {
+        return ResponseDto.of(iProjectService.findByPage(pageIndex,pageSize,sortBy,sortType,projectModel));
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})

@@ -15,4 +15,5 @@ public interface ICommentRepository extends JpaRepository<CommentEntity, Long>, 
     void deleteComment(Long id);
 
     void deleteAllByIdParent_Id(Long id);
+
 }

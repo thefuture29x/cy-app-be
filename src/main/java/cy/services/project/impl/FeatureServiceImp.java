@@ -22,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,6 +80,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto findById(Long id) {
+        if (featureRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         FeatureEntity featureEntity = this.featureRepository.findById(id).orElseThrow(() -> new CustomHandleException(23));
         featureEntity.setTagList(tagRelationService.findTagByCategoryAndObject(Const.tableName.FEATURE.name(), id).stream().map(x -> x.getIdTag()).collect(Collectors.toList()).stream().map(y -> this.tagService.getById(y)).collect(Collectors.toList()));
         featureEntity.setDevTeam(userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.FEATURE.name(), id, Const.type.TYPE_DEV.name()).stream().map(y -> this.userRepository.findById(y.getIdUser()).orElseThrow(() -> new CustomHandleException(232))).collect(Collectors.toList()));
@@ -140,7 +138,6 @@ public class FeatureServiceImp implements IFeatureService {
                 startDate(model.getStartDate())
                 .endDate(model.getEndDate())
                 .createBy(SecurityUtils.getCurrentUser().getUser())
-                .status(Const.status.TO_DO.name())
                 .description(model.getDescription())
                 .name(model.getName())
                 .project(projectEntity)
@@ -150,6 +147,15 @@ public class FeatureServiceImp implements IFeatureService {
                 .isDefault(model.getIsDefault())
 //                .priority(model.getPriority().name())
                 .build();
+
+        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
+        Date currentDate = new Date();
+        if (model.getStartDate().before(currentDate)) {
+            entity.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            entity.setStatus(Const.status.TO_DO.name());
+        }
+
         this.featureRepository.saveAndFlush(entity);
 
         //Add Tags
@@ -212,6 +218,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto update(FeatureModel model) {
+        if (featureRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
         List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
         //Clear old files
         if (model.getFileUrlsKeeping() != null){
@@ -251,6 +258,15 @@ public class FeatureServiceImp implements IFeatureService {
         oldFeature.setStartDate(model.getStartDate());
         oldFeature.setEndDate(model.getEndDate());
         oldFeature.setIsDefault(model.getIsDefault());
+
+        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
+        Date currentDate = new Date();
+        if (model.getStartDate().before(currentDate)) {
+            oldFeature.setStatus(Const.status.IN_PROGRESS.name());
+        } else {
+            oldFeature.setStatus(Const.status.TO_DO.name());
+        }
+
 //        oldFeature.setPriority(model.getPriority().name());
         //Clear old tags
         clearTagList(oldFeature);
@@ -365,7 +381,7 @@ public class FeatureServiceImp implements IFeatureService {
         FeatureEntity oldFeature = this.getById(id);
         oldFeature.setIsDeleted(true);
         this.featureRepository.saveAndFlush(oldFeature);
-        iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE);
+        iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE,oldFeature.getName());
         return true;
     }
 

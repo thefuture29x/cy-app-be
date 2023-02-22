@@ -45,6 +45,4 @@ public class ProjectModel {
     private String monthFilter;
     private String yearFilter;
 
-
-
 }
