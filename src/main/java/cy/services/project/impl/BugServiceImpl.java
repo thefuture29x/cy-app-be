@@ -348,12 +348,12 @@ public class BugServiceImpl implements IRequestBugService {
 
 
                 List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
-                System.out.println(tagRelationEntities);
+//                System.out.println(tagRelationEntities);
                 //delete tag in tag_relations table
                 if (tagRelationEntities != null && tagRelationEntities.size() > 0) {
                     for (TagRelationEntity tagRelation : tagRelationEntities) {
                         iTagRelationRepository.deleteById(tagRelation.getId());
-                         iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
+//                         iTagRelationRepository.deleteAllInBatch(tagRelationEntities);
                     }
                 }
                 if (model.getTags() != null && model.getTags().size() > 0) {
