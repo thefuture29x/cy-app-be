@@ -485,10 +485,12 @@ public class ProjectServiceImpl implements IProjectService {
             countSQL += " AND up.type is not null";
         }
 
-        if (projectModel.getOtherProject()) {
-            sql += " and (up.idUser <> :currentUserId) ";
-            countSQL += " and (up.idUser <> :currentUserId) ";
-        }
+//        if (projectModel.getOtherProject()) {
+//            sql += " and (up.idUser <> :currentUserId) ";
+//            countSQL += " and (up.idUser <> :currentUserId) ";
+//        }
+        sql += " and (up.idUser = :currentUserId) ";
+        countSQL += " and (up.idUser = :currentUserId) ";
 
         if (projectModel.getStatus() != null) {
             sql += " AND p.status = :status ";
@@ -532,10 +534,13 @@ public class ProjectServiceImpl implements IProjectService {
         Query q = manager.createQuery(sql, ProjectDto.class);
         Query qCount = manager.createQuery(countSQL);
 
-        if (projectModel.getOtherProject()) {
-            q.setParameter("currentUserId", userIdd);
-            qCount.setParameter("currentUserId", userIdd);
-        }
+//        if (projectModel.getOtherProject()) {
+//            q.setParameter("currentUserId", userIdd);
+//            qCount.setParameter("currentUserId", userIdd);
+//        }
+        q.setParameter("currentUserId", userIdd);
+        qCount.setParameter("currentUserId", userIdd);
+
         if (projectModel.getStatus() != null) {
             q.setParameter("status", projectModel.getStatus());
             qCount.setParameter("status", projectModel.getStatus());
