@@ -569,9 +569,6 @@ public class ProjectServiceImpl implements IProjectService {
         Long numberResult = (Long) qCount.getSingleResult();
         Page<ProjectDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
 
-//        UserDto userDtoCheck = UserDto.toDto(SecurityUtils.getCurrentUser().getUser());
-
-
         result.stream().forEach(data -> {
             List<Long> listIdViewer = userRepository.getAllIdViewerByCategoryAndObjectId(Const.tableName.PROJECT.name(), data.getId());
             List<Long> listViewerCheck = listIdViewer != null ? listIdViewer : new ArrayList<>();
@@ -581,8 +578,6 @@ public class ProjectServiceImpl implements IProjectService {
                 data.setEditable(true);
             }
         });
-
-
         return result;
     }
 }
