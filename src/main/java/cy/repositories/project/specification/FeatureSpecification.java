@@ -59,23 +59,7 @@ public class FeatureSpecification {
         });
     }
     public static Specification<FeatureEntity> byFeatureDate(String minDate, String maxDate){
-        return ((root, query, criteriaBuilder) -> {
-//            if (maxDate != null) {
-//                Instant instant = maxDate.toInstant();
-//                instant = instant.plus(1, ChronoUnit.DAYS);
-//                Instant maxInstant = instant;
-//                Timestamp maxTimestamp = new Timestamp(instant.toEpochMilli());
-                if (minDate != null && maxDate !=null){
-                    return criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000")),criteriaBuilder.lessThanOrEqualTo(root.get(FeatureEntity_.END_DATE), convertDate(maxDate+".000")));
-                }
-                else if (minDate != null ) {
-                    return criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000"));
-                }
-                else if(maxDate !=null){
-                    return criteriaBuilder.lessThanOrEqualTo(root.get(FeatureEntity_.END_DATE), convertDate(maxDate+".000"));
-                }else
-                    return null;
-        });
+        return ((root, query, criteriaBuilder) -> criteriaBuilder.and(criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000")),criteriaBuilder.lessThanOrEqualTo(root.get(FeatureEntity_.END_DATE), convertDate(maxDate+".000"))));
     }
 
     public static Specification<FeatureEntity> byFeatureStartAndEndDate(String minDate, String maxDate){
@@ -108,7 +92,7 @@ public class FeatureSpecification {
 //            specificationList.add(byDescription(filterModel.getSearchField()));
 //            specificationList.add(byCreatorName(filterModel.getSearchField()));
         }
-        if(filterModel.getMaxDate()!= null || filterModel.getMinDate()!=null){
+        if(filterModel.getMaxDate()!= null && filterModel.getMinDate()!=null){
             specificationList.add(byFeatureDate(filterModel.getMinDate(),filterModel.getMaxDate()));
         }else {
             specificationList.add(byFeatureStartAndEndDate(filterModel.getMinDate(),filterModel.getMaxDate()));
