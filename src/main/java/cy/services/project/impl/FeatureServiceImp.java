@@ -148,14 +148,7 @@ public class FeatureServiceImp implements IFeatureService {
 //                .priority(model.getPriority().name())
                 .build();
 
-        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-        Date currentDate = new Date();
-        if (model.getStartDate().before(currentDate)) {
-            entity.setStatus(Const.status.IN_PROGRESS.name());
-        } else {
-            entity.setStatus(Const.status.TO_DO.name());
-        }
-
+        entity.setStatus(Const.status.TO_DO.name());
         this.featureRepository.saveAndFlush(entity);
 
         //Add Tags
@@ -259,14 +252,7 @@ public class FeatureServiceImp implements IFeatureService {
         oldFeature.setEndDate(model.getEndDate());
         oldFeature.setIsDefault(model.getIsDefault());
 
-        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-        Date currentDate = new Date();
-        if (model.getStartDate().before(currentDate)) {
-            oldFeature.setStatus(Const.status.IN_PROGRESS.name());
-        } else {
-            oldFeature.setStatus(Const.status.TO_DO.name());
-        }
-
+        oldFeature.setStatus(Const.status.TO_DO.name());
 //        oldFeature.setPriority(model.getPriority().name());
         //Clear old tags
         clearTagList(oldFeature);
