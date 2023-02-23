@@ -32,6 +32,7 @@ public class SubTaskDto {
     private List<UserProjectDto> assignedUser;
     private List<FileDto> attachFileUrls;
     private List<TagDto> tagList;
+    private List<UserDto> viewerList;
 
     // Bug list
     private List<BugDto> bugList;

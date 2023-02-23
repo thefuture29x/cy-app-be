@@ -610,7 +610,12 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public Page<TaskDto> findAllByProjectId(Long id, Pageable pageable) {
-        return this.repository.findAllByProjectId(id, pageable).map(task -> TaskDto.toDto(task));
+        Page<TaskDto> listTask = repository.findAllByProjectId(id, pageable).map(task -> TaskDto.toDto(task));
+        listTask.stream().forEach(data -> {
+            List<UserDto> listUserViewer = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_VIEWER.name(), data.getId()).stream().map(e -> UserDto.toDto(e)).collect(Collectors.toList());
+            data.setViewerList(listUserViewer);
+        });
+        return listTask;
     }
 
     public boolean updateStatusTask(Long taskId, SubTaskUpdateModel subTaskUpdateModel) {

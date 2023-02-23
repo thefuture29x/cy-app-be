@@ -78,6 +78,18 @@ public class FeatureSpecification {
         });
     }
 
+    public static Specification<FeatureEntity> byFeatureStartAndEndDate(String minDate, String maxDate){
+        return ((root, query, criteriaBuilder) -> {
+            if (minDate != null ) {
+                return criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.START_DATE), convertDate(minDate+".000"));
+            }
+            else if(maxDate !=null){
+                return criteriaBuilder.greaterThanOrEqualTo(root.get(FeatureEntity_.END_DATE), convertDate(maxDate+".000"));
+            }else
+                return null;
+        });
+    }
+
     public static Specification<FeatureEntity> filterAndSearch(FeatureFilterModel filterModel) {
         List<Specification<FeatureEntity>> specificationList = new ArrayList<>();
         Specification<FeatureEntity> finalSpecs = null;
@@ -98,6 +110,8 @@ public class FeatureSpecification {
         }
         if(filterModel.getMaxDate()!= null || filterModel.getMinDate()!=null){
             specificationList.add(byFeatureDate(filterModel.getMinDate(),filterModel.getMaxDate()));
+        }else {
+            specificationList.add(byFeatureStartAndEndDate(filterModel.getMinDate(),filterModel.getMaxDate()));
         }
         for (Specification<FeatureEntity> spec : specificationList) {
             if(finalSpecs == null) {
