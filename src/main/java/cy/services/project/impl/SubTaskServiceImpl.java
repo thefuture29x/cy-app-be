@@ -683,8 +683,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
     public Page<SubTaskDto> findAllByProjectId(Long id, Pageable pageable) {
         Page<SubTaskDto> listSubTaskDto = subTaskRepository.findAllByProjectId(id, pageable).map(data -> SubTaskDto.toDto(data));
         listSubTaskDto.stream().forEach(data -> {
-            List<UserDto> listUserViewer = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_VIEWER.name(), data.getId()).stream().map(e -> UserDto.toDto(e)).collect(Collectors.toList());
-            data.setViewerList(listUserViewer);
+            List<UserDto> listUserViewer = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.SUBTASK.name(), Const.type.TYPE_REVIEWER.name(), data.getId()).stream().map(e -> UserDto.toDto(e)).collect(Collectors.toList());
+            data.setReviewerUserList(listUserViewer);
         });
         return listSubTaskDto;
     }
