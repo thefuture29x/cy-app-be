@@ -589,6 +589,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     public List<TagDto> saveTagList(String tagList, Long subTaskId) {
         List<TagDto> tagDtoList = new ArrayList<>();
+        if(tagList == null || tagList.length() == 0) {
+            return tagDtoList;
+        }
         List<String> tagListSplit = Arrays.stream(tagList.split(",")).collect(Collectors.toList());
         Long tagId = null;
         for (String tag : tagListSplit) {
