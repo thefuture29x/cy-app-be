@@ -523,7 +523,7 @@ public class ProjectServiceImpl implements IProjectService {
                     break;
             }
         }else {
-            sql += " order by p.updatedDate";
+            sql += " order by up.createdDate";
         }
         if (sortType != ""){
             sql += " " + sortType;
