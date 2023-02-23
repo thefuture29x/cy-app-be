@@ -302,60 +302,37 @@ public class ProjectServiceImpl implements IProjectService {
             projectEntity.setStatus(Const.status.TO_DO.name());
         }
         projectEntity.setUpdatedDate(currentDate);
-        List<UserProjectEntity> userProjectEntities = iUserProjectRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
-        if (userProjectEntities != null && userProjectEntities.size() > 0) {
-            iUserProjectRepository.deleteAllInBatch(userProjectEntities);
-        }
+
+        // get list id dev old and new of project
+        List<Long> listIdUserDevOld = new ArrayList<>();
+        List<Long> listIdUserDevNew = new ArrayList<>();
 
         if (!projectModel.getUserDev().stream().anyMatch(userId::equals)) {
-            UserProjectEntity userProjectEntity = new UserProjectEntity();
-            userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-            userProjectEntity.setObjectId(projectEntity.getId());
-            userProjectEntity.setType(Const.type.TYPE_DEV.name());
-            userProjectEntity.setIdUser(userId);
-            iUserProjectRepository.save(userProjectEntity);
+            listIdUserDevNew.add(userId);
         }
+        listUserDev.stream().forEach(data -> listIdUserDevOld.add(data.getUserId()));
+        projectModel.getUserDev().stream().forEach(data -> listIdUserDevNew.add(data));
 
+        deleteOldUserAndSaveNewUser(listIdUserDevOld,listIdUserDevNew,Const.type.TYPE_DEV, projectEntity.getId());
 
-        if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
-            for (Long userDev : projectModel.getUserDev()) {
-                UserEntity user = userRepository.findById(userDev).orElse(null);
-                if (user != null) {
-                    UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                    userProjectEntity.setObjectId(projectEntity.getId());
-                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                    userProjectEntity.setIdUser(user.getUserId());
-                    iUserProjectRepository.save(userProjectEntity);
-                }
-            }
-        }
-        if (projectModel.getUserFollow() != null && projectModel.getUserFollow().size() > 0) {
-            for (Long userFollow : projectModel.getUserFollow()) {
-                UserEntity user = userRepository.findById(userFollow).orElse(null);
-                if (user != null) {
-                    UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                    userProjectEntity.setObjectId(projectEntity.getId());
-                    userProjectEntity.setType(Const.type.TYPE_FOLLOWER.name());
-                    userProjectEntity.setIdUser(user.getUserId());
-                    iUserProjectRepository.save(userProjectEntity);
-                }
-            }
-        }
-        if (projectModel.getUserViewer() != null && projectModel.getUserViewer().size() > 0) {
-            for (Long userFollow : projectModel.getUserViewer()) {
-                UserEntity user = userRepository.findById(userFollow).orElse(null);
-                if (user != null) {
-                    UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                    userProjectEntity.setObjectId(projectEntity.getId());
-                    userProjectEntity.setType(Const.type.TYPE_VIEWER.name());
-                    userProjectEntity.setIdUser(user.getUserId());
-                    iUserProjectRepository.save(userProjectEntity);
-                }
-            }
-        }
+        // get list id follower old and new of project
+        List<Long> listIdUserFollowOld = new ArrayList<>();
+        List<Long> listIdUserFollowNew = new ArrayList<>();
+
+        listUserFollow.stream().forEach(data -> listIdUserFollowOld.add(data.getUserId()));
+        projectModel.getUserFollow().stream().forEach(data -> listIdUserFollowNew.add(data));
+
+        deleteOldUserAndSaveNewUser(listIdUserFollowOld,listIdUserFollowNew,Const.type.TYPE_FOLLOWER, projectEntity.getId());
+
+        // get list id follower old and new of project
+        List<Long> listIdUserViewerOld = new ArrayList<>();
+        List<Long> listIdUserViewerNew = new ArrayList<>();
+
+        listUserView.stream().forEach(data -> listIdUserViewerOld.add(data.getUserId()));
+        projectModel.getUserViewer().stream().forEach(data -> listIdUserViewerNew.add(data));
+
+        deleteOldUserAndSaveNewUser(listIdUserViewerOld,listIdUserViewerNew,Const.type.TYPE_VIEWER, projectEntity.getId());
+
 
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
         iTagRelationRepository.deleteAll(tagRelationEntities);
@@ -413,7 +390,7 @@ public class ProjectServiceImpl implements IProjectService {
                 }
             }
         }
-        iProjectRepository.saveAndFlush(projectEntity);
+        iProjectRepository.save(projectEntity);
         List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_DEV.name(), projectEntity.getId());
         List<UserEntity> userFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_FOLLOWER.name(), projectEntity.getId());
         List<UserEntity> userView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.PROJECT.name(), Const.type.TYPE_VIEWER.name(), projectEntity.getId());
@@ -586,4 +563,36 @@ public class ProjectServiceImpl implements IProjectService {
         });
         return result;
     }
+
+    public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId){
+        // find user in listIdOld but not in listIdNew
+        List<Long> diff1 = new ArrayList<>(listIdOld);
+        diff1.removeAll(listIdNew);
+
+        // find user in listIdNew but not in listIdOld
+        List<Long> diff2 = new ArrayList<>(listIdNew);
+        diff2.removeAll(listIdOld);
+
+        // delete old user not in listIdNew
+        if (diff1.size() > 0){
+            for (Long idUser : diff1) {
+                iUserProjectRepository.deleteByIdUserAndTypeAndObjectId(idUser,userType.name(),projectId);
+            }
+        }
+        // save new user in listIdNew
+        if (diff2.size() > 0){
+            for (Long idUser : diff2) {
+                UserEntity user = userRepository.findById(idUser).orElse(null);
+                if (user != null) {
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectId);
+                    userProjectEntity.setType(userType.name());
+                    userProjectEntity.setIdUser(idUser);
+                    iUserProjectRepository.save(userProjectEntity);
+                }
+            }
+        }
+    }
+
 }

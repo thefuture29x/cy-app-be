@@ -5,7 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.transaction.annotation.Transactional;
+
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository
@@ -27,4 +28,9 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
 
     @Query(value = "SELECT up FROM UserProjectEntity up WHERE up.category = ?1 AND up.idUser = ?2 AND up.objectId = ?3 AND up.type = ?4")
     List<UserProjectEntity> getByAllAttrs(String category, Long userId, Long objectId, String type);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM `tbl_user_projects` WHERE user_id = ?1 AND category = 'PROJECT' AND type = ?2 AND object_id = ?3", nativeQuery = true)
+    void deleteByIdUserAndTypeAndObjectId(Long idUser,String type,Long objectId);
 }
