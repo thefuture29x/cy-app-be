@@ -600,10 +600,14 @@ public class TaskServiceImpl implements ITaskService {
         if (taskSearchModel.getName() != null) {
             q.setParameter("name", "%" + taskSearchModel.getName() + "%");
         }
+
         List<TaskDto> queryResult = q.getResultList();
         queryResult.stream().forEach(data -> {
             data.setCountSubtask(iTaskRepository.countSubtask(data.getId()));
             data.setCountSubtaskDone(iTaskRepository.countSubtaskDone(data.getId()));
+            List<UserDto> listUserDev= userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), data.getId()).stream().map(e -> UserDto.toDto(e)).collect(Collectors.toList());
+
+            data.setDevList(listUserDev);
         });
         return queryResult;
     }
