@@ -104,13 +104,7 @@ public class ProjectServiceImpl implements IProjectService {
         projectEntity.setDescription(projectModel.getDescription());
         projectEntity.setName(projectModel.getName());
         projectEntity.setIsDefault(projectModel.getIsDefault());
-
-        // set status if startDate before currentDate status = progress, or currentDate before startDate => status = to-do
-        if (projectModel.getStartDate().before(currentDate)) {
-            projectEntity.setStatus(Const.status.IN_PROGRESS.name());
-        } else {
-            projectEntity.setStatus(Const.status.TO_DO.name());
-        }
+        projectEntity.setStatus(Const.status.TO_DO.name());
         projectEntity.setUpdatedDate(currentDate);
         projectEntity = iProjectRepository.save(projectEntity);
 
@@ -296,11 +290,7 @@ public class ProjectServiceImpl implements IProjectService {
         projectEntity.setName(projectModel.getName());
         projectEntity.setIsDefault(projectModel.getIsDefault());
 
-        if (startDateCheck.before(currentDateCheck)) {
-            projectEntity.setStatus(Const.status.IN_PROGRESS.name());
-        } else {
-            projectEntity.setStatus(Const.status.TO_DO.name());
-        }
+        projectEntity.setStatus(Const.status.TO_DO.name());
         projectEntity.setUpdatedDate(currentDate);
 
         // get list id dev old and new of project
