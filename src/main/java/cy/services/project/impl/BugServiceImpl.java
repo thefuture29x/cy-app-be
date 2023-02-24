@@ -369,11 +369,14 @@ public class BugServiceImpl implements IRequestBugService {
                             tagRelationEntity.setObjectId(bugEntity.getId());
                             iTagRelationRepository.save(tagRelationEntity);
                         } else if (tagEntity != null) {
-                            TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                            tagRelationEntity.setCategory(Const.tableName.BUG.name());
-                            tagRelationEntity.setIdTag(tagEntity.getId());
-                            tagRelationEntity.setObjectId(bugEntity.getId());
-                            iTagRelationRepository.save(tagRelationEntity);
+                            TagRelationEntity tagRelationEntity = iTagRelationRepository.checkIsEmpty(bugEntity.getId(),tagEntity.getId(),Const.tableName.BUG.name());
+                            if (tagRelationEntity == null){
+                                tagRelationEntity = new TagRelationEntity();
+                                tagRelationEntity.setCategory(Const.tableName.BUG.name());
+                                tagRelationEntity.setIdTag(tagEntity.getId());
+                                tagRelationEntity.setObjectId(bugEntity.getId());
+                                iTagRelationRepository.save(tagRelationEntity);
+                            }
                         }
                     }
                 }
