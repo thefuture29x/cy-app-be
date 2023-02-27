@@ -542,12 +542,12 @@ public class ProjectServiceImpl implements IProjectService {
         Page<ProjectDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
 
         result.stream().forEach(data -> {
-            List<Long> listIdDevAndFollower = userRepository.getAllIdDevAndFollowerByTypeAndObjectId(Const.tableName.PROJECT.name(), data.getId());
-            List<Long> listIdDevAndFollowerCheck = listIdDevAndFollower != null ? listIdDevAndFollower : new ArrayList<>();
+            List<Long> listIdDev = userRepository.getAllIdDevByTypeAndObjectId(Const.tableName.PROJECT.name(), data.getId());
+            List<Long> listIdDevCheck = listIdDev != null ? listIdDev : new ArrayList<>();
 
             data.setEditable(false);
 
-            if (listIdDevAndFollowerCheck.stream().anyMatch(userIdd::equals)){
+            if (listIdDevCheck.stream().anyMatch(userIdd::equals)){
                 data.setEditable(true);
             }
         });

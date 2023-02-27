@@ -2,10 +2,7 @@ package cy.repositories.project.specification;
 
 import cy.entities.UserEntity;
 import cy.entities.UserEntity_;
-import cy.entities.project.FeatureEntity;
-import cy.entities.project.FeatureEntity_;
-import cy.entities.project.ProjectEntity;
-import cy.entities.project.ProjectEntity_;
+import cy.entities.project.*;
 import cy.models.project.FeatureFilterModel;
 import cy.models.project.FeatureModel;
 import cy.utils.Const;
@@ -13,7 +10,11 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.jpa.domain.Specification;
 import org.yaml.snakeyaml.util.EnumUtils;
 
-import javax.persistence.criteria.Join;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.criteria.*;
+import javax.swing.*;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -30,6 +31,18 @@ public class FeatureSpecification {
 
     public static Specification<FeatureEntity> byName(String name) {
         return (root, query, cb) -> cb.like(root.get(FeatureEntity_.NAME), "%" + name + "%");
+    }
+
+    public static Specification<FeatureEntity> byHashTag(String hashTag) {
+        return (root, query, cb) -> {
+            Join<TagRelationEntity, FeatureEntity> table2Table1Join = root.join(TagRelationEntity_.OBJECT_ID, JoinType.INNER);
+            Join<TagRelationEntity, TagEntity> table2Table3Join = root.join(TagRelationEntity_.ID_TAG, JoinType.INNER)
+                    .join(TagEntity_.ID, JoinType.INNER);
+
+            return cb.and(
+                    cb.equal(table2Table3Join.get("condition"), hashTag)
+            );
+        };
     }
 
     public static Specification<FeatureEntity> byProjectId(Long id) {
@@ -88,9 +101,13 @@ public class FeatureSpecification {
             firstSpecs = byStatus(status);
         }
         if (filterModel.getSearchField() != null) {
-            specificationList.add(byName(filterModel.getSearchField()));
+            if (filterModel.getSearchField().charAt(0) == '#'){
+                specificationList.add(byHashTag(filterModel.getSearchField()));
 //            specificationList.add(byDescription(filterModel.getSearchField()));
 //            specificationList.add(byCreatorName(filterModel.getSearchField()));
+            }else {
+                specificationList.add(byName(filterModel.getSearchField()));
+            }
         }
         if(filterModel.getMaxDate()!= null && filterModel.getMinDate()!=null){
             specificationList.add(byFeatureDate(filterModel.getMinDate(),filterModel.getMaxDate()));

@@ -1,14 +1,12 @@
 package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
+import cy.dtos.project.ProjectDto;
 import cy.dtos.project.TagDto;
 import cy.dtos.project.FeatureDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
-import cy.models.project.FeatureModel;
-import cy.models.project.FileModel;
-import cy.models.project.TagModel;
-import cy.models.project.TagRelationModel;
+import cy.models.project.*;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
 import cy.services.project.*;
@@ -16,12 +14,15 @@ import cy.utils.Const;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,8 @@ public class FeatureServiceImp implements IFeatureService {
     IFileRepository iFileRepository;
     @Autowired
     ITagRepository iTagRepository;
+    @Autowired
+    EntityManager manager;
 
 
     @Override
@@ -374,6 +377,70 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public Page<FeatureDto> findAllByProjectId(Long id, Pageable pageable) {
         return this.featureRepository.findAllByProject_Id(id, pageable).map(FeatureDto::toDto);
+    }
+
+    @Override
+    public Page<FeatureDto> findByPage(FeatureModel featureModel, Pageable pageable) {
+        String sql = "SELECT distinct new cy.dtos.project.FeatureDto(p) FROM FeatureEntity p ";
+        String countSQL = "select count(distinct(p)) from FeatureEntity p  ";
+        if (featureModel.getName() != null && featureModel.getName().charAt(0) == '#') {
+            sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+            countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+        }
+
+        if (featureModel.getName() != null) {
+            if (featureModel.getName().charAt(0) == '#') {
+                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+                countSQL += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+            } else {
+                sql += " AND (p.name LIKE :textSearch ) ";
+                countSQL += "AND (p.name LIKE :textSearch ) ";
+            }
+        }
+
+        if (!pageable.getSort().isEmpty()){
+            switch (pageable.getSort().toString()){
+                case "startDate":
+                    sql += " order by p.startDate";
+                    break;
+                case "endDate":
+                    sql += " order by p.endDate";
+                    break;
+            }
+        }else {
+            sql += " order by p.updatedDate";
+        }
+
+        if (!pageable.getSort().ascending().isEmpty()){
+            sql += " asc";
+        }
+        if (!pageable.getSort().descending().isEmpty()){
+            sql += " desc";
+        }
+
+
+        Query q = manager.createQuery(sql, ProjectDto.class);
+        Query qCount = manager.createQuery(countSQL);
+
+
+        if (featureModel.getName() != null) {
+            String textSearch = featureModel.getName();
+            if (featureModel.getName().charAt(0) == '#') {
+                q.setParameter("textSearch", textSearch.substring(1));
+                qCount.setParameter("textSearch", textSearch.substring(1));
+            } else {
+                q.setParameter("textSearch", "%" + textSearch + "%");
+                qCount.setParameter("textSearch", "%" + textSearch + "%");
+            }
+        }
+
+        q.setFirstResult((pageable.getPageNumber()) * pageable.getPageSize());
+        q.setMaxResults(pageable.getPageSize());
+
+        Long numberResult = (Long) qCount.getSingleResult();
+        Page<FeatureDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
+
+        return result;
     }
 
     public boolean updateStatusFeature(Long id, String status) {
