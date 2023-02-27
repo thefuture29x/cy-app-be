@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -380,58 +383,88 @@ public class FeatureServiceImp implements IFeatureService {
     }
 
     @Override
-    public Page<FeatureDto> findByPage(FeatureModel featureModel, Pageable pageable) {
+    public Page<FeatureDto> findByPage(FeatureFilterModel featureFilterModel, Pageable pageable) {
         String sql = "SELECT distinct new cy.dtos.project.FeatureDto(p) FROM FeatureEntity p ";
         String countSQL = "select count(distinct(p)) from FeatureEntity p  ";
-        if (featureModel.getName() != null && featureModel.getName().charAt(0) == '#') {
+        if (featureFilterModel.getSearchField() != null && featureFilterModel.getSearchField().charAt(0) == '#') {
             sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
             countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
         }
 
-        if (featureModel.getName() != null) {
-            if (featureModel.getName().charAt(0) == '#') {
-                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
-                countSQL += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+        sql += " WHERE p.project.id = :projectId and p.isDeleted = false ";
+        countSQL += " WHERE p.project.id = :projectId and p.isDeleted = false ";
+
+        if (featureFilterModel.getSearchField() != null) {
+            if (featureFilterModel.getSearchField().charAt(0) == '#') {
+                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'FEATURE') ";
+                countSQL += " AND (t.name = :textSearch ) AND (tr.category LIKE 'FEATURE') ";
             } else {
                 sql += " AND (p.name LIKE :textSearch ) ";
                 countSQL += "AND (p.name LIKE :textSearch ) ";
             }
         }
 
-        if (!pageable.getSort().isEmpty()){
-            switch (pageable.getSort().toString()){
-                case "startDate":
-                    sql += " order by p.startDate";
-                    break;
-                case "endDate":
-                    sql += " order by p.endDate";
-                    break;
-            }
+        if (featureFilterModel.getStatus() != null) {
+            sql += " AND p.status = :status ";
+            countSQL += " AND p.status = :status ";
+        }
+
+        if (featureFilterModel.getMinDate() != null && featureFilterModel.getMaxDate() != null){
+            sql += " AND p.startDate >= :startDate AND p.endDate <= :endDate ";
+            countSQL += " AND p.startDate >= :startDate AND p.endDate <= :endDate ";
         }else {
-            sql += " order by p.updatedDate";
+            if (featureFilterModel.getMinDate() != null){
+                sql += " AND p.startDate >= :startDate ";
+                countSQL += " AND p.startDate >= :startDate ";
+            }else if (featureFilterModel.getMaxDate() != null){
+                sql += " AND p.endDate >= :endDate ";
+                countSQL += " AND p.endDate >= :endDate ";
+            }
         }
 
-        if (!pageable.getSort().ascending().isEmpty()){
-            sql += " asc";
+        Sort.Order orderUpdatedDate = pageable.getSort().getOrderFor("updatedDate");
+        if (orderUpdatedDate != null) {
+            sql += " order by p.updatedDate " + orderUpdatedDate.getDirection().toString();
         }
-        if (!pageable.getSort().descending().isEmpty()){
-            sql += " desc";
+        Sort.Order orderStartDate = pageable.getSort().getOrderFor("startDate");
+        if (orderStartDate != null) {
+            sql += " order by p.startDate " + orderStartDate.getDirection().toString();
         }
 
+        Sort.Order orderEndDate = pageable.getSort().getOrderFor("endDate");
+        if (orderEndDate != null) {
+            sql += " order by p.endDate " + orderEndDate.getDirection().toString();
+        }
 
-        Query q = manager.createQuery(sql, ProjectDto.class);
+        Query q = manager.createQuery(sql, FeatureDto.class);
         Query qCount = manager.createQuery(countSQL);
 
 
-        if (featureModel.getName() != null) {
-            String textSearch = featureModel.getName();
-            if (featureModel.getName().charAt(0) == '#') {
-                q.setParameter("textSearch", textSearch.substring(1));
-                qCount.setParameter("textSearch", textSearch.substring(1));
+        if (featureFilterModel.getSearchField() != null) {
+            String textSearch = featureFilterModel.getSearchField();
+            if (featureFilterModel.getSearchField().charAt(0) == '#') {
+                q.setParameter("textSearch", textSearch);
+                qCount.setParameter("textSearch", textSearch);
             } else {
                 q.setParameter("textSearch", "%" + textSearch + "%");
                 qCount.setParameter("textSearch", "%" + textSearch + "%");
             }
+        }
+        if (featureFilterModel.getProjectId() != null) {
+            q.setParameter("projectId", featureFilterModel.getProjectId());
+            qCount.setParameter("projectId", featureFilterModel.getProjectId());
+        }
+        if (featureFilterModel.getStatus() != null) {
+            q.setParameter("status", featureFilterModel.getStatus());
+            qCount.setParameter("status", featureFilterModel.getStatus());
+        }
+        if (featureFilterModel.getMinDate() != null) {
+            q.setParameter("startDate",convertDate(featureFilterModel.getMinDate()+".000"));
+            qCount.setParameter("startDate", convertDate(featureFilterModel.getMinDate()+".000"));
+        }
+        if (featureFilterModel.getMaxDate() != null) {
+            q.setParameter("endDate", convertDate(featureFilterModel.getMaxDate()+".000"));
+            qCount.setParameter("endDate", convertDate(featureFilterModel.getMaxDate()+".000"));
         }
 
         q.setFirstResult((pageable.getPageNumber()) * pageable.getPageSize());
@@ -446,5 +479,22 @@ public class FeatureServiceImp implements IFeatureService {
     public boolean updateStatusFeature(Long id, String status) {
         featureRepository.updateStatusFeature(status, id);
         return true;
+    }
+
+    public static java.sql.Timestamp convertDate(String date) {
+        java.sql.Timestamp result = null;
+        SimpleDateFormat localeIta = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        try {
+            Date parsedDate = localeIta.parse(date);
+            result = new Timestamp(parsedDate.getTime());
+//            result.setHours(0);
+//            result.setMinutes(0);
+//            result.setSeconds(0);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 }

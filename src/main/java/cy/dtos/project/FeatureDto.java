@@ -62,18 +62,25 @@ public class FeatureDto {
     public static List<FeatureDto> toListDto(List<FeatureEntity> featureEntities){
         return featureEntities.stream().map(FeatureDto::toDto).collect(Collectors.toList());
     }
-//    public static void main(String[] args) throws IllegalAccessException {
-//        FeatureEntity featureEntity = new FeatureEntity();
-//        featureEntity.setDevTeam(List.of(new UserEntity()));
-//        Field[] feFields = featureEntity.getClass().getDeclaredFields();
-//
-//
-//        Field devTeam = feFields[3];
-//        devTeam.setAccessible(true);
-//        List<UserEntity> userList = (List<UserEntity>) devTeam.get(featureEntity);
-//        devTeam.setAccessible(false);
-//        System.out.println(feFields[3].getGenericType().getTypeName());
-//        System.out.println(643634);
-//    }
+
+    public FeatureDto(FeatureEntity entity){
+        this.setId(entity.getId());
+                this.setCreatedDate(entity.getCreatedDate());
+                this.setUpdatedDate(entity.getUpdatedDate());
+                this.setUid(entity.getCreateBy().getUserId());
+                this.setCreateBy(entity.getCreateBy().getFullName());
+                this.setStartDate(entity.getStartDate());
+                this.setEndDate(entity.getEndDate());
+                this.setStatus(entity.getStatus());
+                this.setIsDeleted(entity.getIsDeleted());
+                this.setName(entity.getName());
+                this.setPriority(entity.getPriority());
+                this.setDescription(entity.getDescription());
+                this.setViewerTeams(entity.getViewTeam()!=null? entity.getViewTeam().stream().map(UserDto::toDto).collect(Collectors.toList()): new ArrayList<>());
+                this.setFollowersTeam(entity.getFollowTeam()!=null? entity.getFollowTeam().stream().map(UserDto::toDto).collect(Collectors.toList()): new ArrayList<>());
+                this.setDevTeam(entity.getDevTeam()!=null? entity.getDevTeam().stream().map(UserDto::toDto).collect(Collectors.toList()) : new ArrayList<>());
+                this.setFiles(entity.getAttachFiles()!=null ? entity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>());
+                this.setTagList(entity.getTagList()!=null? entity.getTagList().stream().map(TagDto::toDto).collect(Collectors.toList()) : new ArrayList<>());
+    }
 
 }

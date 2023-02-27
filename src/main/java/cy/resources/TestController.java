@@ -8,9 +8,11 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.attendance.PayRollDto;
 import cy.dtos.attendance.RequestAttendDto;
 import cy.dtos.ResponseDto;
+import cy.dtos.project.FeatureDto;
 import cy.entities.project.*;
 import cy.models.UserModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
+import cy.models.project.FeatureFilterModel;
 import cy.models.project.TaskSearchModel;
 import cy.repositories.IUserRepository;
 import cy.repositories.project.*;
@@ -18,6 +20,7 @@ import cy.services.attendance.IPayRollService;
 import cy.services.attendance.IRequestAttendService;
 import cy.services.IUserService;
 import cy.services.attendance.impl.RequestAttendServiceImpl;
+import cy.services.project.IFeatureService;
 import cy.services.project.ISubTaskService;
 import cy.services.project.ITaskService;
 import cy.utils.Const;
@@ -118,6 +121,8 @@ public class TestController {
     IFeatureRepository iFeatureRepository;
     @Autowired
     IProjectRepository iProjectRepository;
+    @Autowired
+    IFeatureService iFeatureService;
 
     @PostMapping ("change-status")
     public void testUpLoadFile(Long idParent)  {
@@ -137,9 +142,8 @@ public class TestController {
         }
     }
     @PostMapping ("check-deleted")
-    public void testCheckDeleted(Long idParent)  {
-        if(iProjectRepository.checkIsDeleted(idParent)) throw new CustomHandleException(491);
-        System.out.println(iProjectRepository.checkIsDeleted(idParent));
+    public ResponseDto testCheckDeleted(@RequestBody @Valid FeatureFilterModel model, Pageable pageable)  {
+        return ResponseDto.of(iFeatureService.findByPage(model,pageable));
     }
 
 

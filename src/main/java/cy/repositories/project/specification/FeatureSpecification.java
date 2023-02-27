@@ -35,9 +35,9 @@ public class FeatureSpecification {
 
     public static Specification<FeatureEntity> byHashTag(String hashTag) {
         return (root, query, cb) -> {
-            Join<TagRelationEntity, FeatureEntity> table2Table1Join = root.join(TagRelationEntity_.OBJECT_ID, JoinType.INNER);
-            Join<TagRelationEntity, TagEntity> table2Table3Join = root.join(TagRelationEntity_.ID_TAG, JoinType.INNER)
-                    .join(TagEntity_.ID, JoinType.INNER);
+            Join<TagRelationEntity, FeatureEntity> table2Table1Join = root.join(FeatureEntity_.ID, JoinType.INNER);
+            Join<FeatureEntity, TagRelationEntity> table1Table2Join = table2Table1Join.join(TagRelationEntity_.OBJECT_ID, JoinType.INNER);
+            Join<TagRelationEntity, TagEntity> table2Table3Join = table1Table2Join.join("tag", JoinType.INNER);
 
             return cb.and(
                     cb.equal(table2Table3Join.get("condition"), hashTag)
