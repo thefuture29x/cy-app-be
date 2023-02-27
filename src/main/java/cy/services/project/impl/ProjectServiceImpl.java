@@ -109,12 +109,16 @@ public class ProjectServiceImpl implements IProjectService {
         projectEntity = iProjectRepository.save(projectEntity);
 
         if (!projectModel.getUserDev().stream().anyMatch(userId::equals)) {
-            UserProjectEntity userProjectEntity = new UserProjectEntity();
-            userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-            userProjectEntity.setObjectId(projectEntity.getId());
-            userProjectEntity.setType(Const.type.TYPE_DEV.name());
-            userProjectEntity.setIdUser(userId);
-            iUserProjectRepository.save(userProjectEntity);
+            if (!projectModel.getUserFollow().stream().anyMatch(userId::equals)){
+                if (!projectModel.getUserViewer().stream().anyMatch(userId::equals)){
+                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setObjectId(projectEntity.getId());
+                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                    userProjectEntity.setIdUser(userId);
+                    iUserProjectRepository.save(userProjectEntity);
+                }
+            }
         }
 
         if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
