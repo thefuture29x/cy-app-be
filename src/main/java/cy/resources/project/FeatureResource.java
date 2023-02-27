@@ -53,7 +53,8 @@ public class FeatureResource {
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
     @PostMapping("/search-feature")
     public ResponseDto searchFeature(@RequestBody @Valid FeatureFilterModel model, Pageable pageable) {
-        return ResponseDto.of(this.featureService.filter(pageable, FeatureSpecification.filterAndSearch(model)));
+//        return ResponseDto.of(this.featureService.filter(pageable, FeatureSpecification.filterAndSearch(model)));
+        return ResponseDto.of(this.featureService.findByPage(model,pageable));
     }
 
     @RolesAllowed({RoleEntity.ADMINISTRATOR, RoleEntity.ADMIN, RoleEntity.MANAGER, RoleEntity.EMPLOYEE, RoleEntity.LEADER})
