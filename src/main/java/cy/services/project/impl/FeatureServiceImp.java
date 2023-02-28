@@ -102,9 +102,10 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public FeatureDto add(FeatureModel model) {
+        Long userId = SecurityUtils.getCurrentUserId();
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(() -> new CustomHandleException(45354345));
-        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-        Set<Long> currentProjectIdFollows = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectIdFollows = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         int countError = 0;
         if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
             countError += 1;
@@ -112,10 +113,10 @@ public class FeatureServiceImp implements IFeatureService {
         if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectIdFollows::contains)) {
             countError += 1;
         }
-        if(SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()){
+        if (SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()) {
             countError += 1;
         }
-        if (countError == 3){
+        if (countError == 3) {
             throw new CustomHandleException(11);
         }
         List<TagEntity> tagList = new ArrayList<>();
@@ -127,7 +128,7 @@ public class FeatureServiceImp implements IFeatureService {
         //Add Files
         List<MultipartFile> files = model.getFiles();
         List<FileEntity> fileEntities = new ArrayList<>();
-        if (files != null){
+        if (files != null) {
             for (MultipartFile file : files
             ) {
                 FileModel model1 = new FileModel();
@@ -137,7 +138,6 @@ public class FeatureServiceImp implements IFeatureService {
                 fileEntities.add(this.fileService.addEntity(model1));
             }
         }
-
 
 
         FeatureEntity entity = (FeatureEntity) FeatureEntity.builder().
@@ -159,29 +159,40 @@ public class FeatureServiceImp implements IFeatureService {
 
         //Add Tags
         tagList.stream().forEach(x -> this.tagRelationService.add(TagRelationModel.builder().idTag(x.getId()).category(Const.tableName.FEATURE.name()).objectId(entity.getId()).build()));
+
+        // add user to dev list if user doesn't choose his role
+        if (!model.getUids().stream().anyMatch(userId::equals)) {
+            if (!model.getUserFollow().stream().anyMatch(userId::equals)) {
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.FEATURE.name());
+                userProjectEntity.setObjectId(projectEntity.getId());
+                userProjectEntity.setType(Const.type.TYPE_DEV.name());
+                userProjectEntity.setIdUser(userId);
+                userProjectRepository.save(userProjectEntity);
+            }
+        }
+
         //Add Users
 //        List<Long> curProjectIds = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
-        if (model.getUids() != null){
+        if (model.getUids() != null) {
 //            if (new HashSet<>(curProjectIds).containsAll(model.getUids())) {
-                model.getUids().stream().forEach(x -> {
-                    this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(entity.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
+            model.getUids().stream().forEach(x -> {
+                this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(entity.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
 
-                    // add dev to project
-                    if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),projectEntity.getId(),Const.type.TYPE_DEV.name(),x).size() == 0){
-                        UserProjectEntity userProjectPro = this.addDev(x,Const.type.TYPE_DEV.name(),Const.tableName.PROJECT.name());
-                        userProjectPro.setObjectId(projectEntity.getId());
-                        this.userProjectRepository.saveAndFlush(userProjectPro);
-                    }
-                });
-                entity.setDevTeam(model.getUids().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
-
+                // add dev to project
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name(), x).size() == 0) {
+                    UserProjectEntity userProjectPro = this.addDev(x, Const.type.TYPE_DEV.name(), Const.tableName.PROJECT.name());
+                    userProjectPro.setObjectId(projectEntity.getId());
+                    this.userProjectRepository.saveAndFlush(userProjectPro);
+                }
+            });
+            entity.setDevTeam(model.getUids().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
 
 
 //            } else {
 //                throw new CustomHandleException(2131231);
 //            }
         }
-
 
 
         if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
@@ -210,6 +221,7 @@ public class FeatureServiceImp implements IFeatureService {
 
         return this.userProjectRepository.saveAndFlush(userProject);
     }
+
     @Override
     public List<FeatureDto> add(List<FeatureModel> model) {
         return null;
@@ -220,24 +232,24 @@ public class FeatureServiceImp implements IFeatureService {
         if (featureRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
         List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
         //Clear old files
-        if (model.getFileUrlsKeeping() != null){
+        if (model.getFileUrlsKeeping() != null) {
             iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.FEATURE.name(), model.getId());
-        }else {
+        } else {
             iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
         }
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
         FeatureEntity featureOriginal = (FeatureEntity) Const.copy(oldFeature);
         List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.FEATURE.name(), Const.type.TYPE_DEV.name(), model.getId());
         List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.FEATURE.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());
-        List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.FEATURE.name());
+        List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(model.getId(), Const.tableName.FEATURE.name());
         featureOriginal.setDevTeam(listUserDev);
         featureOriginal.setFollowTeam(listUserFollow);
         featureOriginal.setTagList(listTag);
         featureOriginal.setAttachFiles(fileOriginal);
 
         ProjectEntity projectEntity = oldFeature.getProject();
-        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-        Set<Long> currentProjectIdFollows = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> currentProjectIdFollows = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         int countError = 0;
         if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectUIDs::contains)) {
             countError += 1;
@@ -245,10 +257,10 @@ public class FeatureServiceImp implements IFeatureService {
         if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(currentProjectIdFollows::contains)) {
             countError += 1;
         }
-        if(SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()){
+        if (SecurityUtils.getCurrentUserId() != projectEntity.getCreateBy().getUserId()) {
             countError += 1;
         }
-        if (countError == 3){
+        if (countError == 3) {
             throw new CustomHandleException(11);
         }
 
@@ -276,7 +288,7 @@ public class FeatureServiceImp implements IFeatureService {
 
         //Add new files
         List<MultipartFile> newFileList = model.getFiles();
-        if (newFileList != null){
+        if (newFileList != null) {
             newFileList.stream().forEach(x -> {
                 FileModel fileModel = new FileModel();
                 fileModel.setFile(x);
@@ -291,16 +303,16 @@ public class FeatureServiceImp implements IFeatureService {
 //        List<Long> currentAvailableDev = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
         List<Long> newDevTeam = model.getUids();
         List<UserEntity> newDevTeamEntity = new ArrayList<>();
-        if (model.getUids() != null){
+        if (model.getUids() != null) {
             newDevTeam.stream().forEach(x -> {
                 newDevTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
                 // add dev to feature
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),oldFeature.getId(),Const.type.TYPE_DEV.name(),x).size() == 0){
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(), oldFeature.getId(), Const.type.TYPE_DEV.name(), x).size() == 0) {
                     this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
                 }
                 // add dev to project
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(),projectEntity.getId(),Const.type.TYPE_DEV.name(),x).size() == 0){
-                    UserProjectEntity userProjectPro = this.addDev(x,Const.type.TYPE_DEV.name(),Const.tableName.PROJECT.name());
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name(), x).size() == 0) {
+                    UserProjectEntity userProjectPro = this.addDev(x, Const.type.TYPE_DEV.name(), Const.tableName.PROJECT.name());
                     userProjectPro.setObjectId(projectEntity.getId());
                     this.userProjectRepository.saveAndFlush(userProjectPro);
                 }
@@ -313,7 +325,7 @@ public class FeatureServiceImp implements IFeatureService {
         if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
             newFollowTeam.stream().forEach(x -> {
                 newFollowTeamEntity.add(this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2)));
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(),oldFeature.getId(),Const.type.TYPE_FOLLOWER.name(),x).size() == 0){
+                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.FEATURE.name(), oldFeature.getId(), Const.type.TYPE_FOLLOWER.name(), x).size() == 0) {
                     this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(oldFeature.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_FOLLOWER.name()).build());
                 }
             });
@@ -373,7 +385,7 @@ public class FeatureServiceImp implements IFeatureService {
         FeatureEntity oldFeature = this.getById(id);
         oldFeature.setIsDeleted(true);
         this.featureRepository.saveAndFlush(oldFeature);
-        iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE,oldFeature.getName());
+        iHistoryLogService.logDelete(id, oldFeature, Const.tableName.FEATURE, oldFeature.getName());
         return true;
     }
 
@@ -384,6 +396,7 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public Page<FeatureDto> findByPage(FeatureFilterModel featureFilterModel, Pageable pageable) {
+        Long userIdd = SecurityUtils.getCurrentUserId();
         String sql = "SELECT distinct new cy.dtos.project.FeatureDto(p) FROM FeatureEntity p ";
         String countSQL = "select count(distinct(p)) from FeatureEntity p  ";
         if (featureFilterModel.getSearchField() != null && featureFilterModel.getSearchField().charAt(0) == '#') {
@@ -409,14 +422,14 @@ public class FeatureServiceImp implements IFeatureService {
             countSQL += " AND p.status = :status ";
         }
 
-        if (featureFilterModel.getMinDate() != null && featureFilterModel.getMaxDate() != null){
+        if (featureFilterModel.getMinDate() != null && featureFilterModel.getMaxDate() != null) {
             sql += " AND p.startDate >= :startDate AND p.endDate <= :endDate ";
             countSQL += " AND p.startDate >= :startDate AND p.endDate <= :endDate ";
-        }else {
-            if (featureFilterModel.getMinDate() != null){
+        } else {
+            if (featureFilterModel.getMinDate() != null) {
                 sql += " AND p.startDate >= :startDate ";
                 countSQL += " AND p.startDate >= :startDate ";
-            }else if (featureFilterModel.getMaxDate() != null){
+            } else if (featureFilterModel.getMaxDate() != null) {
                 sql += " AND p.endDate >= :endDate ";
                 countSQL += " AND p.endDate >= :endDate ";
             }
@@ -459,12 +472,12 @@ public class FeatureServiceImp implements IFeatureService {
             qCount.setParameter("status", featureFilterModel.getStatus());
         }
         if (featureFilterModel.getMinDate() != null) {
-            q.setParameter("startDate",convertDate(featureFilterModel.getMinDate()+".000"));
-            qCount.setParameter("startDate", convertDate(featureFilterModel.getMinDate()+".000"));
+            q.setParameter("startDate", convertDate(featureFilterModel.getMinDate() + ".000"));
+            qCount.setParameter("startDate", convertDate(featureFilterModel.getMinDate() + ".000"));
         }
         if (featureFilterModel.getMaxDate() != null) {
-            q.setParameter("endDate", convertDate(featureFilterModel.getMaxDate()+".000"));
-            qCount.setParameter("endDate", convertDate(featureFilterModel.getMaxDate()+".000"));
+            q.setParameter("endDate", convertDate(featureFilterModel.getMaxDate() + ".000"));
+            qCount.setParameter("endDate", convertDate(featureFilterModel.getMaxDate() + ".000"));
         }
 
         q.setFirstResult((pageable.getPageNumber()) * pageable.getPageSize());
@@ -472,6 +485,17 @@ public class FeatureServiceImp implements IFeatureService {
 
         Long numberResult = (Long) qCount.getSingleResult();
         Page<FeatureDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
+
+        result.stream().forEach(data -> {
+            List<Long> listIdDev = userRepository.getAllIdDevByTypeAndObjectId(Const.tableName.FEATURE.name(), data.getId());
+            List<Long> listIdDevCheck = listIdDev != null ? listIdDev : new ArrayList<>();
+
+            data.setEditable(false);
+
+            if (listIdDevCheck.stream().anyMatch(userIdd::equals)) {
+                data.setEditable(true);
+            }
+        });
 
         return result;
     }

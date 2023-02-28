@@ -108,6 +108,7 @@ public class ProjectServiceImpl implements IProjectService {
         projectEntity.setUpdatedDate(currentDate);
         projectEntity = iProjectRepository.save(projectEntity);
 
+        // add user to dev list if user doesn't choose his role
         if (!projectModel.getUserDev().stream().anyMatch(userId::equals)) {
             if (!projectModel.getUserFollow().stream().anyMatch(userId::equals)){
                 if (!projectModel.getUserViewer().stream().anyMatch(userId::equals)){

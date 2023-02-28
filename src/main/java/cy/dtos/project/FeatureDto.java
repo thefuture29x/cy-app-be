@@ -35,6 +35,7 @@ public class FeatureDto {
     private List<UserDto> viewerTeams;
     private List<FileDto> files;
     private List<TagDto> tagList;
+    private Boolean editable;
 
     public static FeatureDto toDto(FeatureEntity entity){
         return FeatureDto.builder()
