@@ -161,8 +161,12 @@ public class FeatureServiceImp implements IFeatureService {
         tagList.stream().forEach(x -> this.tagRelationService.add(TagRelationModel.builder().idTag(x.getId()).category(Const.tableName.FEATURE.name()).objectId(entity.getId()).build()));
 
         // add user to dev list if user doesn't choose his role
-        if (!model.getUids().stream().anyMatch(userId::equals)) {
-            if (!model.getUserFollow().stream().anyMatch(userId::equals)) {
+
+        List<Long> listIdDev = model.getUids() != null ? model.getUids() : new ArrayList<>();
+        List<Long> listIdFollower = model.getUserFollow() != null ? model.getUserFollow() : new ArrayList<>();
+
+        if (!listIdDev.stream().anyMatch(userId::equals)) {
+            if (!listIdFollower.stream().anyMatch(userId::equals)) {
                 UserProjectEntity userProjectEntity = new UserProjectEntity();
                 userProjectEntity.setCategory(Const.tableName.FEATURE.name());
                 userProjectEntity.setObjectId(projectEntity.getId());
@@ -173,38 +177,30 @@ public class FeatureServiceImp implements IFeatureService {
         }
 
         //Add Users
-//        List<Long> curProjectIds = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(),Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
-        if (model.getUids() != null) {
-//            if (new HashSet<>(curProjectIds).containsAll(model.getUids())) {
-            model.getUids().stream().forEach(x -> {
-                this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(entity.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
-
-                // add dev to project
-                if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name(), x).size() == 0) {
-                    UserProjectEntity userProjectPro = this.addDev(x, Const.type.TYPE_DEV.name(), Const.tableName.PROJECT.name());
-                    userProjectPro.setObjectId(projectEntity.getId());
-                    this.userProjectRepository.saveAndFlush(userProjectPro);
-                }
-            });
-            entity.setDevTeam(model.getUids().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
 
 
-//            } else {
-//                throw new CustomHandleException(2131231);
-//            }
-        }
+        listIdDev.stream().forEach(x -> {
+            this.userProjectRepository.save(UserProjectEntity.builder().idUser(x).objectId(entity.getId()).category(Const.tableName.FEATURE.name()).type(Const.type.TYPE_DEV.name()).build());
+
+            // add dev to project
+            if (userProjectRepository.getByCategoryAndObjectIdAndTypeAndIdUser(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name(), x).size() == 0) {
+                UserProjectEntity userProjectPro = this.addDev(x, Const.type.TYPE_DEV.name(), Const.tableName.PROJECT.name());
+                userProjectPro.setObjectId(projectEntity.getId());
+                this.userProjectRepository.saveAndFlush(userProjectPro);
+            }
+        });
+        entity.setDevTeam(listIdDev.stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
 
 
-        if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
-            model.getUserFollow().stream().forEach(x -> this.userProjectRepository.save(UserProjectEntity.builder()
-                    .idUser(x)
-                    .objectId(entity.getId())
-                    .category(Const.tableName.FEATURE.name())
-                    .type(Const.type.TYPE_FOLLOWER.name())
-                    .build()));
-            entity.setFollowTeam(model.getUserFollow().stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
+        listIdFollower.stream().forEach(x -> this.userProjectRepository.save(UserProjectEntity.builder()
+                .idUser(x)
+                .objectId(entity.getId())
+                .category(Const.tableName.FEATURE.name())
+                .type(Const.type.TYPE_FOLLOWER.name())
+                .build()));
+        entity.setFollowTeam(listIdFollower.stream().map(x -> this.userRepository.findById(x).orElseThrow(() -> new CustomHandleException(2))).collect(Collectors.toList()));
 
-        }
+
 //        entity.setProject();
         iHistoryLogService.logCreate(entity.getId(), entity, Const.tableName.FEATURE, entity.getName());
         return FeatureDto.toDto(entity);
@@ -275,7 +271,7 @@ public class FeatureServiceImp implements IFeatureService {
         //Clear old tags
         clearTagList(oldFeature);
         //Add new tags
-        List<String> newTagList = model.getTagList();
+        List<String> newTagList = model.getTagList() != null ? model.getTagList() : new ArrayList<>();
         List<TagEntity> newTagEntityList = new ArrayList<>();
         if (newTagList != null) {
             newTagList.stream().forEach(x -> {
@@ -301,7 +297,7 @@ public class FeatureServiceImp implements IFeatureService {
 
         clearDevTeam(oldFeature.getId());
 //        List<Long> currentAvailableDev = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
-        List<Long> newDevTeam = model.getUids();
+        List<Long> newDevTeam = model.getUids() != null ? model.getUids() : new ArrayList<>();
         List<UserEntity> newDevTeamEntity = new ArrayList<>();
         if (model.getUids() != null) {
             newDevTeam.stream().forEach(x -> {
@@ -320,7 +316,7 @@ public class FeatureServiceImp implements IFeatureService {
             oldFeature.setDevTeam(newDevTeamEntity);
         }
 
-        List<Long> newFollowTeam = model.getUserFollow();
+        List<Long> newFollowTeam = model.getUserFollow() != null ? model.getUserFollow() : new ArrayList<>();
         List<UserEntity> newFollowTeamEntity = new ArrayList<>();
         if (model.getUserFollow() != null && model.getUserFollow().size() > 0) {
             newFollowTeam.stream().forEach(x -> {

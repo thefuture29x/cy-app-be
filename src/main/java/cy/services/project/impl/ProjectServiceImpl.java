@@ -174,11 +174,21 @@ public class ProjectServiceImpl implements IProjectService {
                     tagRelationEntity.setObjectId(projectEntity.getId());
                     iTagRelationRepository.save(tagRelationEntity);
                 } else if (tagEntity != null) {
-                    TagRelationEntity tagRelationEntity = new TagRelationEntity();
-                    tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
-                    tagRelationEntity.setIdTag(tagEntity.getId());
-                    tagRelationEntity.setObjectId(projectEntity.getId());
-                    iTagRelationRepository.save(tagRelationEntity);
+                    TagRelationEntity tagRelationEntity = iTagRelationRepository.checkIsEmpty(projectEntity.getId(),tagEntity.getId(),Const.tableName.PROJECT.name());
+                    if (tagRelationEntity == null){
+                        tagRelationEntity = new TagRelationEntity();
+                        tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
+                        tagRelationEntity.setIdTag(tagEntity.getId());
+                        tagRelationEntity.setObjectId(projectEntity.getId());
+                        iTagRelationRepository.save(tagRelationEntity);
+                    }
+
+
+//                    TagRelationEntity tagRelationEntity = new TagRelationEntity();
+//                    tagRelationEntity.setCategory(Const.tableName.PROJECT.name());
+//                    tagRelationEntity.setIdTag(tagEntity.getId());
+//                    tagRelationEntity.setObjectId(projectEntity.getId());
+//                    iTagRelationRepository.save(tagRelationEntity);
                 }
             }
         }
