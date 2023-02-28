@@ -491,8 +491,8 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         return new StringBuilder();
     }
     private StringBuilder checkTagEntityUpdate(HistoryLogTitle annotation,StringBuilder changedContent, Object val1, Object val2){
-        List<TagEntity> originalTagList = (List<TagEntity>) val1;
-        List<TagEntity> newTagList = (List<TagEntity>) val2;
+        List<TagEntity> originalTagList = val1 != null ? (List<TagEntity>) val1 : new ArrayList<>();
+        List<TagEntity> newTagList = val2 != null ? (List<TagEntity>) val2 : new ArrayList<>();
 
         if (originalTagList.size() == newTagList.size()){
             List<String> originalTagListName = new ArrayList<>();
@@ -524,8 +524,8 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
         return new StringBuilder();
     }
     private StringBuilder checkMultipleFileUpdate(StringBuilder changedContent,HistoryEntity historyEntity, Object val1, Object val2){
-        List<FileEntity> originalFiles = (List<FileEntity>) val1;
-        List<FileEntity> newFiles = (List<FileEntity>) val2;
+        List<FileEntity> originalFiles = val1 != null ? (List<FileEntity>) val1 : new ArrayList<>();
+        List<FileEntity> newFiles = val2 != null ? (List<FileEntity>) val2 : new ArrayList<>();
 
         if (!new HashSet<>(originalFiles).equals(new HashSet<>(newFiles))){
             for (FileEntity entity : originalFiles) {
