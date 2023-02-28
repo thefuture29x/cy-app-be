@@ -169,7 +169,7 @@ public class FeatureServiceImp implements IFeatureService {
             if (!listIdFollower.stream().anyMatch(userId::equals)) {
                 UserProjectEntity userProjectEntity = new UserProjectEntity();
                 userProjectEntity.setCategory(Const.tableName.FEATURE.name());
-                userProjectEntity.setObjectId(projectEntity.getId());
+                userProjectEntity.setObjectId(entity.getId());
                 userProjectEntity.setType(Const.type.TYPE_DEV.name());
                 userProjectEntity.setIdUser(userId);
                 userProjectRepository.save(userProjectEntity);
