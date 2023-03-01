@@ -464,8 +464,8 @@ public class FeatureServiceImp implements IFeatureService {
             qCount.setParameter("projectId", featureFilterModel.getProjectId());
         }
         if (featureFilterModel.getStatus() != null) {
-            q.setParameter("status", featureFilterModel.getStatus());
-            qCount.setParameter("status", featureFilterModel.getStatus());
+            q.setParameter("status", featureFilterModel.getStatus().toString());
+            qCount.setParameter("status", featureFilterModel.getStatus().toString());
         }
         if (featureFilterModel.getMinDate() != null) {
             q.setParameter("startDate", convertDate(featureFilterModel.getMinDate() + ".000"));
