@@ -364,7 +364,24 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
     @Override
     public Page<HistoryLogDto> getAllHistoryOfBug(Long idProject, Pageable pageable) {
-        return this.historyLogRepository.getAllHistoryOfBug(idProject,pageable).map(data -> HistoryLogDto.toDto(data));
+        return this.historyLogRepository.getAllHistoryOfBugInProject(idProject,pageable).map(data -> HistoryLogDto.toDto(data));
+    }
+
+    @Override
+    public Page<HistoryLogDto> getAllHistory(Long idObject, Const.tableName category, Pageable pageable) {
+        switch (category.toString()){
+            case "PROJECT":
+                return this.historyLogRepository.getAllHistoryOfProject(idObject,pageable).map(data -> HistoryLogDto.toDto(data));
+            case "FEATURE":
+                return this.historyLogRepository.getAllHistoryOfFeature(idObject,pageable).map(data -> HistoryLogDto.toDto(data));
+            case "TASK":
+                return this.historyLogRepository.getAllHistoryOfTask(idObject,pageable).map(data -> HistoryLogDto.toDto(data));
+            case "SUBTASK":
+                return this.historyLogRepository.getAllHistoryOfSubTask(idObject,pageable).map(data -> HistoryLogDto.toDto(data));
+            case "BUG":
+                return this.historyLogRepository.getAllHistoryOfBug(idObject,pageable).map(data -> HistoryLogDto.toDto(data));
+        }
+        return null;
     }
 
     private void compareObjectFields(HistoryLogTitle annotation,

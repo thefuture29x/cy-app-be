@@ -356,6 +356,8 @@ public class FeatureServiceImp implements IFeatureService {
         // delete Feature
         this.featureRepository.deleteById(id);
 
+        iHistoryLogService.logDelete(id, feature, Const.tableName.FEATURE, feature.getName());
+
         return true;
     }
 
