@@ -328,7 +328,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 .append(category.name().toLowerCase())
                 .append(" <b>"+nameObject+"</b>.</p>");
 
-        this.historyLogRepository.saveAndFlush(HistoryEntity
+        this.historyLogRepository.save(HistoryEntity
                 .builder()
                 .ObjectId(objectId)
                 .category(category.name())
