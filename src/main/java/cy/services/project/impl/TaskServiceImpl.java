@@ -564,10 +564,10 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public List<TaskDto> searchTask(TaskSearchModel taskSearchModel) {
         String sql = "SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
-        sql += "inner join UserProjectEntity uspr ON task.id = uspr.objectId AND uspr.category = 'TASK' ";
+        sql += "inner join UserProjectEntity uspr ON task.id = uspr.objectId ";
 
         if (taskSearchModel.getUserId() != null) {
-            sql += " AND uspr.idUser = :userId AND uspr.type = 'TYPE_DEV'";
+            sql += " AND uspr.idUser = :userId AND uspr.type = 'TYPE_DEV' AND uspr.category = 'TASK' ";
         }
         if (taskSearchModel.getFeatureId() != null) {
             sql += " AND task.feature.id = :featureId";
