@@ -354,7 +354,7 @@ public class FeatureServiceImp implements IFeatureService {
         fileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), id).stream().forEach(fileEntity -> this.fileService.deleteById(fileEntity.getId()));
 
         // delete Feature
-        this.featureRepository.deleteById(id);
+        this.featureRepository.deleteFeature(id);
 
         iHistoryLogService.logDelete(id, feature, Const.tableName.FEATURE, feature.getName());
 

@@ -36,4 +36,8 @@ public interface IFeatureRepository extends JpaRepository<FeatureEntity,Long>, J
     @Query(value = "SELECT is_deleted FROM `tbl_features` WHERE id = ?1", nativeQuery = true)
     boolean checkIsDeleted(Long id);
 
+    @Modifying
+    @Query(value = "UPDATE `tbl_features` SET is_deleted = 1 WHERE id = ?1", nativeQuery = true)
+    void deleteFeature(Long id);
+
 }

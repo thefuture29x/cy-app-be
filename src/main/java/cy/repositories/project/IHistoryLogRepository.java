@@ -27,7 +27,7 @@ public interface IHistoryLogRepository extends JpaRepository<HistoryEntity, Long
     @Query(value = "SELECT * FROM `tbl_historys` \n" +
             "WHERE object_id = ?1 and category = 'PROJECT' OR (\n" +
             "\tobject_id IN (\n" +
-            "\t\tSELECT id FROM `tbl_features` WHERE project_id = ?1 AND is_deleted = 0\n" +
+            "\t\tSELECT id FROM `tbl_features` WHERE project_id = ?1 \n" +
             "\t) AND category = 'FEATURE' AND (content LIKE '%đã thêm mới feature%' OR content LIKE '%đã cập nhật feature%' OR content LIKE '%đã xóa feature%')\n" +
             ")\n",nativeQuery = true)
     Page<HistoryEntity> getAllHistoryOfProject(Long idProject, Pageable pageable);
@@ -35,7 +35,7 @@ public interface IHistoryLogRepository extends JpaRepository<HistoryEntity, Long
     @Query(value = "SELECT * FROM `tbl_historys` \n" +
             "WHERE object_id = ?1 and category = 'FEATURE' OR (\n" +
             "\tobject_id IN (\n" +
-            "\t\tSELECT id FROM `tbl_tasks` WHERE feature_id = ?1 AND is_deleted = 0\n" +
+            "\t\tSELECT id FROM `tbl_tasks` WHERE feature_id = ?1 \n" +
             "\t) AND category = 'TASK' AND (content LIKE '%đã thêm mới task%' OR content LIKE '%đã cập nhật task%' OR content LIKE '%đã xóa task%')\n" +
             ")\n",nativeQuery = true)
     Page<HistoryEntity> getAllHistoryOfFeature(Long idFeature, Pageable pageable);
@@ -44,13 +44,13 @@ public interface IHistoryLogRepository extends JpaRepository<HistoryEntity, Long
             "WHERE object_id = ?1 and category = 'TASK' \n" +
             "OR (\n" +
             "\tobject_id IN (\n" +
-            "\t\tSELECT id FROM `tbl_sub_tasks` WHERE task_id = ?1 AND is_deleted = 0\n" +
+            "\t\tSELECT id FROM `tbl_sub_tasks` WHERE task_id = ?1 \n" +
             "\t) \n" +
             "\tAND category = 'SUBTASK' AND (content LIKE '%đã thêm mới sub task%' OR content LIKE '%đã cập nhật sub task%' OR content LIKE '%đã xóa sub task%')\n" +
             ")\n" +
             "OR (\n" +
             "\tobject_id IN (\n" +
-            "\t\tSELECT id FROM `tbl_bugs` WHERE task_id = ?1 AND is_deleted = 0\n" +
+            "\t\tSELECT id FROM `tbl_bugs` WHERE task_id = ?1 \n" +
             "\t) \n" +
             "\tAND category = 'BUG' AND (content LIKE '%đã thêm mới bug%' OR content LIKE '%đã cập nhật bug%' OR content LIKE '%đã xóa bug%')\n" +
             ")",nativeQuery = true)
@@ -60,7 +60,7 @@ public interface IHistoryLogRepository extends JpaRepository<HistoryEntity, Long
             "WHERE object_id = ?1 and category = 'SUBTASK' AND (content LIKE '%đã thêm mới sub task%' OR content LIKE '%đã cập nhật sub task%' OR content LIKE '%đã xóa sub task%')\n" +
             "OR (\n" +
             "\tobject_id IN (\n" +
-            "\t\tSELECT id FROM `tbl_bugs` WHERE sub_task_id = ?1 AND is_deleted = 0\n" +
+            "\t\tSELECT id FROM `tbl_bugs` WHERE sub_task_id = ?1 \n" +
             "\t) \n" +
             "\tAND category = 'BUG' AND (content LIKE '%đã thêm mới bug%' OR content LIKE '%đã cập nhật bug%' OR content LIKE '%đã xóa bug%')\n" +
             ")\n",nativeQuery = true)
