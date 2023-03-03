@@ -112,6 +112,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
             // Set following user list then set watching user list, developer user list and reviewer user list
             setFollowingUserList(subTaskDto);
+
+            // Set dev list in project
+            setDevListInProject(subTaskDto);
         }
         return subTaskDto;
     }
@@ -813,5 +816,23 @@ public class SubTaskServiceImpl implements ISubTaskService {
             taskEntity.setStatus(Const.status.IN_PROGRESS.name());
         }
         taskRepository.save(taskEntity);
+    }
+
+    private void setDevListInProject(SubTaskDto subTaskDto) {
+        Long projectId = subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId());
+        if(projectId == null) {
+            throw new CustomHandleException(209);
+        }else {
+            String sqlQueryGetDevList = "SELECT * FROM tbl_user WHERE user_id IN (SELECT user_id FROM tbl_user_projects WHERE object_id = " + projectId
+                    + " AND type = '" + Const.type.TYPE_DEV.name() + "'"
+                    + " AND category = '" + Const.tableName.PROJECT.name() + "')";
+            Query nativeQuery = entityManager.createNativeQuery(sqlQueryGetDevList, UserEntity.class);
+            List<UserEntity> listUserDev = nativeQuery.getResultList();
+            List<UserDto> listUserDto = new ArrayList<>();
+            for (UserEntity userEntity : listUserDev) {
+                listUserDto.add(UserDto.toDto(userEntity));
+            }
+            subTaskDto.setDevListInProject(listUserDto);
+        }
     }
 }
