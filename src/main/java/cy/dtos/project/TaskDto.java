@@ -38,6 +38,9 @@ public class TaskDto {
     private int countSubtask;
     private int countSubtaskDone;
 
+    // Dev list in project
+    private List<UserDto> devListInProject;
+
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;
 //
