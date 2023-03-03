@@ -172,6 +172,9 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto add(TaskModel model) {
+        // Check tag exist by name
+        checkTaskExistByName(model.getName());
+
         TaskEntity taskEntity = TaskModel.toEntity(model);
 
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
@@ -712,4 +715,13 @@ public class TaskServiceImpl implements ITaskService {
         }
     }
 
+    private void checkTaskExistByName(String name) {
+        // MySQL query is NOT case-sensitive
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "'";
+        Query nativeQuery = manager.createNativeQuery(sqlQuery);
+        BigInteger count = (BigInteger) nativeQuery.getSingleResult();
+        if(count.intValue() > 0) {
+            throw new CustomHandleException(210);
+        }
+    }
 }
