@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -112,6 +113,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
             // Set following user list then set watching user list, developer user list and reviewer user list
             setFollowingUserList(subTaskDto);
+
+            // Set dev list in project
+            setDevListInProject(subTaskDto);
         }
         return subTaskDto;
     }
@@ -199,6 +203,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto add(SubTaskModel model) {
+        // Check subtask name is exist
+        checkSubTaskExistByName(model.getName());
+
         List<Object> objectList = this.checkIdAndDate(model);
         TaskEntity taskEntityChecked = (TaskEntity) objectList.get(0);
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objectList.get(1);
@@ -813,5 +820,33 @@ public class SubTaskServiceImpl implements ISubTaskService {
             taskEntity.setStatus(Const.status.IN_PROGRESS.name());
         }
         taskRepository.save(taskEntity);
+    }
+
+    private void setDevListInProject(SubTaskDto subTaskDto) {
+        Long projectId = subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId());
+        if(projectId == null) {
+            throw new CustomHandleException(209);
+        }else {
+            String sqlQueryGetDevList = "SELECT * FROM tbl_user WHERE user_id IN (SELECT user_id FROM tbl_user_projects WHERE object_id = " + projectId
+                    + " AND type = '" + Const.type.TYPE_DEV.name() + "'"
+                    + " AND category = '" + Const.tableName.PROJECT.name() + "')";
+            Query nativeQuery = entityManager.createNativeQuery(sqlQueryGetDevList, UserEntity.class);
+            List<UserEntity> listUserDev = nativeQuery.getResultList();
+            List<UserDto> listUserDto = new ArrayList<>();
+            for (UserEntity userEntity : listUserDev) {
+                listUserDto.add(UserDto.toDto(userEntity));
+            }
+            subTaskDto.setDevListInProject(listUserDto);
+        }
+    }
+
+    private void checkSubTaskExistByName(String name) {
+        // MySQL query is NOT case-sensitive
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_sub_tasks WHERE name = '" + name + "'";
+        Query nativeQuery = entityManager.createNativeQuery(sqlQuery);
+        BigInteger count = (BigInteger) nativeQuery.getSingleResult();
+        if(count.intValue() > 0) {
+            throw new CustomHandleException(210);
+        }
     }
 }

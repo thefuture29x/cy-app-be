@@ -3,6 +3,7 @@ package cy.services.project.impl;
 import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.dtos.project.FileDto;
+import cy.dtos.project.SubTaskDto;
 import cy.dtos.project.TagDto;
 import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -156,7 +158,10 @@ public class TaskServiceImpl implements ITaskService {
         }
         taskEntity.setReViewerTeam(userEntitiesReViewer);
 
-        return TaskDto.toDto(taskEntity);
+        TaskDto taskDtoResult = TaskDto.toDto(taskEntity);
+        // Set dev list in project
+        this.setDevListInProject(taskDtoResult);
+        return taskDtoResult;
     }
 
     @Override
@@ -167,6 +172,9 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto add(TaskModel model) {
+        // Check tag exist by name
+        checkTaskExistByName(model.getName());
+
         TaskEntity taskEntity = TaskModel.toEntity(model);
 
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
@@ -686,4 +694,34 @@ public class TaskServiceImpl implements ITaskService {
         }
     }
 
+    private void setDevListInProject(TaskDto taskDto) {
+        // Get projectId by taskId
+        String sqlQueryGetProjectId = "SELECT p.id FROM tbl_projects p INNER JOIN tbl_features f ON p.id = f.project_id INNER JOIN tbl_tasks t ON f.id = t.feature_id WHERE t.id = " + taskDto.getId();
+        Query nativeQueryGetProjectId = manager.createNativeQuery(sqlQueryGetProjectId);
+        BigInteger projectId = (BigInteger) nativeQueryGetProjectId.getSingleResult();
+        if(projectId == null) {
+            throw new CustomHandleException(209);
+        }else {
+            String sqlQueryGetDevList = "SELECT * FROM tbl_user WHERE user_id IN (SELECT user_id FROM tbl_user_projects WHERE object_id = "
+                    + projectId + " AND type = '" + Const.type.TYPE_DEV.name() + "'"
+                    + " AND category = '" + Const.tableName.PROJECT.name() + "')";
+            Query nativeQuery = manager.createNativeQuery(sqlQueryGetDevList, UserEntity.class);
+            List<UserEntity> listUserDev = nativeQuery.getResultList();
+            List<UserDto> listUserDto = new ArrayList<>();
+            for (UserEntity userEntity : listUserDev) {
+                listUserDto.add(UserDto.toDto(userEntity));
+            }
+            taskDto.setDevListInProject(listUserDto);
+        }
+    }
+
+    private void checkTaskExistByName(String name) {
+        // MySQL query is NOT case-sensitive
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "'";
+        Query nativeQuery = manager.createNativeQuery(sqlQuery);
+        BigInteger count = (BigInteger) nativeQuery.getSingleResult();
+        if(count.intValue() > 0) {
+            throw new CustomHandleException(210);
+        }
+    }
 }

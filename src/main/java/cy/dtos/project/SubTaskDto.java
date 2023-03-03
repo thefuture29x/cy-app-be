@@ -47,6 +47,10 @@ public class SubTaskDto {
 
     // Reviewer list
     private List<UserDto> reviewerUserList;
+
+    // Dev list in project
+    private List<UserDto> devListInProject;
+
     public static SubTaskDto toDto(SubTaskEntity entity) {
         return SubTaskDto.builder()
                 .id(entity.getId())
