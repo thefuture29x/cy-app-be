@@ -574,6 +574,9 @@ public class TaskServiceImpl implements ITaskService {
         String sql = "SELECT distinct new cy.dtos.project.TaskDto(task) FROM TaskEntity task ";
         sql += "inner join UserProjectEntity uspr ON task.id = uspr.objectId ";
 
+        if (taskSearchModel.getName() != null && taskSearchModel.getName().charAt(0) == '#') {
+            sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+        }
         if (taskSearchModel.getUserId() != null) {
             sql += " AND uspr.idUser = :userId AND uspr.type = 'TYPE_DEV' AND uspr.category = 'TASK' ";
         }
@@ -588,8 +591,14 @@ public class TaskServiceImpl implements ITaskService {
             sql += " AND task.endDate <= :endDate ";
         }
         if (taskSearchModel.getName() != null) {
-            sql += " AND task.name LIKE :name ";
+            if (taskSearchModel.getName().charAt(0) == '#') {
+                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+            } else {
+                sql += " AND (task.name LIKE :textSearch ) ";
+            }
         }
+
+
         sql += " AND task.isDeleted = FALSE";
         Query q = manager.createQuery(sql, TaskDto.class);
 
@@ -606,7 +615,12 @@ public class TaskServiceImpl implements ITaskService {
             q.setParameter("endDate", taskSearchModel.getEndDate());
         }
         if (taskSearchModel.getName() != null) {
-            q.setParameter("name", "%" + taskSearchModel.getName() + "%");
+            String textSearch = taskSearchModel.getName();
+            if (taskSearchModel.getName().charAt(0) == '#') {
+                q.setParameter("textSearch", textSearch.substring(1));
+            } else {
+                q.setParameter("textSearch", "%" + textSearch + "%");
+            }
         }
 
         List<TaskDto> queryResult = q.getResultList();

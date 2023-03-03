@@ -1,6 +1,7 @@
 package cy.repositories.project;
 
 import cy.entities.project.FeatureEntity;
+import cy.entities.project.ProjectEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,5 +40,7 @@ public interface IFeatureRepository extends JpaRepository<FeatureEntity,Long>, J
     @Modifying
     @Query(value = "UPDATE `tbl_features` SET is_deleted = 1 WHERE id = ?1", nativeQuery = true)
     void deleteFeature(Long id);
+
+    List<FeatureEntity> getAllByNameAndIsDeleted(String name, Boolean isDeleted);
 
 }

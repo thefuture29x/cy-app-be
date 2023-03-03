@@ -103,6 +103,10 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public FeatureDto add(FeatureModel model) {
         Long userId = SecurityUtils.getCurrentUserId();
+        // check name already exists
+        if (projectRepository.getAllByNameAndIsDeleted(model.getName(), false).size() > 0)
+            throw new CustomHandleException(190);
+
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(() -> new CustomHandleException(45354345));
         Set<Long> currentProjectUIDs = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> currentProjectIdFollows = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_FOLLOWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
@@ -234,6 +238,11 @@ public class FeatureServiceImp implements IFeatureService {
             iFileRepository.deleteAllByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
         }
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
+        // check name already exists
+        if (!oldFeature.getName().equals(model.getName())){
+            if (featureRepository.getAllByNameAndIsDeleted(model.getName(), false).size() > 0)
+                throw new CustomHandleException(190);
+        }
         FeatureEntity featureOriginal = (FeatureEntity) Const.copy(oldFeature);
         List<UserEntity> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.FEATURE.name(), Const.type.TYPE_DEV.name(), model.getId());
         List<UserEntity> listUserFollow = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.FEATURE.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());

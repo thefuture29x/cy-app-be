@@ -248,6 +248,7 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         ProjectEntity projectEntity = iProjectRepository.findById(projectModel.getId()).orElse(null);
+        // check name already exists
         if (!projectEntity.getName().equals(projectModel.getName())){
             if (iProjectRepository.getAllByNameAndIsDeleted(projectModel.getName(), false).size() > 0)
                 throw new CustomHandleException(190);
