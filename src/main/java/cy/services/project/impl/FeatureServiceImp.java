@@ -104,7 +104,7 @@ public class FeatureServiceImp implements IFeatureService {
     public FeatureDto add(FeatureModel model) {
         Long userId = SecurityUtils.getCurrentUserId();
         // check name already exists
-        if (projectRepository.getAllByNameAndIsDeleted(model.getName(), false).size() > 0)
+        if (featureRepository.getAllByNameAndIsDeleted(model.getName(), false).size() > 0)
             throw new CustomHandleException(190);
 
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(() -> new CustomHandleException(45354345));
