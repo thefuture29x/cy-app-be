@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -202,6 +203,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto add(SubTaskModel model) {
+        // Check subtask name is exist
+        checkSubTaskExistByName(model.getName());
+
         List<Object> objectList = this.checkIdAndDate(model);
         TaskEntity taskEntityChecked = (TaskEntity) objectList.get(0);
         List<UserEntity> userEntitiesAssigned = (List<UserEntity>) objectList.get(1);
@@ -833,6 +837,16 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 listUserDto.add(UserDto.toDto(userEntity));
             }
             subTaskDto.setDevListInProject(listUserDto);
+        }
+    }
+
+    private void checkSubTaskExistByName(String name) {
+        // MySQL query is NOT case-sensitive
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_sub_tasks WHERE name = '" + name + "'";
+        Query nativeQuery = entityManager.createNativeQuery(sqlQuery);
+        BigInteger count = (BigInteger) nativeQuery.getSingleResult();
+        if(count.intValue() > 0) {
+            throw new CustomHandleException(210);
         }
     }
 }
