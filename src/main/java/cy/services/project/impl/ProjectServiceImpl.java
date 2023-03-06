@@ -4,6 +4,7 @@ import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
 import cy.dtos.project.ProjectDto;
 import cy.dtos.project.TaskDto;
+import cy.dtos.project.UserMetaDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.ProjectModel;
@@ -575,6 +576,11 @@ public class ProjectServiceImpl implements IProjectService {
             }
         });
         return result;
+    }
+
+    @Override
+    public List<UserMetaDto> getAllUserInProject(String category,String type, Long idProject) {
+        return userRepository.getAllByCategoryAndTypeAndObjectId(category,type, idProject).stream().map(data -> UserMetaDto.toDto(data)).collect(Collectors.toList());
     }
 
     public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId){

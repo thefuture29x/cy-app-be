@@ -23,6 +23,7 @@ public class SubTaskDto {
     private String description;
     private String priority;
     private String createBy;
+    private UserMetaDto createByDto;
     private String status;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startDate;
@@ -60,6 +61,7 @@ public class SubTaskDto {
                 .description(entity.getDescription())
                 .priority(entity.getPriority())
                 .createBy(entity.getCreateBy().getFullName())
+                .createByDto(entity.getCreateBy() != null ? UserMetaDto.toDto(entity.getCreateBy()) : null)
                 .status(entity.getStatus())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())

@@ -25,8 +25,10 @@ import cy.services.project.ISubTaskService;
 import cy.services.project.ITaskService;
 import cy.utils.Const;
 import cy.utils.FileUploadProvider;
+import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -123,6 +125,8 @@ public class TestController {
     IProjectRepository iProjectRepository;
     @Autowired
     IFeatureService iFeatureService;
+    @Autowired
+    IUserProjectRepository iUserProjectRepository;
 
     @PostMapping ("change-status")
     public void testUpLoadFile(Long idParent)  {
@@ -141,9 +145,18 @@ public class TestController {
             return;
         }
     }
-    @PostMapping ("check-deleted")
-    public ResponseDto testCheckDeleted(@RequestBody @Valid FeatureFilterModel model, Pageable pageable)  {
-        return ResponseDto.of(iFeatureService.findByPage(model,pageable));
+    @PostMapping ("test-nef")
+    public ResponseDto testCheckDeleted(@RequestParam(value = "id") Long taskId)  {
+
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = iUserProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(taskId,listType);
+        if(listIdDevInProject.stream().anyMatch(idUser::equals)){
+            System.out.println("ahihihihi");
+        }
+
+        return null;
     }
 
 

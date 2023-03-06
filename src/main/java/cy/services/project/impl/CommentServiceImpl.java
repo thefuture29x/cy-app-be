@@ -8,6 +8,7 @@ import cy.models.project.CommentModel;
 import cy.models.project.FileModel;
 import cy.repositories.project.ICommentRepository;
 import cy.repositories.project.IFileRepository;
+import cy.repositories.project.IUserProjectRepository;
 import cy.repositories.project.specification.CommentSpecification;
 import cy.repositories.project.specification.FileSpecification;
 import cy.services.project.ICommentService;
@@ -15,6 +16,7 @@ import cy.services.project.IFileService;
 import cy.services.project.IHistoryLogService;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,12 +38,15 @@ public class CommentServiceImpl implements ICommentService {
     private final IFileService fileService;
 
     private final IHistoryLogService historyLogService;
+    private final IUserProjectRepository userProjectRepository;
 
-    public CommentServiceImpl(ICommentRepository commentRepository, IFileRepository fileRepository, IFileService fileService, IHistoryLogService historyLogService) {
+
+    public CommentServiceImpl(ICommentRepository commentRepository, IFileRepository fileRepository, IFileService fileService, IHistoryLogService historyLogService,IUserProjectRepository userProjectRepository) {
         this.commentRepository = commentRepository;
         this.fileRepository = fileRepository;
         this.fileService = fileService;
         this.historyLogService = historyLogService;
+        this.userProjectRepository = userProjectRepository;
     }
 
 
@@ -78,6 +83,42 @@ public class CommentServiceImpl implements ICommentService {
     @Override
     public CommentDto add(CommentModel model) {
         CommentEntity commentEntity = CommentModel.toEntity(model);
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        listType.add(Const.type.TYPE_FOLLOWER.toString());
+
+        if (model.getCategory().toString().equals("FEATURE")){
+            List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
+            if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
+                throw new CustomHandleException(5);
+            }
+        }
+
+//        switch (model.getCategory().toString()){
+//            case "FEATURE":
+//                List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
+//                if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
+//                    throw new CustomHandleException(5);
+//                }
+//            case "TASK":
+//                List<Long> listIdDevInProject_Task = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getObjectId(), listType);
+//                if(!listIdDevInProject_Task.stream().anyMatch(idUser::equals)){
+//                    throw new CustomHandleException(5);
+//                }
+//            case "SUBTASK":
+//                List<Long> listIdDevInProject_Subtask = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(model.getObjectId(), listType);
+//                if(!listIdDevInProject_Subtask.stream().anyMatch(idUser::equals)){
+//                    throw new CustomHandleException(5);
+//                }
+//            case "BUG":
+//                List<Long> listIdDevInProject_Bug = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(model.getObjectId(), listType);
+//                if(!listIdDevInProject_Bug.stream().anyMatch(idUser::equals)){
+//                    throw new CustomHandleException(5);
+//                }
+//        }
 
         if (model.getIdParent() != null) {
             CommentEntity parentComment = this.getById(model.getIdParent());

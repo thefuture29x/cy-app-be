@@ -60,5 +60,13 @@ public class ProjectResource {
         return ResponseDto.of(iUserViewProjectService.findProjectRecentlyViewed());
     }
 
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @GetMapping(value = "/getAllUserInProject")
+    public ResponseDto getAllUserInProject(@RequestParam(name = "category") String category,
+                                           @RequestParam(name = "type") String type,
+                                           @RequestParam(name = "idObject") Long idObject) {
+        return ResponseDto.of(iProjectService.getAllUserInProject(category,type,idObject));
+    }
+
 
 }

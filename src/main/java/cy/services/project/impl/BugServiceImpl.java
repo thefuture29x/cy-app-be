@@ -132,6 +132,23 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto add(BugModel model) {
         Date now = Date.from(Instant.now());
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+
+        if (model.getTask()!= null){
+            List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getTask(), listType);
+            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+                throw new CustomHandleException(5);
+            }
+        }else {
+            List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(model.getSubTask(), listType);
+            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+                throw new CustomHandleException(5);
+            }
+        }
+
         try {
             BugEntity bugEntity = model.modelToEntity(model);
             bugEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
@@ -255,6 +272,15 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto update(BugModel model) {
         if (iBugRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(model.getId(), listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         BugEntity bug = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
         List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
 
@@ -430,6 +456,15 @@ public class BugServiceImpl implements IRequestBugService {
 
     public BugDto deleteOnlyFile(Long idFile, Long idProject) {
         BugEntity bugEntity = iBugRepository.findById(idProject).orElseThrow(() -> new CustomHandleException(11));
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idProject, listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         if (bugEntity.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
             try {
                 FileEntity file = iFileRepository.findById(idFile).get();
@@ -488,6 +523,15 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto updateStatusSubTaskToBug(Long id, int status) {
         if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(id, listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
         //chuyển trạng thái Subtask
@@ -595,6 +639,16 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public BugDto updateStatusTaskToBug(Long id, int status) {
         if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(id, listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
         TaskEntity taskEntity = iTaskRepository.findById(bugEntity.getTask().getId()).orElseThrow(() -> new CustomHandleException(251));
         //chuyển trạng thái Subtask
@@ -703,6 +757,15 @@ public class BugServiceImpl implements IRequestBugService {
     @Override
     public boolean deleteById(Long id) {
         try {
+            // check the user is on the project's dev list
+            Long idUser = SecurityUtils.getCurrentUserId();
+            List<String> listType = new ArrayList<>();
+            listType.add(Const.type.TYPE_DEV.toString());
+            List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(id, listType);
+            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+                throw new CustomHandleException(5);
+            }
+
             BugEntity bugEntity = iBugRepository.findById(id).get();
             bugEntity.setIsDeleted(true);
             iBugRepository.save(bugEntity);

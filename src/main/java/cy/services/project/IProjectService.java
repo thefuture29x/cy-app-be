@@ -1,6 +1,8 @@
 package cy.services.project;
 
+import cy.dtos.UserDto;
 import cy.dtos.project.ProjectDto;
+import cy.dtos.project.UserMetaDto;
 import cy.models.project.ProjectModel;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.parameters.P;
@@ -17,4 +19,5 @@ public interface IProjectService {
     Boolean changIsDeleteById(Long id);
     Page<ProjectDto> findByPage(Integer pageIndex, Integer pageSize,String sortBy,String sortType, ProjectModel projectModel);
 
+    List<UserMetaDto> getAllUserInProject(String category,String type, Long idObject);
 }

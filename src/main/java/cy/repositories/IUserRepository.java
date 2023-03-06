@@ -57,4 +57,5 @@ public interface IUserRepository extends JpaRepository<UserEntity, Long>, JpaSpe
             "JOIN tbl_user us ON uspr.user_id = us.user_id\n" +
             "WHERE uspr.category = ?1 AND (uspr.type = 'TYPE_DEV') AND uspr.object_id = ?2\n",nativeQuery = true)
     List<Long> getAllIdDevByTypeAndObjectId(String category, Long objectId);
+
 }

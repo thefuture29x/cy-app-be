@@ -175,6 +175,15 @@ public class TaskServiceImpl implements ITaskService {
         // Check tag exist by name
         checkTaskExistByName(model.getName());
 
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getFeatureId(),listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         TaskEntity taskEntity = TaskModel.toEntity(model);
 
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
@@ -291,6 +300,16 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public TaskDto update(TaskModel model) {
         if (iTaskRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getId(),listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         List<FileEntity> fileOriginalExist = fileRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), model.getId());
         if (model.getFileUrlsKeeping() != null) {
             fileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.TASK.name(), model.getId());
@@ -435,6 +454,14 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public boolean deleteById(Long id) {
         try {
+            // check the user is on the project's dev list
+            Long idUser = SecurityUtils.getCurrentUserId();
+            List<String> listType = new ArrayList<>();
+            listType.add(Const.type.TYPE_DEV.toString());
+            List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(id,listType);
+            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+                throw new CustomHandleException(5);
+            }
             // delete subTask
             List<SubTaskEntity> subTaskEntities = this.subTaskRepository.findByTaskId(id);
             subTaskEntities.forEach(subTaskEntity -> this.subTaskService.deleteById(subTaskEntity.getId()));
@@ -646,6 +673,16 @@ public class TaskServiceImpl implements ITaskService {
 
     public boolean updateStatusTask(Long taskId, SubTaskUpdateModel subTaskUpdateModel) {
         TaskEntity taskEntityExist = iTaskRepository.findById(taskId).orElseThrow(() -> new CustomHandleException(253));
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(taskId,listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         if (taskEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
             throw new CustomHandleException(205);
         }

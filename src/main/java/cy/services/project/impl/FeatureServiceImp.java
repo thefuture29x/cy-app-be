@@ -103,7 +103,13 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public FeatureDto add(FeatureModel model) {
         Long userId = SecurityUtils.getCurrentUserId();
-        // check name already exists
+        // check the user is on the project's dev list
+        List<Long> listIdDevInProject = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), model.getPid(),Const.type.TYPE_DEV.name());
+        if(!listIdDevInProject.stream().anyMatch(userId::equals)) {
+            throw new CustomHandleException(5);
+        }
+
+            // check name already exists
         if (featureRepository.getAllByNameAndIsDeleted(model.getName(), false).size() > 0)
             throw new CustomHandleException(190);
 
@@ -230,6 +236,16 @@ public class FeatureServiceImp implements IFeatureService {
     @Override
     public FeatureDto update(FeatureModel model) {
         if (featureRepository.checkIsDeleted(model.getId())) throw new CustomHandleException(491);
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getId(), listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.FEATURE.name(), model.getId());
         //Clear old files
         if (model.getFileUrlsKeeping() != null) {
@@ -342,6 +358,15 @@ public class FeatureServiceImp implements IFeatureService {
 
     @Override
     public boolean deleteById(Long id) {
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(id, listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         FeatureEntity feature = this.featureRepository.findById(id).orElseThrow(() -> new RuntimeException("Feature not exist !!!"));
         // delete Task
         List<TaskEntity> taskEntities = this.taskRepository.findByFeatureId(id);

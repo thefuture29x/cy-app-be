@@ -203,8 +203,18 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     @Override
     public SubTaskDto add(SubTaskModel model) {
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getTaskId(), listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         // Check subtask name is exist
         checkSubTaskExistByName(model.getName());
+
 
         List<Object> objectList = this.checkIdAndDate(model);
         TaskEntity taskEntityChecked = (TaskEntity) objectList.get(0);
@@ -274,6 +284,15 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public SubTaskDto update(SubTaskModel modelUpdate) {
         if (subTaskRepository.checkIsDeleted(modelUpdate.getId())) throw new CustomHandleException(491);
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(modelUpdate.getId(), listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         SubTaskEntity subTaskExisted = this.subTaskRepository.findByIdAndIsDeletedFalse(modelUpdate.getId());
         List<FileEntity> fileOriginal = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), modelUpdate.getId());
 
@@ -677,6 +696,16 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public boolean softDeleteById(Long id) {
         SubTaskEntity subTaskDeleting = this.subTaskRepository.findByIdAndIsDeletedFalse(id);
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(id, listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
+
         if (subTaskDeleting == null) {
             throw new CustomHandleException(199);
         } else {

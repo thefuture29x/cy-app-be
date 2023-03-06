@@ -1,6 +1,8 @@
 package cy.repositories.project;
 
+import cy.entities.UserEntity;
 import cy.entities.project.UserProjectEntity;
+import cy.utils.Const;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -33,4 +35,47 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
     @Transactional
     @Query(value = "DELETE FROM `tbl_user_projects` WHERE user_id = ?1 AND category = 'PROJECT' AND type = ?2 AND object_id = ?3", nativeQuery = true)
     void deleteByIdUserAndTypeAndObjectId(Long idUser,String type,Long objectId);
+
+    @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
+            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' and type IN ?2 \n" +
+            "WHERE uspr.object_id = (\n" +
+            "\tSELECT project_id FROM tbl_features WHERE id = ?1\n" +
+            ")",nativeQuery = true)
+    List<Long> getAllIdDevOfProjectByFeatureIdInThisProject(Long idFeature, List<String> listType);
+    @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
+            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' \n" +
+            "WHERE uspr.object_id = (\n" +
+            "\tSELECT project_id FROM tbl_features WHERE id = (\n" +
+            "\t\tSELECT feature_id FROM tbl_tasks WHERE id = ?1\n" +
+            "\t)\n" +
+            ")\n",nativeQuery = true)
+    List<Long> getAllIdDevOfProjectByTaskIdInThisProject(Long idTask, List<String> listType);
+
+    @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
+            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' \n" +
+            "WHERE uspr.object_id = (\n" +
+            "\tSELECT project_id FROM tbl_features WHERE id = (\n" +
+            "\t\tSELECT feature_id FROM tbl_tasks WHERE id = (\n" +
+            "\t\t\tSELECT task_id FROM tbl_sub_tasks WHERE id = ?1\n" +
+            "\t\t)\n" +
+            "\t)\n" +
+            ")",nativeQuery = true)
+    List<Long> getAllIdDevOfProjectBySubTaskIdInThisProject(Long idSubTask, List<String> listType);
+
+    @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
+            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' and type IN ?2 \n" +
+            "WHERE uspr.object_id = (\n" +
+            "\tSELECT project_id FROM tbl_features WHERE id = (\n" +
+            "\t\tSELECT feature_id FROM tbl_tasks WHERE id = (\n" +
+            "\t\t\tSELECT task_id FROM tbl_sub_tasks WHERE id = (SELECT sub_task_id FROM tbl_bugs WHERE id = ?1)\n" +
+            "\t\t)\n" +
+            "\t)\n" +
+            ")\n" +
+            "OR\n" +
+            "uspr.object_id = (\n" +
+            "\tSELECT project_id FROM tbl_features WHERE id = (\n" +
+            "\t\tSELECT feature_id FROM tbl_tasks WHERE id = (SELECT task_id FROM tbl_bugs WHERE id = ?1)\n" +
+            "\t)\n" +
+            ")",nativeQuery = true)
+    List<Long> getAllIdDevOfProjectByBugIdInThisProject(Long idBug, List<String> listType);
 }

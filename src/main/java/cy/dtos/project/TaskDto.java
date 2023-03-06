@@ -29,6 +29,7 @@ public class TaskDto {
     private String priority;
     private Long featureId;
     private String createBy;
+    private UserMetaDto createByDto;
     private List<UserDto> devList;
     private List<UserDto> followerList;
     private List<UserDto> viewerList;
@@ -59,6 +60,7 @@ public class TaskDto {
                 .priority(entity.getPriority())
                 .featureId(entity.getFeature().getId())
                 .createBy(entity.getCreateBy().getFullName())
+                .createByDto(entity.getCreateBy() != null ? UserMetaDto.toDto(entity.getCreateBy()) : null)
                 .devList(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .followerList(entity.getFollowerTeam() != null ? entity.getFollowerTeam().stream().map(UserDto::toDto)
