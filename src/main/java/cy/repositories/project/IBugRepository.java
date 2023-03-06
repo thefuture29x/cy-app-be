@@ -64,7 +64,7 @@ public interface IBugRepository extends JpaRepository<BugEntity, Long> {
             "\tWHERE ts.id = ?1 AND bg.is_deleted = 0 AND ts.is_deleted = 0 AND sts.is_deleted = 0\n" +
             ")",nativeQuery = true)
     Page<BugEntity> findAllByTaskId(Long idTask, Pageable pageable);
-    @Query(value = "SELECT * FROM tbl_bugs bg WHERE bg.sub_task_id=?1 AND bg.is_deleted =0",nativeQuery = true)
+    @Query(value = "SELECT * FROM tbl_bugs  WHERE sub_task_id=?1 AND is_deleted =0",nativeQuery = true)
     Page<BugEntity> findAllBySubTaskId(Long idSubTask, Pageable pageable);
     @Query(value = "select * from tbl_bugs where sub_task_id = ?1 AND is_deleted =0", nativeQuery = true)
     List<BugEntity> getAllBugBySubTaskId(Long subtaskId);
