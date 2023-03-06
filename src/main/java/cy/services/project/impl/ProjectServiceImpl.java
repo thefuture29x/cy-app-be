@@ -108,19 +108,26 @@ public class ProjectServiceImpl implements IProjectService {
         projectEntity.setUpdatedDate(currentDate);
         projectEntity = iProjectRepository.save(projectEntity);
 
-        // add user to dev list if user doesn't choose his role
-        if (!projectModel.getUserDev().stream().anyMatch(userId::equals)) {
-            if (!projectModel.getUserFollow().stream().anyMatch(userId::equals)){
-                if (!projectModel.getUserViewer().stream().anyMatch(userId::equals)){
-                    UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
-                    userProjectEntity.setObjectId(projectEntity.getId());
-                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                    userProjectEntity.setIdUser(userId);
-                    iUserProjectRepository.save(userProjectEntity);
-                }
-            }
-        }
+        // add user create to dev list
+        UserProjectEntity userCreate = new UserProjectEntity();
+        userCreate.setCategory(Const.tableName.PROJECT.name());
+        userCreate.setObjectId(projectEntity.getId());
+        userCreate.setType(Const.type.TYPE_DEV.name());
+        userCreate.setIdUser(userId);
+        iUserProjectRepository.save(userCreate);
+
+//        if (!projectModel.getUserDev().stream().anyMatch(userId::equals)) {
+//            if (!projectModel.getUserFollow().stream().anyMatch(userId::equals)){
+//                if (!projectModel.getUserViewer().stream().anyMatch(userId::equals)){
+//                    UserProjectEntity userProjectEntity = new UserProjectEntity();
+//                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+//                    userProjectEntity.setObjectId(projectEntity.getId());
+//                    userProjectEntity.setType(Const.type.TYPE_DEV.name());
+//                    userProjectEntity.setIdUser(userId);
+//                    iUserProjectRepository.save(userProjectEntity);
+//                }
+//            }
+//        }
 
         if (projectModel.getUserDev() != null && projectModel.getUserDev().size() > 0) {
             for (Long userDev : projectModel.getUserDev()) {
