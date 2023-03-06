@@ -237,7 +237,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 //        subTaskEntity.setStatus(Const.status.TO_DO.name());
         subTaskEntity.setName(model.getName());
         subTaskEntity.setDescription(model.getDescription());
-        subTaskEntity.setPriority(model.getPriority().name()); // Default value: MEDIUM
+        subTaskEntity.setPriority(model.getPriority() != null ? model.getPriority().name() : "MEDIUM"); // Default value: MEDIUM
         subTaskEntity.setTask(taskEntityChecked);
         subTaskEntity.setAttachFiles(fileEntityList);
         subTaskEntity.setAssignTo(null); // Default value: null
@@ -569,10 +569,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Check follow user id list
         if (model.getFollowingUserIdList() != null) {
             for (Long userId : model.getFollowingUserIdList()) {
-                boolean isUserEntityExist = userRepository.existsById(userId);
-                if (!isUserEntityExist) {
-                    throw new CustomHandleException(202);
-                }
+//                boolean isUserEntityExist = userRepository.existsById(userId);
+                userRepository.findById(userId).orElseThrow(() -> new CustomHandleException(202));
+//                if (!isUserEntityExist) {
+//                    throw new CustomHandleException(202);
+//                }
             }
             objectList.add(true);
         } else {
