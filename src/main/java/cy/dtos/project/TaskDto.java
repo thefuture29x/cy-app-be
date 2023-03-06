@@ -40,6 +40,7 @@ public class TaskDto {
 
     // Dev list in project
     private List<UserDto> devListInProject;
+    private Long projectId;
 
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;

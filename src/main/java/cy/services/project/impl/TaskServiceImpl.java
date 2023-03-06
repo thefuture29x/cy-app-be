@@ -161,6 +161,8 @@ public class TaskServiceImpl implements ITaskService {
         TaskDto taskDtoResult = TaskDto.toDto(taskEntity);
         // Set dev list in project
         this.setDevListInProject(taskDtoResult);
+        // Set projectId
+        taskDtoResult.setProjectId(taskEntity.getFeature().getProject().getId());
         return taskDtoResult;
     }
 
