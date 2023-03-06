@@ -610,7 +610,7 @@ public class TaskServiceImpl implements ITaskService {
         sql += "inner join UserProjectEntity uspr ON task.id = uspr.objectId ";
 
         if (taskSearchModel.getName() != null && taskSearchModel.getName().charAt(0) == '#') {
-            sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+            sql += " inner join TagRelationEntity tr on tr.objectId = task.id inner join TagEntity t on t.id = tr.idTag ";
         }
         if (taskSearchModel.getUserId() != null) {
             sql += " AND uspr.idUser = :userId AND uspr.type = 'TYPE_DEV' AND uspr.category = 'TASK' ";
@@ -627,7 +627,7 @@ public class TaskServiceImpl implements ITaskService {
         }
         if (taskSearchModel.getName() != null) {
             if (taskSearchModel.getName().charAt(0) == '#') {
-                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'PROJECT') ";
+                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'TASK') ";
             } else {
                 sql += " AND (task.name LIKE :textSearch ) ";
             }
@@ -652,7 +652,7 @@ public class TaskServiceImpl implements ITaskService {
         if (taskSearchModel.getName() != null) {
             String textSearch = taskSearchModel.getName();
             if (taskSearchModel.getName().charAt(0) == '#') {
-                q.setParameter("textSearch", textSearch.substring(1));
+                q.setParameter("textSearch", textSearch);
             } else {
                 q.setParameter("textSearch", "%" + textSearch + "%");
             }
