@@ -174,8 +174,8 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto add(TaskModel model) {
-        // Check tag exist by name
-        checkTaskExistByName(model.getName());
+        // Check task exist by name
+        checkTaskExistByName(model.getName(), model.getFeatureId());
 
         // check the user is on the project's dev list
         Long idUser = SecurityUtils.getCurrentUserId();
@@ -320,6 +320,12 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         TaskEntity taskExist = (TaskEntity) Const.copy(this.getById(model.getId()));
+
+        // Check task exist by name
+        if (!taskExist.getName().equals(model.getName())){
+            checkTaskExistByName(model.getName(), model.getFeatureId());
+        }
+
         List<UserEntity> listUserDevExist = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), model.getId());
         List<UserEntity> listUserFollowExist = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_FOLLOWER.name(), model.getId());
         List<TagEntity> listTagExist = tagRepository.getAllByObjectIdAndCategory(model.getId(), Const.tableName.TASK.name());
@@ -768,9 +774,9 @@ public class TaskServiceImpl implements ITaskService {
         }
     }
 
-    private void checkTaskExistByName(String name) {
+    private void checkTaskExistByName(String name, Long featureId) {
         // MySQL query is NOT case-sensitive
-        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "'";
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "' and feature_id = " +featureId;
         Query nativeQuery = manager.createNativeQuery(sqlQuery);
         BigInteger count = (BigInteger) nativeQuery.getSingleResult();
         if(count.intValue() > 0) {

@@ -216,7 +216,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
 
         // Check subtask name is exist
-        checkSubTaskExistByName(model.getName());
+        checkSubTaskExistByName(model.getName(), model.getTaskId());
 
 
         List<Object> objectList = this.checkIdAndDate(model);
@@ -297,6 +297,12 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
 
         SubTaskEntity subTaskExisted = this.subTaskRepository.findByIdAndIsDeletedFalse(modelUpdate.getId());
+
+        // Check subtask name is exist
+        if (!subTaskExisted.getName().equals(modelUpdate.getName())){
+            checkSubTaskExistByName(modelUpdate.getName(), modelUpdate.getTaskId());
+        }
+
         List<FileEntity> fileOriginal = fileRepository.getByCategoryAndObjectId(Const.tableName.SUBTASK.name(), modelUpdate.getId());
 
         if (subTaskExisted == null) {
@@ -873,9 +879,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
     }
 
-    private void checkSubTaskExistByName(String name) {
+    private void checkSubTaskExistByName(String name, Long idTask) {
         // MySQL query is NOT case-sensitive
-        String sqlQuery = "SELECT COUNT(*) FROM tbl_sub_tasks WHERE name = '" + name + "'";
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_sub_tasks WHERE name = '" + name + "' and task_id =  " + idTask;
         Query nativeQuery = entityManager.createNativeQuery(sqlQuery);
         BigInteger count = (BigInteger) nativeQuery.getSingleResult();
         if(count.intValue() > 0) {

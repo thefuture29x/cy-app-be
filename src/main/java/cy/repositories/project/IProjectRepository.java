@@ -21,4 +21,6 @@ public interface IProjectRepository  extends JpaRepository<ProjectEntity, Long> 
     boolean checkIsDeleted(Long id);
 
     List<ProjectEntity> getAllByNameAndIsDeleted(String name, Boolean isDeleted);
+
+
 }

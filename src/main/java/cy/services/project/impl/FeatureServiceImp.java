@@ -109,8 +109,8 @@ public class FeatureServiceImp implements IFeatureService {
             throw new CustomHandleException(5);
         }
 
-            // check name already exists
-        if (featureRepository.getAllByNameAndIsDeleted(model.getName(), false).size() > 0)
+        // check name already exists
+        if (featureRepository.getAllByNameAndIsDeletedAndProject_Id(model.getName(), false, model.getPid()).size() > 0)
             throw new CustomHandleException(190);
 
         ProjectEntity projectEntity = this.projectRepository.findById(model.getPid()).orElseThrow(() -> new CustomHandleException(45354345));
@@ -256,7 +256,7 @@ public class FeatureServiceImp implements IFeatureService {
         FeatureEntity oldFeature = this.featureRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(232));
         // check name already exists
         if (!oldFeature.getName().equals(model.getName())){
-            if (featureRepository.getAllByNameAndIsDeleted(model.getName(), false).size() > 0)
+            if (featureRepository.getAllByNameAndIsDeletedAndProject_Id(model.getName(), false, model.getPid()).size() > 0)
                 throw new CustomHandleException(190);
         }
         FeatureEntity featureOriginal = (FeatureEntity) Const.copy(oldFeature);
