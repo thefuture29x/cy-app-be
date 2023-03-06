@@ -36,7 +36,7 @@ public class FeatureDto {
     private List<FileDto> files;
     private List<TagDto> tagList;
     private Boolean editable;
-
+    private Long projectId;
     public static FeatureDto toDto(FeatureEntity entity){
         return FeatureDto.builder()
                 .id(entity.getId())
@@ -58,6 +58,7 @@ public class FeatureDto {
                 .files(entity.getAttachFiles()!=null ? entity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
                 .tagList(entity.getTagList()!=null? entity.getTagList().stream().map(TagDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
 //                .project(ProjectDto.toDto(entity.getProject()))
+                .projectId(entity.getProject().getId())
                 .build();
     }
     public static List<FeatureDto> toListDto(List<FeatureEntity> featureEntities){
