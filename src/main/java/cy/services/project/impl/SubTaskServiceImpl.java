@@ -116,6 +116,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
             // Set dev list in project
             setDevListInProject(subTaskDto);
+
+            // Set projectId
+            subTaskDto.setProjectId(subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId()));
         }
         return subTaskDto;
     }

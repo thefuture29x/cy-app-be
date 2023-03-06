@@ -51,6 +51,7 @@ public class SubTaskDto {
 
     // Dev list in project
     private List<UserDto> devListInProject;
+    private Long projectId;
 
     public static SubTaskDto toDto(SubTaskEntity entity) {
         return SubTaskDto.builder()
