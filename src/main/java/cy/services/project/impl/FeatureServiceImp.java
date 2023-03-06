@@ -175,16 +175,16 @@ public class FeatureServiceImp implements IFeatureService {
         List<Long> listIdDev = model.getUids() != null ? model.getUids() : new ArrayList<>();
         List<Long> listIdFollower = model.getUserFollow() != null ? model.getUserFollow() : new ArrayList<>();
 
-        if (!listIdDev.stream().anyMatch(userId::equals)) {
-            if (!listIdFollower.stream().anyMatch(userId::equals)) {
-                UserProjectEntity userProjectEntity = new UserProjectEntity();
-                userProjectEntity.setCategory(Const.tableName.FEATURE.name());
-                userProjectEntity.setObjectId(entity.getId());
-                userProjectEntity.setType(Const.type.TYPE_DEV.name());
-                userProjectEntity.setIdUser(userId);
-                userProjectRepository.save(userProjectEntity);
-            }
-        }
+//        if (!listIdDev.stream().anyMatch(userId::equals)) {
+//            if (!listIdFollower.stream().anyMatch(userId::equals)) {
+//                UserProjectEntity userProjectEntity = new UserProjectEntity();
+//                userProjectEntity.setCategory(Const.tableName.FEATURE.name());
+//                userProjectEntity.setObjectId(entity.getId());
+//                userProjectEntity.setType(Const.type.TYPE_DEV.name());
+//                userProjectEntity.setIdUser(userId);
+//                userProjectRepository.save(userProjectEntity);
+//            }
+//        }
 
         //Add Users
 
