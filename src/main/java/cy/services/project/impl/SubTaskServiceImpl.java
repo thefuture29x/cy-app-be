@@ -881,7 +881,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     private void checkSubTaskExistByName(String name, Long idTask) {
         // MySQL query is NOT case-sensitive
-        String sqlQuery = "SELECT COUNT(*) FROM tbl_sub_tasks WHERE name = '" + name + "' and task_id =  " + idTask;
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_sub_tasks WHERE name = '" + name + "' and is_deleted = 0 and task_id =  " + idTask;
         Query nativeQuery = entityManager.createNativeQuery(sqlQuery);
         BigInteger count = (BigInteger) nativeQuery.getSingleResult();
         if(count.intValue() > 0) {

@@ -526,7 +526,7 @@ public class FeatureServiceImp implements IFeatureService {
             if(listIdDevInProject.stream().anyMatch(userIdd::equals)){
                 data.setEditable(true);
             }
-            
+
         });
 
         return result;

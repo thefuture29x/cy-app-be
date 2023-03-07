@@ -776,7 +776,7 @@ public class TaskServiceImpl implements ITaskService {
 
     private void checkTaskExistByName(String name, Long featureId) {
         // MySQL query is NOT case-sensitive
-        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "' and feature_id = " +featureId;
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "' and is_deleted = 0 and feature_id = " +featureId;
         Query nativeQuery = manager.createNativeQuery(sqlQuery);
         BigInteger count = (BigInteger) nativeQuery.getSingleResult();
         if(count.intValue() > 0) {
