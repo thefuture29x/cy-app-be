@@ -519,14 +519,14 @@ public class FeatureServiceImp implements IFeatureService {
         Page<FeatureDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
 
         result.stream().forEach(data -> {
-            List<Long> listIdDev = userRepository.getAllIdDevByTypeAndObjectId(Const.tableName.FEATURE.name(), data.getId());
-            List<Long> listIdDevCheck = listIdDev != null ? listIdDev : new ArrayList<>();
-
             data.setEditable(false);
-
-            if (listIdDevCheck.stream().anyMatch(userIdd::equals)) {
+            List<String> listType = new ArrayList<>();
+            listType.add(Const.type.TYPE_DEV.toString());
+            List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(data.getId(), listType);
+            if(listIdDevInProject.stream().anyMatch(userIdd::equals)){
                 data.setEditable(true);
             }
+            
         });
 
         return result;
