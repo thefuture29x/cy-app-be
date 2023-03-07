@@ -210,7 +210,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         Long idUser = SecurityUtils.getCurrentUserId();
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
-        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getTaskId(), listType);
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(model.getTaskId(), listType);
         if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
             throw new CustomHandleException(5);
         }
