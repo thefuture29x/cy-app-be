@@ -43,6 +43,8 @@ public class TaskDto {
     private List<UserDto> devListInProject;
     private Long projectId;
 
+    // Bug list of task
+    private List<BugDto> bugList;
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;
 //

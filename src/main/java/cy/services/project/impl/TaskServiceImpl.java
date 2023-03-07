@@ -2,10 +2,7 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
-import cy.dtos.project.FileDto;
-import cy.dtos.project.SubTaskDto;
-import cy.dtos.project.TagDto;
-import cy.dtos.project.TaskDto;
+import cy.dtos.project.*;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.*;
@@ -51,6 +48,9 @@ public class TaskServiceImpl implements ITaskService {
     private final ISubTaskRepository subTaskRepository;
     private final ITaskRepository iTaskRepository;
     private final IProjectRepository iProjectRepository;
+
+    @Autowired
+    BugServiceImpl bugService;
 
     @Autowired
     EntityManager manager;
@@ -163,6 +163,8 @@ public class TaskServiceImpl implements ITaskService {
         this.setDevListInProject(taskDtoResult);
         // Set projectId
         taskDtoResult.setProjectId(taskEntity.getFeature().getProject().getId());
+        // Set bugList
+        this.setBugList(taskDtoResult);
         return taskDtoResult;
     }
 
@@ -776,5 +778,12 @@ public class TaskServiceImpl implements ITaskService {
         if(count.intValue() > 0) {
             throw new CustomHandleException(210);
         }
+    }
+
+    private void setBugList(TaskDto taskDto) {
+        Pageable pageable = PageRequest.of(0, 1000);
+        Page<BugDto> allBugOfTask = bugService.findAllBugOfTask(taskDto.getId(), pageable);
+        List<BugDto> listBugDto = allBugOfTask.getContent();
+        taskDto.setBugList(listBugDto);
     }
 }
