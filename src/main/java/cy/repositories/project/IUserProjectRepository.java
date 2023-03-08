@@ -43,7 +43,7 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
             ")",nativeQuery = true)
     List<Long> getAllIdDevOfProjectByFeatureIdInThisProject(Long idFeature, List<String> listType);
     @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
-            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' \n" +
+            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' and type IN ?2 \n" +
             "WHERE uspr.object_id = (\n" +
             "\tSELECT project_id FROM tbl_features WHERE id = (\n" +
             "\t\tSELECT feature_id FROM tbl_tasks WHERE id = ?1\n" +
@@ -52,7 +52,7 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
     List<Long> getAllIdDevOfProjectByTaskIdInThisProject(Long idTask, List<String> listType);
 
     @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
-            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' \n" +
+            "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' and type IN ?2 \n" +
             "WHERE uspr.object_id = (\n" +
             "\tSELECT project_id FROM tbl_features WHERE id = (\n" +
             "\t\tSELECT feature_id FROM tbl_tasks WHERE id = (\n" +
