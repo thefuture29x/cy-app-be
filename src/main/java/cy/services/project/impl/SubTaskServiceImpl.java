@@ -779,7 +779,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
         sql += " AND is_deleted = false";
 
-        sql += " ORDER BY created_date DESC";
+        // Get sort by and sort type
+        String sortBy = pageable.getSort().toString().split(":")[0].replace(" ", "");
+        String sortType = pageable.getSort().toString().split(":")[1].replace(" ", "");
+        sql += " ORDER BY " + sortBy + " " + sortType;
 
         // Paging
         int page = pageable.getPageNumber();
