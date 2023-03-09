@@ -607,7 +607,6 @@ public class BugServiceImpl implements IRequestBugService {
         return bugDto;
     }
 
-
     @Override
     public BugDto updateStatusBugOfSubtask(Long idSubtask, String newStatusOfBug) {
         // check bug is deleted
@@ -622,24 +621,14 @@ public class BugServiceImpl implements IRequestBugService {
         if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
-
-        //chuyển trạng thái Subtask
-        SubTaskEntity subTaskEntity = subTaskRepository.findById(bugEntity.getSubTask().getId()).orElseThrow(() -> new CustomHandleException(11));
-
         // get list user review and dev of this bug
         Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
-//        String ST_TO_DO = Const.status.TO_DO.name();
-//        String ST_IN_PROGRESS = Const.status.IN_PROGRESS.name();
-//        String ST_IN_REVIEW = Const.status.IN_REVIEW.name();
-//        String ST_PENDING = Const.status.PENDING.name();
-//        String ST_DONE = Const.status.DONE.name();
-
         if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (bugEntity.getStatus()) {
                 case "TO_DO":
-                    switch (newStatusOfBug){
+                    switch (newStatusOfBug) {
                         case "IN_PROGRESS":
                             List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
                                 return FileEntity.builder()
@@ -650,23 +639,23 @@ public class BugServiceImpl implements IRequestBugService {
                                         .category(Const.tableName.BUG_HISTORY.name())
                                         .build();
                             }).collect(Collectors.toList());
-                            this.startFixBug(idSubtask, bugEntity,files);
+                            this.startFixBug(idSubtask, null, bugEntity, files);
                             break;
                         case "PENDING":
-                            this.startPending(bugEntity,Const.status.TO_DO.name());
+                            this.startPending(bugEntity, Const.status.TO_DO.name());
                             break;
                     }
                     break;
                 case "IN_PROGRESS":
-                    switch (newStatusOfBug){
+                    switch (newStatusOfBug) {
                         case "TO_DO":
                             iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
                             break;
                         case "IN_REVIEW":
-                            this.endFixBug(idSubtask,bugEntity,Const.status.IN_REVIEW.name());
+                            this.endFixBug(idSubtask, null, bugEntity, Const.status.IN_REVIEW.name());
                             break;
                         case "PENDING":
-                            this.startPending(bugEntity,Const.status.IN_PROGRESS.name());
+                            this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
                         case "DONE":
                             changeStatusSubTask(bugEntity.getSubTask().getId());
@@ -674,66 +663,66 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                     break;
                 case "IN_REVIEW":
-                    switch (newStatusOfBug){
+                    switch (newStatusOfBug) {
                         case "IN_PROGRESS":
-                            this.startFixBug(idSubtask, bugEntity,null);
+                            this.startFixBug(idSubtask, null, bugEntity, null);
                             break;
                         case "PENDING":
-                            this.startPending(bugEntity,Const.status.IN_REVIEW.name());
+                            this.startPending(bugEntity, Const.status.IN_REVIEW.name());
                             break;
                     }
                     break;
                 case "PENDING":
                     PendingHistoryEntity pendingHistoryEntity = iPendingHistoryRepository.findByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
-                    switch (pendingHistoryEntity.getStatusBeforePending()){
+                    switch (pendingHistoryEntity.getStatusBeforePending()) {
                         case "TO_DO":
-                            switch (newStatusOfBug){
+                            switch (newStatusOfBug) {
                                 case "IN_PROGRESS":
-                                    this.startFixBug(idSubtask, bugEntity,null);
+                                    this.startFixBug(idSubtask, null, bugEntity, null);
                                     break;
                             }
                             break;
                         case "IN_PROGRESS":
-                            switch (newStatusOfBug){
+                            switch (newStatusOfBug) {
                                 case "TO_DO":
                                     iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
                                     break;
                                 case "IN_REVIEW":
-                                    this.endFixBug(idSubtask,bugEntity,Const.status.IN_REVIEW.name());
+                                    this.endFixBug(idSubtask, null, bugEntity, Const.status.IN_REVIEW.name());
                                     break;
                                 case "DONE":
-                                    this.endFixBug(idSubtask,bugEntity,Const.status.DONE.name());
+                                    this.endFixBug(idSubtask, null, bugEntity, Const.status.DONE.name());
                                     break;
                             }
                             break;
                         case "IN_REVIEW":
-                            switch (newStatusOfBug){
+                            switch (newStatusOfBug) {
                                 case "IN_PROGRESS":
-                                    this.startFixBug(idSubtask, bugEntity,null);
+                                    this.startFixBug(idSubtask, null, bugEntity, null);
                                     break;
                             }
                             break;
                         case "DONE":
-                            switch (newStatusOfBug){
+                            switch (newStatusOfBug) {
                                 case "IN_PROGRESS":
-                                    this.startFixBug(idSubtask, bugEntity,null);
+                                    this.startFixBug(idSubtask, null, bugEntity, null);
                                     break;
                             }
                             break;
                     }
-                    if (!newStatusOfBug.equals("PENDING")){
+                    if (!newStatusOfBug.equals("PENDING")) {
                         pendingHistoryEntity.setEndDate(Date.from(Instant.now()));
                         pendingHistoryEntity.setStatusAfterPending(newStatusOfBug);
                         iPendingHistoryRepository.save(pendingHistoryEntity);
                     }
                     break;
                 case "DONE":
-                    switch (newStatusOfBug){
+                    switch (newStatusOfBug) {
                         case "IN_PROGRESS":
-                            this.startFixBug(idSubtask, bugEntity,null);
+                            this.startFixBug(idSubtask, null, bugEntity, null);
                             break;
                         case "PENDING":
-                            this.startPending(bugEntity,Const.status.DONE.name());
+                            this.startPending(bugEntity, Const.status.DONE.name());
                             break;
                     }
                     break;
@@ -744,11 +733,9 @@ public class BugServiceImpl implements IRequestBugService {
 
         bugEntity.setStatus(newStatusOfBug);
         iBugRepository.save(bugEntity);
-        //Lưu dữ liệu vào bảng BugHistory
-
 
         BugDto bugDto = BugDto.entityToDto(bugEntity);
-        //Lưu dữ liệu vào bảng BugHistory
+
         return bugDto;
     }
 
@@ -856,6 +843,136 @@ public class BugServiceImpl implements IRequestBugService {
 
         BugDto bugDto = BugDto.entityToDto(bugEntity);
         //Lưu dữ liệu vào bảng BugHistory
+        return bugDto;
+    }
+
+    @Override
+    public BugDto updateStatusBugOfTask(Long idTask, String newStatusOfBug) {
+        // check bug is deleted
+        if (iBugRepository.checkIsDeleted(idTask)) throw new CustomHandleException(491);
+        BugEntity bugEntity = iBugRepository.findById(idTask).orElseThrow(() -> new CustomHandleException(313));
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idTask, listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+            throw new CustomHandleException(5);
+        }
+
+        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
+            switch (bugEntity.getStatus()) {
+                case "TO_DO":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
+                                return FileEntity.builder()
+                                        .fileName(f.getFileName())
+                                        .fileType(f.getFileType())
+                                        .link(f.getLink())
+                                        .uploadedBy(f.getUploadedBy())
+                                        .category(Const.tableName.BUG_HISTORY.name())
+                                        .build();
+                            }).collect(Collectors.toList());
+                            this.startFixBug(null, idTask, bugEntity, files);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.TO_DO.name());
+                            break;
+                    }
+                    break;
+                case "IN_PROGRESS":
+                    switch (newStatusOfBug) {
+                        case "TO_DO":
+                            iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
+                            break;
+                        case "IN_REVIEW":
+                            this.endFixBug(null, idTask, bugEntity, Const.status.IN_REVIEW.name());
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
+                            break;
+                        case "DONE":
+                            changeStatusSubTask(bugEntity.getSubTask().getId());
+                            break;
+                    }
+                    break;
+                case "IN_REVIEW":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            this.startFixBug(null, idTask, bugEntity, null);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.IN_REVIEW.name());
+                            break;
+                    }
+                    break;
+                case "PENDING":
+                    PendingHistoryEntity pendingHistoryEntity = iPendingHistoryRepository.findByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
+                    switch (pendingHistoryEntity.getStatusBeforePending()) {
+                        case "TO_DO":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(null, idTask, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                        case "IN_PROGRESS":
+                            switch (newStatusOfBug) {
+                                case "TO_DO":
+                                    iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
+                                    break;
+                                case "IN_REVIEW":
+                                    this.endFixBug(null, idTask, bugEntity, Const.status.IN_REVIEW.name());
+                                    break;
+                                case "DONE":
+                                    this.endFixBug(null, idTask, bugEntity, Const.status.DONE.name());
+                                    break;
+                            }
+                            break;
+                        case "IN_REVIEW":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(null, idTask, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                        case "DONE":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(null, idTask, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                    }
+                    if (!newStatusOfBug.equals("PENDING")) {
+                        pendingHistoryEntity.setEndDate(Date.from(Instant.now()));
+                        pendingHistoryEntity.setStatusAfterPending(newStatusOfBug);
+                        iPendingHistoryRepository.save(pendingHistoryEntity);
+                    }
+                    break;
+                case "DONE":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            this.startFixBug(null, idTask, bugEntity, null);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.DONE.name());
+                            break;
+                    }
+                    break;
+            }
+        } else {
+            throw new CustomHandleException(311);
+        }
+        bugEntity.setStatus(newStatusOfBug);
+        iBugRepository.save(bugEntity);
+
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
         return bugDto;
     }
 
@@ -1062,26 +1179,30 @@ public class BugServiceImpl implements IRequestBugService {
             return;
         }
     }
-    public void startFixBug(Long idSubtask, BugEntity bugEntity, List<FileEntity> files) {
+
+    public void startFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, List<FileEntity> files) {
         //dev bắt đầu fix bug
-        subTaskRepository.updateStatusSubTask(idSubtask, Const.status.IN_PROGRESS.name());
-//        List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
-//            return FileEntity.builder()
-//                    .fileName(f.getFileName())
-//                    .fileType(f.getFileType())
-//                    .link(f.getLink())
-//                    .uploadedBy(f.getUploadedBy())
-//                    .category(Const.tableName.BUG_HISTORY.name())
-//                    .build();
-//        }).collect(Collectors.toList());
+        if (idTask != null) {
+            iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
+            changeStatusTask(bugEntity.getTask().getId());
+        } else if (idSubtask != null) {
+            subTaskRepository.updateStatusSubTask(idSubtask, Const.status.IN_PROGRESS.name());
+            changeStatusSubTask(bugEntity.getSubTask().getId());
+        }
         iBugRepository.flush();
         saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
-        changeStatusSubTask(bugEntity.getSubTask().getId());
     }
 
-    public void endFixBug(Long idSubtask, BugEntity bugEntity, String newStatus) {
+    public void endFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, String newStatus) {
         //dev kết thúc fix bug
-        subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
+        if (idTask != null) {
+            iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
+            changeStatusTask(bugEntity.getTask().getId());
+        } else if (idSubtask != null) {
+            subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
+            changeStatusSubTask(bugEntity.getSubTask().getId());
+        }
+
         List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity.getId());
         for (BugHistoryEntity bugHistoryEntity : bugHistoryEntities) {
             if (bugHistoryEntity.getEndDate() == null) {
@@ -1089,7 +1210,6 @@ public class BugServiceImpl implements IRequestBugService {
                 iBugHistoryRepository.save(bugHistoryEntity);
             }
         }
-        changeStatusSubTask(bugEntity.getSubTask().getId());
     }
 
     public void startPending(BugEntity bugEntity, String oldStatus) {

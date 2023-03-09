@@ -19,4 +19,5 @@ public interface IRequestBugService extends IBaseService<BugEntity, BugDto, BugM
     BugDto updateStatusTaskToBug(Long id, int status);
     AllBugDto getAllBug(Long idProject);
     BugDto updateStatusBugOfSubtask(Long idSubtask, String newStatusOfBug);
+    BugDto updateStatusBugOfTask(Long idTask, String newStatusOfBug);
 }
