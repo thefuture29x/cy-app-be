@@ -20,4 +20,9 @@ public interface IBugHistoryRepository extends JpaRepository<BugHistoryEntity, L
     @Query(value = "UPDATE tbl_bug_historys SET detail = ?1 WHERE id = ?2",nativeQuery = true)
     void updateDetailHistoryBug(String detail,Long id);
 
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM tbl_bug_historys WHERE bug_id = ?1 AND end_date IS NULL ORDER BY id DESC LIMIT 1",nativeQuery = true)
+    void deleteLastBugHistoryOfBug(Long idBug);
+
 }
