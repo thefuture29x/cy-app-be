@@ -1012,7 +1012,9 @@ public class BugServiceImpl implements IRequestBugService {
             featureBugDto.setChildDto(listFeatureDto);
             allBugDtos.add(featureBugDto);
         }
+
         projectBugDto.setIdObject(idProject);
+        projectBugDto.setName(iProjectRepository.findById(idProject).get().getName());
         projectBugDto.setCategory(Const.tableName.PROJECT.name());
         projectBugDto.setChildDto(allBugDtos);
         projectBugDto.setCountBug(iBugRepository.countAllBugOfProjectByProjectId(idProject));
