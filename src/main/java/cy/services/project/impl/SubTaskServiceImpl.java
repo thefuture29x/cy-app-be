@@ -211,7 +211,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
         List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getTaskId(), listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -292,7 +292,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
         List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(modelUpdate.getId(), listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -619,7 +619,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     public List<TagDto> saveTagList(String tagList, Long subTaskId) {
         List<TagDto> tagDtoList = new ArrayList<>();
-        if(tagList == null || tagList.length() == 0) {
+        if (tagList == null || tagList.length() == 0) {
             return tagDtoList;
         }
         List<String> tagListSplit = Arrays.stream(tagList.split(",")).collect(Collectors.toList());
@@ -706,7 +706,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
         List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(id, listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -737,7 +737,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
     public Page<SubTaskDto> findAllByTaskId(Long id, String keyword, Pageable pageable) {
         List<SubTaskDto> getAllSubTaskDto = new ArrayList<>();
         Page<SubTaskEntity> findAllSubTask = subTaskRepository.findByTaskIdWithPaging(id, keyword, pageable);
-        for(SubTaskEntity subTaskEntity : findAllSubTask) {
+        for (SubTaskEntity subTaskEntity : findAllSubTask) {
             SubTaskDto subTaskDto = SubTaskDto.toDto(subTaskEntity);
             setReviewerUserList(subTaskDto);
             getAllSubTaskDto.add(subTaskDto);
@@ -780,10 +780,13 @@ public class SubTaskServiceImpl implements ISubTaskService {
         sql += " AND is_deleted = false";
 
         // Get sort by and sort type
-        String sortBy = pageable.getSort().toString().split(":")[0].replace(" ", "");
-        String sortType = pageable.getSort().toString().split(":")[1].replace(" ", "");
-        sql += " ORDER BY " + sortBy + " " + sortType;
-
+        try {
+            String sortBy = pageable.getSort().toString().split(":")[0].replace(" ", "");
+            String sortType = pageable.getSort().toString().split(":")[1].replace(" ", "");
+            sql += " ORDER BY " + sortBy + " " + sortType;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // Paging
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -801,7 +804,15 @@ public class SubTaskServiceImpl implements ISubTaskService {
         for (SubTaskEntity subTaskEntity : subTaskEntityList) {
             subTaskDtoList.add(SubTaskDto.toDto(subTaskEntity));
         }
-        return new PageImpl<>(subTaskDtoList, pageable, subTaskDtoList.size());
+
+        // Get total elements
+        String sqlCount = sql.replace("SELECT *", "SELECT COUNT(*)");
+        // Remove limit
+        sqlCount = sqlCount.substring(0, sqlCount.lastIndexOf("LIMIT"));
+        Query nativeQueryCount = entityManager.createNativeQuery(sqlCount);
+        int totalElements = Integer.parseInt(nativeQueryCount.getSingleResult().toString());
+//        int totalPage = (int) Math.ceil((double) totalElements / size);
+        return new PageImpl<>(subTaskDtoList, pageable, totalElements);
     }
 
     @Override
@@ -852,7 +863,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         } else if (countStatus == 2 && getAllStatusOfSubTask.stream().anyMatch(Const.status.DONE.name()::contains) && getAllStatusOfSubTask.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)) {
             // All sub-task have status DONE OR IN_REVIEW
             taskEntity.setStatus(Const.status.IN_REVIEW.name());
-        } else if(countStatus != 0){
+        } else if (countStatus != 0) {
             taskEntity.setStatus(Const.status.IN_PROGRESS.name());
         }
         taskRepository.save(taskEntity);
@@ -860,12 +871,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
     private void setDevListInProject(SubTaskDto subTaskDto) {
         Long projectId = subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId());
-        if(projectId == null) {
+        if (projectId == null) {
             throw new CustomHandleException(209);
-        }else {
-            String sqlQueryGetDevList = "SELECT * FROM tbl_user WHERE user_id IN (SELECT user_id FROM tbl_user_projects WHERE object_id = " + projectId
-                    + " AND type = '" + Const.type.TYPE_DEV.name() + "'"
-                    + " AND category = '" + Const.tableName.PROJECT.name() + "')";
+        } else {
+            String sqlQueryGetDevList = "SELECT * FROM tbl_user WHERE user_id IN (SELECT user_id FROM tbl_user_projects WHERE object_id = " + projectId + " AND type = '" + Const.type.TYPE_DEV.name() + "'" + " AND category = '" + Const.tableName.PROJECT.name() + "')";
             Query nativeQuery = entityManager.createNativeQuery(sqlQueryGetDevList, UserEntity.class);
             List<UserEntity> listUserDev = nativeQuery.getResultList();
             List<UserDto> listUserDto = new ArrayList<>();
@@ -881,7 +890,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         String sqlQuery = "SELECT COUNT(*) FROM tbl_sub_tasks WHERE name = '" + name + "'";
         Query nativeQuery = entityManager.createNativeQuery(sqlQuery);
         BigInteger count = (BigInteger) nativeQuery.getSingleResult();
-        if(count.intValue() > 0) {
+        if (count.intValue() > 0) {
             throw new CustomHandleException(210);
         }
     }
