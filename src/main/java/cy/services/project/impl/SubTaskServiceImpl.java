@@ -299,7 +299,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         SubTaskEntity subTaskExisted = this.subTaskRepository.findByIdAndIsDeletedFalse(modelUpdate.getId());
 
         // Check subtask name is exist
-        if (!subTaskExisted.getName().equals(modelUpdate.getName())){
+        if (!subTaskExisted.getName().equals(modelUpdate.getName())) {
             checkSubTaskExistByName(modelUpdate.getName(), modelUpdate.getTaskId());
         }
 
@@ -742,13 +742,62 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public Page<SubTaskDto> findAllByTaskId(Long id, String keyword, Pageable pageable) {
         List<SubTaskDto> getAllSubTaskDto = new ArrayList<>();
-        Page<SubTaskEntity> findAllSubTask = subTaskRepository.findByTaskIdWithPaging(id, keyword, pageable);
-        for (SubTaskEntity subTaskEntity : findAllSubTask) {
-            SubTaskDto subTaskDto = SubTaskDto.toDto(subTaskEntity);
-            setReviewerUserList(subTaskDto);
+        List<SubTaskDto> subTaskDtoList = new ArrayList<>();
+        long totalElements = 0L;
+        // If keyword start with #, search by tag
+        if (keyword != null && keyword.startsWith("#")) {
+            String querySQL = "SELECT DISTINCT new cy.dtos.project.SubTaskDto(st) FROM SubTaskEntity st INNER JOIN TagRelationEntity tr ON " +
+                    "st.id = tr.objectId " + "INNER JOIN TagEntity t ON tr.idTag = t.id " +
+                    "WHERE tr.category = 'SUBTASK' AND st.task.id = ?1 AND st.isDeleted = false AND t.name LIKE ?2";
+            try {
+                // Get order by
+                String orderBy = pageable.getSort().toString().split(":")[0];
+                // Get order type
+                String orderType = pageable.getSort().toString().split(":")[1].replace(" ", "");
+                querySQL += " ORDER BY st." + orderBy + " " + orderType;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            entityManager.clear();
+            Query query = entityManager.createQuery(querySQL, SubTaskDto.class);
+            query.setParameter(1, id);
+            query.setParameter(2, "%" + keyword + "%");
+
+            // Get page number
+            int pageNumber = pageable.getPageNumber();
+            // Get page size
+            int pageSize = pageable.getPageSize();
+            // Get offset
+            int offset = pageNumber * pageSize;
+
+            query.setFirstResult(offset);
+            query.setMaxResults(pageSize);
+
+            try {
+                subTaskDtoList = query.getResultList();
+            } catch (Exception e) {
+                throw new CustomHandleException(211);
+            }
+
+            // Get total elements
+            String querySQLCount = querySQL.replace("DISTINCT new cy.dtos.project.SubTaskDto(st)", "COUNT(DISTINCT st.id)");
+
+            entityManager.clear();
+            Query queryTotal = entityManager.createQuery(querySQLCount);
+            queryTotal.setParameter(1, id);
+            queryTotal.setParameter(2, "%" + keyword + "%");
+            totalElements = Long.parseLong(queryTotal.getSingleResult().toString());
+        } else {
+            Page<SubTaskDto> findAllSubTask = subTaskRepository.findByTaskIdWithPaging(id, keyword, pageable);
+            subTaskDtoList = findAllSubTask.getContent();
+            totalElements = findAllSubTask.getTotalElements();
+        }
+        for (SubTaskDto subTaskDto : subTaskDtoList) {
+            this.setReviewerUserList(subTaskDto);
             getAllSubTaskDto.add(subTaskDto);
         }
-        return new PageImpl<>(getAllSubTaskDto, pageable, findAllSubTask.getTotalElements());
+        return new PageImpl<>(getAllSubTaskDto, pageable, totalElements);
     }
 
     @Override
@@ -827,6 +876,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (subTaskEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
             throw new CustomHandleException(205);
         }
+
+        // If current status is IN_REVIEW -> delete all reviewer
+        if(subTaskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())){
+            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_REVIEWER.name())) {
+                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+            }
+        }
+
         subTaskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
         SubTaskEntity saveResult = subTaskRepository.save(subTaskEntityExist);
         if (saveResult == null) {
@@ -851,9 +908,6 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 userProjectRepository.save(userProjectEntity);
             }
         }
-
-        // Update status of task
-//        updateStatusOfTask(subTaskEntityExist.getTask());
         return true;
     }
 

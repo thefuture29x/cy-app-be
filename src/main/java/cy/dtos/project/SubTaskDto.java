@@ -53,6 +53,22 @@ public class SubTaskDto {
     private List<UserDto> devListInProject;
     private Long projectId;
 
+    public SubTaskDto(SubTaskEntity subTaskEntity) {
+        this.id = subTaskEntity.getId();
+        this.name = subTaskEntity.getName();
+        this.taskId = subTaskEntity.getTask().getId();
+        this.description = subTaskEntity.getDescription();
+        this.priority = subTaskEntity.getPriority();
+        this.createBy = subTaskEntity.getCreateBy().getFullName();
+        this.createByDto = subTaskEntity.getCreateBy() != null ? UserMetaDto.toDto(subTaskEntity.getCreateBy()) : null;
+        this.status = subTaskEntity.getStatus();
+        this.startDate = subTaskEntity.getStartDate();
+        this.endDate = subTaskEntity.getEndDate();
+        this.isDefault = subTaskEntity.getIsDefault() != null ? subTaskEntity.getIsDefault() : false;
+        this.attachFileUrls = subTaskEntity.getAttachFiles() != null ? subTaskEntity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>();
+        this.tagList = subTaskEntity.getTagList() != null ? subTaskEntity.getTagList().stream().map(TagDto::toDto).collect(Collectors.toList()) : new ArrayList<>();
+    }
+
     public static SubTaskDto toDto(SubTaskEntity entity) {
         return SubTaskDto.builder()
                 .id(entity.getId())
@@ -67,10 +83,8 @@ public class SubTaskDto {
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
                 .isDefault(entity.getIsDefault() != null ? entity.getIsDefault() : false)
-                .attachFileUrls(entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(FileDto::toDto)
-                        .collect(Collectors.toList()) : new ArrayList<>())
-                .tagList(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto)
-                        .collect(Collectors.toList()) : new ArrayList<>())
+                .attachFileUrls(entity.getAttachFiles() != null ? entity.getAttachFiles().stream().map(FileDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
+                .tagList(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).collect(Collectors.toList()) : new ArrayList<>())
 //                .assignedUser(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(UserDto::toDto)
 //                        .collect(Collectors.toList()) : new ArrayList<>())
                 .build();
