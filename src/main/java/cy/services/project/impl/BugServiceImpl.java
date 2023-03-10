@@ -110,10 +110,19 @@ public class BugServiceImpl implements IRequestBugService {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
             tagEntityList.add(TagDto.toDto(tagEntity));
         }
-        BugDto bugDto = BugDto.entityToDto(iBugRepository.findById(id).get());
+        BugEntity bugEntity = iBugRepository.findById(id).get();
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
         bugDto.setReviewerList(reviewerList);
         bugDto.setResponsibleList(responsibleList);
         bugDto.setTagList(tagEntityList);
+        if (bugEntity.getSubTask() != null){
+            bugDto.setSubTaskName(bugEntity.getSubTask().getName());
+            bugDto.setTaskName(bugEntity.getSubTask().getTask().getName());
+            bugDto.setFeatureName(bugEntity.getSubTask().getTask().getFeature().getName());
+        }else if (bugEntity.getTask() != null){
+            bugDto.setTaskName(bugEntity.getTask().getName());
+            bugDto.setFeatureName(bugEntity.getTask().getFeature().getName());
+        }
         return bugDto;
     }
 

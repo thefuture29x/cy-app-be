@@ -44,6 +44,9 @@ public class BugDto {
     private UserMetaDto assignTo;
     private UserMetaDto createBy;
     private String reason;
+    private String featureName;
+    private String taskName;
+    private String subTaskName;
 
     public static BugDto entityToDto(BugEntity obj) {
         return BugDto.builder()
