@@ -746,9 +746,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         long totalElements = 0L;
         // If keyword start with #, search by tag
         if (keyword != null && keyword.startsWith("#")) {
-            String querySQL = "SELECT DISTINCT new cy.dtos.project.SubTaskDto(st) FROM SubTaskEntity st INNER JOIN TagRelationEntity tr ON " +
-                    "st.id = tr.objectId " + "INNER JOIN TagEntity t ON tr.idTag = t.id " +
-                    "WHERE tr.category = 'SUBTASK' AND st.task.id = ?1 AND st.isDeleted = false AND t.name = ?2";
+            String querySQL = "SELECT DISTINCT new cy.dtos.project.SubTaskDto(st) FROM SubTaskEntity st INNER JOIN TagRelationEntity tr ON " + "st.id = tr.objectId " + "INNER JOIN TagEntity t ON tr.idTag = t.id " + "WHERE tr.category = 'SUBTASK' AND st.task.id = ?1 AND st.isDeleted = false AND t.name = ?2";
             try {
                 // Get order by
                 String orderBy = pageable.getSort().toString().split(":")[0];
@@ -823,7 +821,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
             sql += " AND start_date >= '" + sdf.format(startDate) + "'";
         }
         if (endDate != null) {
-            sql += " AND end_date <= '" + sdf.format(endDate) + "'";
+            if (startDate == null) {
+                sql += " AND end_date >= '" + sdf.format(endDate) + "'";
+            } else {
+                sql += " AND end_date <= '" + sdf.format(endDate) + "'";
+            }
         }
         if (status != null) {
             sql += " AND status = '" + status + "'";
@@ -878,7 +880,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
 
         // If current status is IN_REVIEW -> delete all reviewer
-        if(subTaskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())){
+        if (subTaskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
             for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_REVIEWER.name())) {
                 userProjectRepository.deleteByIdNative(userProjectEntity.getId());
             }
