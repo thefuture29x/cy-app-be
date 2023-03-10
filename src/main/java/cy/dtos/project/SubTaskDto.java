@@ -53,6 +53,12 @@ public class SubTaskDto {
     private List<UserDto> devListInProject;
     private Long projectId;
 
+    // Breadcrumb element list
+    private List<String> breadcrumbElementList;
+
+    // Url of each breadcrumb
+    private List<String> breadcrumbUrlList;
+
     public SubTaskDto(SubTaskEntity subTaskEntity) {
         this.id = subTaskEntity.getId();
         this.name = subTaskEntity.getName();
