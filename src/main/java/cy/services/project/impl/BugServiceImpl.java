@@ -74,6 +74,8 @@ public class BugServiceImpl implements IRequestBugService {
     IFeatureRepository iFeatureRepository;
     @Autowired
     ISubTaskRepository iSubTaskRepository;
+    @Autowired
+    IPendingHistoryRepository iPendingHistoryRepository;
 
 
     @Override
@@ -108,10 +110,19 @@ public class BugServiceImpl implements IRequestBugService {
             TagEntity tagEntity = iTagRepository.findById(tagRelationEntity.getIdTag()).orElse(null);
             tagEntityList.add(TagDto.toDto(tagEntity));
         }
-        BugDto bugDto = BugDto.entityToDto(iBugRepository.findById(id).get());
+        BugEntity bugEntity = iBugRepository.findById(id).get();
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
         bugDto.setReviewerList(reviewerList);
         bugDto.setResponsibleList(responsibleList);
         bugDto.setTagList(tagEntityList);
+        if (bugEntity.getSubTask() != null){
+            bugDto.setSubTaskName(bugEntity.getSubTask().getName());
+            bugDto.setTaskName(bugEntity.getSubTask().getTask().getName());
+            bugDto.setFeatureName(bugEntity.getSubTask().getTask().getFeature().getName());
+        }else if (bugEntity.getTask() != null){
+            bugDto.setTaskName(bugEntity.getTask().getName());
+            bugDto.setFeatureName(bugEntity.getTask().getFeature().getName());
+        }
         return bugDto;
     }
 
@@ -137,14 +148,14 @@ public class BugServiceImpl implements IRequestBugService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
 
-        if (model.getTask()!= null){
+        if (model.getTask() != null) {
             List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getTask(), listType);
-            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
                 throw new CustomHandleException(5);
             }
-        }else {
+        } else {
             List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(model.getSubTask(), listType);
-            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
                 throw new CustomHandleException(5);
             }
         }
@@ -277,7 +288,7 @@ public class BugServiceImpl implements IRequestBugService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
         List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(model.getId(), listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -297,7 +308,7 @@ public class BugServiceImpl implements IRequestBugService {
 
                 List<UserEntity> userDevOriginal = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), model.getId());
                 List<UserEntity> userViewOriginal = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), model.getId());
-                List<TagEntity> listTagEntityOriginal = iTagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.BUG.name());
+                List<TagEntity> listTagEntityOriginal = iTagRepository.getAllByObjectIdAndCategory(model.getId(), Const.tableName.BUG.name());
 
                 bugEntityOriginal.setReviewerList(userViewOriginal);
                 bugEntityOriginal.setResponsibleList(userDevOriginal);
@@ -395,8 +406,8 @@ public class BugServiceImpl implements IRequestBugService {
                             tagRelationEntity.setObjectId(bugEntity.getId());
                             iTagRelationRepository.save(tagRelationEntity);
                         } else if (tagEntity != null) {
-                            TagRelationEntity tagRelationEntity = iTagRelationRepository.checkIsEmpty(bugEntity.getId(),tagEntity.getId(),Const.tableName.BUG.name());
-                            if (tagRelationEntity == null){
+                            TagRelationEntity tagRelationEntity = iTagRelationRepository.checkIsEmpty(bugEntity.getId(), tagEntity.getId(), Const.tableName.BUG.name());
+                            if (tagRelationEntity == null) {
                                 tagRelationEntity = new TagRelationEntity();
                                 tagRelationEntity.setCategory(Const.tableName.BUG.name());
                                 tagRelationEntity.setIdTag(tagEntity.getId());
@@ -435,7 +446,7 @@ public class BugServiceImpl implements IRequestBugService {
 
                 List<UserEntity> userDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_DEV.name(), model.getId());
                 List<UserEntity> userView = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.BUG.name(), Const.type.TYPE_REVIEWER.name(), model.getId());
-                List<TagEntity> listTagEntity = iTagRepository.getAllByObjectIdAndCategory(model.getId(),Const.tableName.BUG.name());
+                List<TagEntity> listTagEntity = iTagRepository.getAllByObjectIdAndCategory(model.getId(), Const.tableName.BUG.name());
                 List<FileEntity> file = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
 
                 bugEntity.setReviewerList(userView);
@@ -461,7 +472,7 @@ public class BugServiceImpl implements IRequestBugService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
         List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idProject, listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -528,7 +539,7 @@ public class BugServiceImpl implements IRequestBugService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
         List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(id, listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -606,6 +617,138 @@ public class BugServiceImpl implements IRequestBugService {
     }
 
     @Override
+    public BugDto updateStatusBugOfSubtask(Long idSubtask, String newStatusOfBug) {
+        // check bug is deleted
+        if (iBugRepository.checkIsDeleted(idSubtask)) throw new CustomHandleException(491);
+        BugEntity bugEntity = iBugRepository.findById(idSubtask).orElseThrow(() -> new CustomHandleException(313));
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idSubtask, listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+            throw new CustomHandleException(5);
+        }
+        // get list user review and dev of this bug
+        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
+            switch (bugEntity.getStatus()) {
+                case "TO_DO":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
+                                return FileEntity.builder()
+                                        .fileName(f.getFileName())
+                                        .fileType(f.getFileType())
+                                        .link(f.getLink())
+                                        .uploadedBy(f.getUploadedBy())
+                                        .category(Const.tableName.BUG_HISTORY.name())
+                                        .build();
+                            }).collect(Collectors.toList());
+                            this.startFixBug(idSubtask, null, bugEntity, files);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.TO_DO.name());
+                            break;
+                    }
+                    break;
+                case "IN_PROGRESS":
+                    switch (newStatusOfBug) {
+                        case "TO_DO":
+                            iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
+                            break;
+                        case "IN_REVIEW":
+                            this.endFixBug(idSubtask, null, bugEntity, Const.status.IN_REVIEW.name());
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
+                            break;
+                        case "DONE":
+                            changeStatusSubTask(bugEntity.getSubTask().getId());
+                            break;
+                    }
+                    break;
+                case "IN_REVIEW":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            this.startFixBug(idSubtask, null, bugEntity, null);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.IN_REVIEW.name());
+                            break;
+                    }
+                    break;
+                case "PENDING":
+                    PendingHistoryEntity pendingHistoryEntity = iPendingHistoryRepository.findByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
+                    switch (pendingHistoryEntity.getStatusBeforePending()) {
+                        case "TO_DO":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(idSubtask, null, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                        case "IN_PROGRESS":
+                            switch (newStatusOfBug) {
+                                case "TO_DO":
+                                    iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
+                                    break;
+                                case "IN_REVIEW":
+                                    this.endFixBug(idSubtask, null, bugEntity, Const.status.IN_REVIEW.name());
+                                    break;
+                                case "DONE":
+                                    this.endFixBug(idSubtask, null, bugEntity, Const.status.DONE.name());
+                                    break;
+                            }
+                            break;
+                        case "IN_REVIEW":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(idSubtask, null, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                        case "DONE":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(idSubtask, null, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                    }
+                    if (!newStatusOfBug.equals("PENDING")) {
+                        pendingHistoryEntity.setEndDate(Date.from(Instant.now()));
+                        pendingHistoryEntity.setStatusAfterPending(newStatusOfBug);
+                        iPendingHistoryRepository.save(pendingHistoryEntity);
+                    }
+                    break;
+                case "DONE":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            this.startFixBug(idSubtask, null, bugEntity, null);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.DONE.name());
+                            break;
+                    }
+                    break;
+            }
+        } else {
+            throw new CustomHandleException(311);
+        }
+
+        bugEntity.setStatus(newStatusOfBug);
+        iBugRepository.save(bugEntity);
+
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
+
+        return bugDto;
+    }
+
+    @Override
     public BugDto updateStatusBugToTask(Long id, int status) {
         if (iBugRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         BugEntity bugEntity = iBugRepository.findById(id).orElseThrow(() -> new CustomHandleException(313));
@@ -645,7 +788,7 @@ public class BugServiceImpl implements IRequestBugService {
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
         List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(id, listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -711,6 +854,137 @@ public class BugServiceImpl implements IRequestBugService {
         //Lưu dữ liệu vào bảng BugHistory
         return bugDto;
     }
+
+    @Override
+    public BugDto updateStatusBugOfTask(Long idTask, String newStatusOfBug) {
+        // check bug is deleted
+        if (iBugRepository.checkIsDeleted(idTask)) throw new CustomHandleException(491);
+        BugEntity bugEntity = iBugRepository.findById(idTask).orElseThrow(() -> new CustomHandleException(313));
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idTask, listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+            throw new CustomHandleException(5);
+        }
+
+        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
+            switch (bugEntity.getStatus()) {
+                case "TO_DO":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
+                                return FileEntity.builder()
+                                        .fileName(f.getFileName())
+                                        .fileType(f.getFileType())
+                                        .link(f.getLink())
+                                        .uploadedBy(f.getUploadedBy())
+                                        .category(Const.tableName.BUG_HISTORY.name())
+                                        .build();
+                            }).collect(Collectors.toList());
+                            this.startFixBug(null, idTask, bugEntity, files);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.TO_DO.name());
+                            break;
+                    }
+                    break;
+                case "IN_PROGRESS":
+                    switch (newStatusOfBug) {
+                        case "TO_DO":
+                            iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
+                            break;
+                        case "IN_REVIEW":
+                            this.endFixBug(null, idTask, bugEntity, Const.status.IN_REVIEW.name());
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
+                            break;
+                        case "DONE":
+                            changeStatusSubTask(bugEntity.getSubTask().getId());
+                            break;
+                    }
+                    break;
+                case "IN_REVIEW":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            this.startFixBug(null, idTask, bugEntity, null);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.IN_REVIEW.name());
+                            break;
+                    }
+                    break;
+                case "PENDING":
+                    PendingHistoryEntity pendingHistoryEntity = iPendingHistoryRepository.findByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
+                    switch (pendingHistoryEntity.getStatusBeforePending()) {
+                        case "TO_DO":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(null, idTask, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                        case "IN_PROGRESS":
+                            switch (newStatusOfBug) {
+                                case "TO_DO":
+                                    iBugHistoryRepository.deleteLastBugHistoryOfBug(bugEntity.getId());
+                                    break;
+                                case "IN_REVIEW":
+                                    this.endFixBug(null, idTask, bugEntity, Const.status.IN_REVIEW.name());
+                                    break;
+                                case "DONE":
+                                    this.endFixBug(null, idTask, bugEntity, Const.status.DONE.name());
+                                    break;
+                            }
+                            break;
+                        case "IN_REVIEW":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(null, idTask, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                        case "DONE":
+                            switch (newStatusOfBug) {
+                                case "IN_PROGRESS":
+                                    this.startFixBug(null, idTask, bugEntity, null);
+                                    break;
+                            }
+                            break;
+                    }
+                    if (!newStatusOfBug.equals("PENDING")) {
+                        pendingHistoryEntity.setEndDate(Date.from(Instant.now()));
+                        pendingHistoryEntity.setStatusAfterPending(newStatusOfBug);
+                        iPendingHistoryRepository.save(pendingHistoryEntity);
+                    }
+                    break;
+                case "DONE":
+                    switch (newStatusOfBug) {
+                        case "IN_PROGRESS":
+                            this.startFixBug(null, idTask, bugEntity, null);
+                            break;
+                        case "PENDING":
+                            this.startPending(bugEntity, Const.status.DONE.name());
+                            break;
+                    }
+                    break;
+            }
+        } else {
+            throw new CustomHandleException(311);
+        }
+        bugEntity.setStatus(newStatusOfBug);
+        iBugRepository.save(bugEntity);
+
+        BugDto bugDto = BugDto.entityToDto(bugEntity);
+        return bugDto;
+    }
+
     @Override
     public AllBugDto getAllBug(Long idProject) {
         AllBugDto projectBugDto = new AllBugDto();
@@ -747,7 +1021,9 @@ public class BugServiceImpl implements IRequestBugService {
             featureBugDto.setChildDto(listFeatureDto);
             allBugDtos.add(featureBugDto);
         }
+
         projectBugDto.setIdObject(idProject);
+        projectBugDto.setName(iProjectRepository.findById(idProject).get().getName());
         projectBugDto.setCategory(Const.tableName.PROJECT.name());
         projectBugDto.setChildDto(allBugDtos);
         projectBugDto.setCountBug(iBugRepository.countAllBugOfProjectByProjectId(idProject));
@@ -762,14 +1038,14 @@ public class BugServiceImpl implements IRequestBugService {
             List<String> listType = new ArrayList<>();
             listType.add(Const.type.TYPE_DEV.toString());
             List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(id, listType);
-            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
                 throw new CustomHandleException(5);
             }
 
             BugEntity bugEntity = iBugRepository.findById(id).get();
             bugEntity.setIsDeleted(true);
             iBugRepository.save(bugEntity);
-            iHistoryLogService.logDelete(id, bugEntity, Const.tableName.BUG,bugEntity.getName());
+            iHistoryLogService.logDelete(id, bugEntity, Const.tableName.BUG, bugEntity.getName());
             return true;
         } catch (Exception e) {
             return false;
@@ -881,38 +1157,82 @@ public class BugServiceImpl implements IRequestBugService {
         return result;
     }
 
-    public void changeStatusTask(Long idParent){
+    public void changeStatusTask(Long idParent) {
         List<String> allStatus = iBugRepository.getAllStatusBugByTaskId(idParent);
         int countStatus = allStatus.size();
-        if (countStatus == 1){
-            iTaskRepository.updateStatusTask(idParent,allStatus.get(0));
+        if (countStatus == 1) {
+            iTaskRepository.updateStatusTask(idParent, allStatus.get(0));
             return;
-        }else if (countStatus == 2
+        } else if (countStatus == 2
                 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
-                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
-            iTaskRepository.updateStatusTask(idParent,Const.status.IN_REVIEW.name());
+                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
+            iTaskRepository.updateStatusTask(idParent, Const.status.IN_REVIEW.name());
             return;
-        }else if(countStatus != 0){
-            iTaskRepository.updateStatusTask(idParent,Const.status.IN_PROGRESS.name());
+        } else if (countStatus != 0) {
+            iTaskRepository.updateStatusTask(idParent, Const.status.IN_PROGRESS.name());
             return;
         }
     }
 
-    public void changeStatusSubTask(Long idParent){
+    public void changeStatusSubTask(Long idParent) {
         List<String> allStatus = iBugRepository.getAllStatusBugBySubTaskId(idParent);
         int countStatus = allStatus.size();
-        if (countStatus == 1){
-            iSubTaskRepository.updateStatusSubTask(idParent,allStatus.get(0));
+        if (countStatus == 1) {
+            iSubTaskRepository.updateStatusSubTask(idParent, allStatus.get(0));
             return;
-        }else if (countStatus == 2
+        } else if (countStatus == 2
                 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
-                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)){
-            iSubTaskRepository.updateStatusSubTask(idParent,Const.status.IN_REVIEW.name());
+                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
+            iSubTaskRepository.updateStatusSubTask(idParent, Const.status.IN_REVIEW.name());
             return;
-        }else if (countStatus != 0){
-            iSubTaskRepository.updateStatusSubTask(idParent,Const.status.IN_PROGRESS.name());
+        } else if (countStatus != 0) {
+            iSubTaskRepository.updateStatusSubTask(idParent, Const.status.IN_PROGRESS.name());
             return;
         }
+    }
+
+    public void startFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, List<FileEntity> files) {
+        //dev bắt đầu fix bug
+        if (idTask != null) {
+            iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
+            changeStatusTask(bugEntity.getTask().getId());
+        } else if (idSubtask != null) {
+            subTaskRepository.updateStatusSubTask(idSubtask, Const.status.IN_PROGRESS.name());
+            changeStatusSubTask(bugEntity.getSubTask().getId());
+        }
+        iBugRepository.flush();
+        saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
+    }
+
+    public void endFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, String newStatus) {
+        //dev kết thúc fix bug
+        if (idTask != null) {
+            iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
+            changeStatusTask(bugEntity.getTask().getId());
+        } else if (idSubtask != null) {
+            subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
+            changeStatusSubTask(bugEntity.getSubTask().getId());
+        }
+
+        List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity.getId());
+        for (BugHistoryEntity bugHistoryEntity : bugHistoryEntities) {
+            if (bugHistoryEntity.getEndDate() == null) {
+                bugHistoryEntity.setEndDate(Date.from(Instant.now()));
+                iBugHistoryRepository.save(bugHistoryEntity);
+            }
+        }
+    }
+
+    public void startPending(BugEntity bugEntity, String oldStatus) {
+        iPendingHistoryRepository.save(
+                PendingHistoryEntity
+                        .builder()
+                        .startDate(Date.from(Instant.now()))
+                        .endDate(null)
+                        .objectId(bugEntity.getId())
+                        .category(Const.tableName.BUG.name())
+                        .statusBeforePending(oldStatus)
+                        .build());
     }
 
 }
