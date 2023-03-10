@@ -710,6 +710,8 @@ public class TaskServiceImpl implements ITaskService {
             throw new CustomHandleException(205);
         }
 
+        TaskEntity taskEntityOriginal = taskEntityExist;
+
         // If Task have Subtask -> do not change status of task manually
         List<SubTaskEntity> getAllSubTask = subTaskRepository.findByTaskId(taskId);
         if (getAllSubTask.size() > 0) {
@@ -757,6 +759,7 @@ public class TaskServiceImpl implements ITaskService {
             }
         }
 
+        iHistoryLogService.logUpdate(taskEntityExist.getId(), taskEntityOriginal, saveResult, Const.tableName.TASK);
         return true;
     }
 
