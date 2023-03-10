@@ -325,7 +325,7 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
 
         StringBuilder content = new StringBuilder()
                 .append("<p> đã xóa ")
-                .append(category.name().toLowerCase())
+                .append(annotationClass.title() )
                 .append(" <b>"+nameObject+"</b>.</p>");
 
         this.historyLogRepository.save(HistoryEntity
