@@ -628,12 +628,18 @@ public class TaskServiceImpl implements ITaskService {
             sql += " AND task.feature.id = :featureId";
         }
         sql += " WHERE 1=1 ";
-        if (taskSearchModel.getStartDate() != null) {
-            sql += " AND task.startDate >= :startDate ";
+
+        if (taskSearchModel.getStartDate() != null && taskSearchModel.getEndDate() != null){
+            sql += " AND task.startDate >= :startDate AND task.endDate <= :endDate";
+        }else {
+            if (taskSearchModel.getStartDate() != null) {
+                sql += " AND task.startDate >= :startDate ";
+            }
+            if (taskSearchModel.getEndDate() != null) {
+                sql += " AND task.endDate >= :endDate ";
+            }
         }
-        if (taskSearchModel.getEndDate() != null) {
-            sql += " AND task.endDate <= :endDate ";
-        }
+
         if (taskSearchModel.getName() != null) {
             if (taskSearchModel.getName().charAt(0) == '#') {
                 sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'TASK') ";
