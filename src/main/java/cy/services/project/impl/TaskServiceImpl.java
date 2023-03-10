@@ -147,7 +147,8 @@ public class TaskServiceImpl implements ITaskService {
         taskEntity.setViewerTeam(userEntitiesViewer);
 
         // set reViewerTeam
-        List<UserProjectEntity> userProjectEntitiesReViewer = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_REVIEWER.name());
+        List<UserProjectEntity> userProjectEntitiesReViewer = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(),
+                id, Const.type.TYPE_REVIEWER.name());
         List<Long> idUsersReViewer = userProjectEntitiesReViewer.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
         List<UserEntity> userEntitiesReViewer = new ArrayList<>();
         if (idUsersReViewer != null) {
@@ -710,13 +711,20 @@ public class TaskServiceImpl implements ITaskService {
             }
         }
 
+        // If current status is in review -> delete reviewer
+        if(taskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())){
+            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name())) {
+                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+            }
+        }
+
         taskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
         TaskEntity saveResult = iTaskRepository.save(taskEntityExist);
         if (saveResult == null) {
             return false;
         }
 
-        // If new status is in review -> add reviewer
+        // If new status is IN_REVIEW -> add reviewer
         if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.IN_REVIEW.name())) {
             if (subTaskUpdateModel.getReviewerIdList() == null) {
                 throw new CustomHandleException(206);
@@ -736,9 +744,6 @@ public class TaskServiceImpl implements ITaskService {
                 userProjectRepository.save(userProjectEntity);
             }
         }
-
-        // Update status of feature
-//        changeStatusFeature(taskEntityExist.getFeature().getId());
 
         return true;
     }

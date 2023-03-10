@@ -47,11 +47,6 @@ public class TaskDto {
     private List<BugDto> bugList;
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;
-//
-//        List<String> lstFile = new ArrayList<>();
-//        if(entity.getAttachFiles() != null && entity.getAttachFiles().size() > 0){
-//            entity.getAttachFiles().stream().forEach(x-> lstFile.add(x.getLink()));
-//        }
 
         return TaskDto.builder()
                 .id(entity.getId())
@@ -69,6 +64,8 @@ public class TaskDto {
                 .followerList(entity.getFollowerTeam() != null ? entity.getFollowerTeam().stream().map(UserDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .viewerList(entity.getViewerTeam() != null ? entity.getViewerTeam().stream().map(UserDto::toDto)
+                        .collect(Collectors.toList()) : new ArrayList<>())
+                .reviewerList(entity.getReViewerTeam() != null ? entity.getReViewerTeam().stream().map(UserDto::toDto)
                         .collect(Collectors.toList()) : new ArrayList<>())
                 .tagName(entity.getTagList() != null ? entity.getTagList().stream().map(TagDto::toDto).map(TagDto::getName)
                         .collect(Collectors.toList()) : new ArrayList<>())

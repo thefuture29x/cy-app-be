@@ -876,6 +876,14 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (subTaskEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
             throw new CustomHandleException(205);
         }
+
+        // If current status is IN_REVIEW -> delete all reviewer
+        if(subTaskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())){
+            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_REVIEWER.name())) {
+                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+            }
+        }
+
         subTaskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
         SubTaskEntity saveResult = subTaskRepository.save(subTaskEntityExist);
         if (saveResult == null) {
@@ -900,9 +908,6 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 userProjectRepository.save(userProjectEntity);
             }
         }
-
-        // Update status of task
-//        updateStatusOfTask(subTaskEntityExist.getTask());
         return true;
     }
 
