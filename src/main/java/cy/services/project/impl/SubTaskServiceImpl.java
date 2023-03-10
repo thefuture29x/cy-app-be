@@ -35,10 +35,10 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class SubTaskServiceImpl implements ISubTaskService {
-    private final String PROJECT_DETAIL_URL = "http://3.34.98.33/detail-project/";
-    private final String FEATURE_DETAIL_URL = "http://3.34.98.33/list_detail_feature?id=";
-    private final String TASK_DETAIL_URL = "http://3.34.98.33/detail-task/";
-    private final String SUBTASK_DETAIL_URL = "http://3.34.98.33/detail-subtask/";
+    private final String PROJECT_DETAIL_URL = "/detail-project/";
+    private final String FEATURE_DETAIL_URL = "/list_detail_feature?id=";
+    private final String TASK_DETAIL_URL = "/detail-task/";
+    private final String SUBTASK_DETAIL_URL = "/detail-subtask/";
     @Autowired
     IUserRepository userRepository;
     @Autowired
@@ -892,6 +892,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
             throw new CustomHandleException(205);
         }
 
+        SubTaskEntity subTaskEntityOriginal = subTaskEntityExist;
+
         // If current status is IN_REVIEW -> delete all reviewer
         if (subTaskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
             for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_REVIEWER.name())) {
@@ -923,6 +925,8 @@ public class SubTaskServiceImpl implements ISubTaskService {
                 userProjectRepository.save(userProjectEntity);
             }
         }
+
+        iHistoryLogService.logUpdate(subTaskEntityExist.getId(), subTaskEntityOriginal, saveResult, Const.tableName.SUBTASK);
         return true;
     }
 

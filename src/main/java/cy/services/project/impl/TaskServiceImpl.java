@@ -33,9 +33,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class TaskServiceImpl implements ITaskService {
-    private final String PROJECT_DETAIL_URL = "http://3.34.98.33/detail-project/";
-    private final String FEATURE_DETAIL_URL = "http://3.34.98.33/list_detail_feature?id=";
-    private final String TASK_DETAIL_URL = "http://3.34.98.33/detail-task/";
+    private final String PROJECT_DETAIL_URL = "/detail-project/";
+    private final String FEATURE_DETAIL_URL = "/list_detail_feature?id=";
+    private final String TASK_DETAIL_URL = "/detail-task/";
     private final ITaskRepository repository;
     private final IFileService fileService;
     private final IFileRepository fileRepository;
@@ -710,6 +710,8 @@ public class TaskServiceImpl implements ITaskService {
             throw new CustomHandleException(205);
         }
 
+        TaskEntity taskEntityOriginal = taskEntityExist;
+
         // If Task have Subtask -> do not change status of task manually
         List<SubTaskEntity> getAllSubTask = subTaskRepository.findByTaskId(taskId);
         if (getAllSubTask.size() > 0) {
@@ -757,6 +759,7 @@ public class TaskServiceImpl implements ITaskService {
             }
         }
 
+        iHistoryLogService.logUpdate(taskEntityExist.getId(), taskEntityOriginal, saveResult, Const.tableName.TASK);
         return true;
     }
 
