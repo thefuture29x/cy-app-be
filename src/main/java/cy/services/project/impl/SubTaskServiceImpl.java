@@ -35,10 +35,10 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class SubTaskServiceImpl implements ISubTaskService {
-    private final String PROJECT_DETAIL_URL = "http://3.34.98.33/detail-project/";
-    private final String FEATURE_DETAIL_URL = "http://3.34.98.33/list_detail_feature?id=";
-    private final String TASK_DETAIL_URL = "http://3.34.98.33/detail-task/";
-    private final String SUBTASK_DETAIL_URL = "http://3.34.98.33/detail-subtask/";
+    private final String PROJECT_DETAIL_URL = "/detail-project/";
+    private final String FEATURE_DETAIL_URL = "/list_detail_feature?id=";
+    private final String TASK_DETAIL_URL = "/detail-task/";
+    private final String SUBTASK_DETAIL_URL = "/detail-subtask/";
     @Autowired
     IUserRepository userRepository;
     @Autowired
