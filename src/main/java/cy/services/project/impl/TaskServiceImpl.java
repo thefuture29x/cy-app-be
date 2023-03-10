@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class TaskServiceImpl implements ITaskService {
+    private final String PROJECT_DETAIL_URL = "http://3.34.98.33/detail-project/";
+    private final String FEATURE_DETAIL_URL = "http://3.34.98.33/list_detail_feature?id=";
+    private final String TASK_DETAIL_URL = "http://3.34.98.33/detail-task/";
     private final ITaskRepository repository;
     private final IFileService fileService;
     private final IFileRepository fileRepository;
@@ -166,6 +169,9 @@ public class TaskServiceImpl implements ITaskService {
         taskDtoResult.setProjectId(taskEntity.getFeature().getProject().getId());
         // Set bugList
         this.setBugList(taskDtoResult);
+        // Set breadcrumb element list & breadcrumb url list
+        this.setBreadcrumb(taskDtoResult, taskEntity.getFeature());
+
         return taskDtoResult;
     }
 
@@ -796,5 +802,60 @@ public class TaskServiceImpl implements ITaskService {
         Page<BugDto> allBugOfTask = bugService.findAllBugOfTask(taskDto.getId(), pageable);
         List<BugDto> listBugDto = allBugOfTask.getContent();
         taskDto.setBugList(listBugDto);
+    }
+
+    private void setBreadcrumb(TaskDto taskDto, FeatureEntity featureEntity){
+        // Project name / Feature name / Task name
+        List<String> breadcrumbElementList = new ArrayList<>();
+        ProjectEntity projectEntity = featureEntity.getProject();
+
+        String taskName = "";
+        String featureName = "";
+        String projectName = "";
+
+        Long taskId = 0L;
+        Long featureId = 0L;
+        Long projectId = 0L;
+
+        if(taskDto != null){
+            taskName = taskDto.getName();
+            taskId = taskDto.getId();
+        }
+
+        if(featureEntity != null){
+            featureName = featureEntity.getName();
+            featureId = featureEntity.getId();
+        }
+
+        if(projectEntity != null){
+            projectName = projectEntity.getName();
+            projectId = projectEntity.getId();
+        }
+
+        breadcrumbElementList.add(projectName);
+        breadcrumbElementList.add(featureName);
+        breadcrumbElementList.add(taskName);
+
+        taskDto.setBreadcrumbElementList(breadcrumbElementList);
+
+        List<Long> breadcrumbIdList = new ArrayList<>();
+        breadcrumbIdList.add(projectId);
+        breadcrumbIdList.add(featureId);
+        breadcrumbIdList.add(taskId);
+
+        this.setBreadcrumbUrlList(taskDto, breadcrumbIdList);
+    }
+
+    private void setBreadcrumbUrlList(TaskDto taskDto, List<Long> breadcrumbIdList){
+        List<String> breadcrumbUrlList = new ArrayList<>();
+        String fullProjectUrl = PROJECT_DETAIL_URL + breadcrumbIdList.get(0);
+        String fullFeatureUrl = FEATURE_DETAIL_URL + breadcrumbIdList.get(1) + "&projectId=" + breadcrumbIdList.get(0);
+        String fullTaskUrl = TASK_DETAIL_URL + breadcrumbIdList.get(2);
+
+        breadcrumbUrlList.add(fullProjectUrl);
+        breadcrumbUrlList.add(fullFeatureUrl);
+        breadcrumbUrlList.add(fullTaskUrl);
+
+        taskDto.setBreadcrumbUrlList(breadcrumbUrlList);
     }
 }

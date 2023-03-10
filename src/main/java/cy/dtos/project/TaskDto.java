@@ -45,6 +45,12 @@ public class TaskDto {
 
     // Bug list of task
     private List<BugDto> bugList;
+
+    // Breadcrumb element list
+    private List<String> breadcrumbElementList;
+
+    // Url of each breadcrumb
+    private List<String> breadcrumbUrlList;
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;
 
