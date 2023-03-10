@@ -23,7 +23,7 @@ public interface ISubTaskRepository extends JpaRepository<SubTaskEntity, Long> {
     @Query(value = "select * from tbl_sub_tasks where( is_deleted and (updated_date < DATE_SUB(DATE_ADD(NOW(), INTERVAL 7 HOUR), INTERVAL 12 HOUR)))",nativeQuery = true)
     List<SubTaskEntity> checkSubTasksDelete();
 
-    @Query(value = "select * from tbl_sub_tasks where task_id = ?1", nativeQuery = true)
+    @Query(value = "select * from tbl_sub_tasks where task_id = ?1 and is_deleted = 0", nativeQuery = true)
     List<SubTaskEntity> findByTaskId(Long id);
 
     @Query(value = "SELECT DISTINCT new cy.dtos.project.SubTaskDto(st) FROM SubTaskEntity st WHERE st.task.id = :taskId AND st.name LIKE CONCAT('%',:keyword,'%') AND st.isDeleted = false")
