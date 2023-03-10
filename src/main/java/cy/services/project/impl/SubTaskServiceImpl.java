@@ -819,12 +819,18 @@ public class SubTaskServiceImpl implements ISubTaskService {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // Create sql query
         String sql = "SELECT * FROM tbl_sub_tasks WHERE task_id = " + taskId;
-        if (startDate != null) {
-            sql += " AND start_date >= '" + sdf.format(startDate) + "'";
+
+        if (startDate != null && endDate != null){
+            sql += " AND start_date >= '" + sdf.format(startDate) + "'" + " AND end_date <= '" + sdf.format(endDate) + "'";
+        }else {
+            if (startDate != null) {
+                sql += " AND start_date >= '" + sdf.format(startDate) + "'";
+            }
+            if (endDate != null) {
+                sql += " AND end_date >= '" + sdf.format(endDate) + "'";
+            }
         }
-        if (endDate != null) {
-            sql += " AND end_date <= '" + sdf.format(endDate) + "'";
-        }
+
         if (status != null) {
             sql += " AND status = '" + status + "'";
         }
