@@ -35,6 +35,10 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class SubTaskServiceImpl implements ISubTaskService {
+    private final String PROJECT_DETAIL_URL = "http://3.34.98.33/detail-project/";
+    private final String FEATURE_DETAIL_URL = "http://3.34.98.33/list_detail_feature?id=";
+    private final String TASK_DETAIL_URL = "http://3.34.98.33/detail-task/";
+    private final String SUBTASK_DETAIL_URL = "http://3.34.98.33/detail-subtask/";
     @Autowired
     IUserRepository userRepository;
     @Autowired
@@ -53,6 +57,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
     FileUploadProvider fileUploadProvider;
     @Autowired
     IBugRepository bugRepository;
+    @Autowired
+    IProjectRepository projectRepository;
+    @Autowired
+    IFeatureRepository featureRepository;
     @Autowired
     IRequestBugService bugService;
     @Autowired
@@ -119,6 +127,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
 
             // Set projectId
             subTaskDto.setProjectId(subTaskRepository.getProjectIdBySubTaskId(subTaskDto.getId()));
+
+            // Set breadcrumb element list & breadcrumb url list
+            this.setBreadcrumb(subTaskDto, subTaskEntity.getTask());
         }
         return subTaskDto;
     }
@@ -955,5 +966,73 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (count.intValue() > 0) {
             throw new CustomHandleException(210);
         }
+    }
+
+    private void setBreadcrumb(SubTaskDto subTaskDto, TaskEntity taskEntity){
+        // Project name / Feature name / Task name / Sub-task name
+        List<String> breadcrumbElementList = new ArrayList<>();
+        FeatureEntity featureEntity = taskEntity.getFeature();
+        ProjectEntity projectEntity = featureEntity.getProject();
+
+        String subTaskName = "";
+        String taskName = "";
+        String featureName = "";
+        String projectName = "";
+
+
+        Long subTaskId = 0L;
+        Long taskId = 0L;
+        Long featureId = 0L;
+        Long projectId = 0L;
+
+        if(subTaskDto != null){
+            subTaskName = subTaskDto.getName();
+            subTaskId = subTaskDto.getId();
+        }
+
+        if(taskEntity != null){
+            taskName = taskEntity.getName();
+            taskId = taskEntity.getId();
+        }
+
+        if(featureEntity != null){
+            featureName = featureEntity.getName();
+            featureId = featureEntity.getId();
+        }
+
+        if(projectEntity != null){
+            projectName = projectEntity.getName();
+            projectId = projectEntity.getId();
+        }
+
+        breadcrumbElementList.add(projectName);
+        breadcrumbElementList.add(featureName);
+        breadcrumbElementList.add(taskName);
+        breadcrumbElementList.add(subTaskName);
+
+        subTaskDto.setBreadcrumbElementList(breadcrumbElementList);
+
+        List<Long> breadcrumbIdList = new ArrayList<>();
+        breadcrumbIdList.add(projectId);
+        breadcrumbIdList.add(featureId);
+        breadcrumbIdList.add(taskId);
+        breadcrumbIdList.add(subTaskId);
+
+        this.setBreadcrumbUrlList(subTaskDto, breadcrumbIdList);
+    }
+
+    private void setBreadcrumbUrlList(SubTaskDto subTaskDto, List<Long> breadcrumbIdList){
+        List<String> breadcrumbUrlList = new ArrayList<>();
+        String fullProjectUrl = PROJECT_DETAIL_URL + breadcrumbIdList.get(0);
+        String fullFeatureUrl = FEATURE_DETAIL_URL + breadcrumbIdList.get(1) + "&projectId=" + breadcrumbIdList.get(0);
+        String fullTaskUrl = TASK_DETAIL_URL + breadcrumbIdList.get(2);
+        String fullSubTaskUrl = SUBTASK_DETAIL_URL + breadcrumbIdList.get(3);
+
+        breadcrumbUrlList.add(fullProjectUrl);
+        breadcrumbUrlList.add(fullFeatureUrl);
+        breadcrumbUrlList.add(fullTaskUrl);
+        breadcrumbUrlList.add(fullSubTaskUrl);
+
+        subTaskDto.setBreadcrumbUrlList(breadcrumbUrlList);
     }
 }
