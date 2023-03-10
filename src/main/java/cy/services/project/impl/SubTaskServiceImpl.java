@@ -829,9 +829,9 @@ public class SubTaskServiceImpl implements ISubTaskService {
         // Create sql query
         String sql = "SELECT * FROM tbl_sub_tasks WHERE task_id = " + taskId;
 
-        if (startDate != null && endDate != null){
+        if (startDate != null && endDate != null) {
             sql += " AND start_date >= '" + sdf.format(startDate) + "'" + " AND end_date <= '" + sdf.format(endDate) + "'";
-        }else {
+        } else {
             if (startDate != null) {
                 sql += " AND start_date >= '" + sdf.format(startDate) + "'";
             }
@@ -970,7 +970,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         }
     }
 
-    private void setBreadcrumb(SubTaskDto subTaskDto, TaskEntity taskEntity){
+    private void setBreadcrumb(SubTaskDto subTaskDto, TaskEntity taskEntity) {
         // Project name / Feature name / Task name / Sub-task name
         List<String> breadcrumbElementList = new ArrayList<>();
         FeatureEntity featureEntity = taskEntity.getFeature();
@@ -987,22 +987,22 @@ public class SubTaskServiceImpl implements ISubTaskService {
         Long featureId = 0L;
         Long projectId = 0L;
 
-        if(subTaskDto != null){
+        if (subTaskDto != null) {
             subTaskName = subTaskDto.getName();
             subTaskId = subTaskDto.getId();
         }
 
-        if(taskEntity != null){
+        if (taskEntity != null) {
             taskName = taskEntity.getName();
             taskId = taskEntity.getId();
         }
 
-        if(featureEntity != null){
+        if (featureEntity != null) {
             featureName = featureEntity.getName();
             featureId = featureEntity.getId();
         }
 
-        if(projectEntity != null){
+        if (projectEntity != null) {
             projectName = projectEntity.getName();
             projectId = projectEntity.getId();
         }
@@ -1023,7 +1023,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         this.setBreadcrumbUrlList(subTaskDto, breadcrumbIdList);
     }
 
-    private void setBreadcrumbUrlList(SubTaskDto subTaskDto, List<Long> breadcrumbIdList){
+    private void setBreadcrumbUrlList(SubTaskDto subTaskDto, List<Long> breadcrumbIdList) {
         List<String> breadcrumbUrlList = new ArrayList<>();
         String fullProjectUrl = PROJECT_DETAIL_URL + breadcrumbIdList.get(0);
         String fullFeatureUrl = FEATURE_DETAIL_URL + breadcrumbIdList.get(1) + "&projectId=" + breadcrumbIdList.get(0);
