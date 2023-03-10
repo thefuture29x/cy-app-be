@@ -821,10 +821,10 @@ public class SubTaskServiceImpl implements ISubTaskService {
             sql += " AND start_date >= '" + sdf.format(startDate) + "'";
         }
         if (endDate != null) {
-            if (startDate == null) {
-                sql += " AND end_date >= '" + sdf.format(endDate) + "'";
-            } else {
+            if (startDate != null) {
                 sql += " AND end_date <= '" + sdf.format(endDate) + "'";
+            } else {
+                sql += " AND end_date >= '" + sdf.format(endDate) + "'";
             }
         }
         if (status != null) {
