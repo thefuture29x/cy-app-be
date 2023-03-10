@@ -748,7 +748,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
         if (keyword != null && keyword.startsWith("#")) {
             String querySQL = "SELECT DISTINCT new cy.dtos.project.SubTaskDto(st) FROM SubTaskEntity st INNER JOIN TagRelationEntity tr ON " +
                     "st.id = tr.objectId " + "INNER JOIN TagEntity t ON tr.idTag = t.id " +
-                    "WHERE tr.category = 'SUBTASK' AND st.task.id = ?1 AND st.isDeleted = false AND t.name LIKE ?2";
+                    "WHERE tr.category = 'SUBTASK' AND st.task.id = ?1 AND st.isDeleted = false AND t.name = ?2";
             try {
                 // Get order by
                 String orderBy = pageable.getSort().toString().split(":")[0];
@@ -762,7 +762,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             entityManager.clear();
             Query query = entityManager.createQuery(querySQL, SubTaskDto.class);
             query.setParameter(1, id);
-            query.setParameter(2, "%" + keyword + "%");
+            query.setParameter(2, keyword);
 
             // Get page number
             int pageNumber = pageable.getPageNumber();
@@ -786,7 +786,7 @@ public class SubTaskServiceImpl implements ISubTaskService {
             entityManager.clear();
             Query queryTotal = entityManager.createQuery(querySQLCount);
             queryTotal.setParameter(1, id);
-            queryTotal.setParameter(2, "%" + keyword + "%");
+            queryTotal.setParameter(2, keyword);
             totalElements = Long.parseLong(queryTotal.getSingleResult().toString());
         } else {
             Page<SubTaskDto> findAllSubTask = subTaskRepository.findByTaskIdWithPaging(id, keyword, pageable);
