@@ -51,6 +51,8 @@ public class TaskDto {
 
     // Url of each breadcrumb
     private List<String> breadcrumbUrlList;
+
+    private boolean isHaveSubtask;
     public static TaskDto toDto(TaskEntity entity){
         if(entity ==  null) return null;
 

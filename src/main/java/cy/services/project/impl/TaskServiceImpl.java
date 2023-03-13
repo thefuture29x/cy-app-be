@@ -2,7 +2,10 @@ package cy.services.project.impl;
 
 import cy.dtos.CustomHandleException;
 import cy.dtos.UserDto;
-import cy.dtos.project.*;
+import cy.dtos.project.BugDto;
+import cy.dtos.project.FileDto;
+import cy.dtos.project.TagDto;
+import cy.dtos.project.TaskDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.*;
@@ -25,7 +28,6 @@ import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -98,9 +100,7 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public TaskDto findById(Long id) {
-        if (iTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         TaskEntity taskEntity = this.getById(id);
-
         // set Tag
         List<TagRelationEntity> tagRelationEntities = this.tagRelationRepository.getByCategoryAndObjectId(Const.tableName.TASK.name(), id);
         List<Long> idTags = tagRelationEntities.stream().map(TagRelationEntity::getIdTag).collect(Collectors.toList());
@@ -150,8 +150,7 @@ public class TaskServiceImpl implements ITaskService {
         taskEntity.setViewerTeam(userEntitiesViewer);
 
         // set reViewerTeam
-        List<UserProjectEntity> userProjectEntitiesReViewer = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(),
-                id, Const.type.TYPE_REVIEWER.name());
+        List<UserProjectEntity> userProjectEntitiesReViewer = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), id, Const.type.TYPE_REVIEWER.name());
         List<Long> idUsersReViewer = userProjectEntitiesReViewer.stream().map(UserProjectEntity::getIdUser).collect(Collectors.toList());
         List<UserEntity> userEntitiesReViewer = new ArrayList<>();
         if (idUsersReViewer != null) {
@@ -171,14 +170,22 @@ public class TaskServiceImpl implements ITaskService {
         this.setBugList(taskDtoResult);
         // Set breadcrumb element list & breadcrumb url list
         this.setBreadcrumb(taskDtoResult, taskEntity.getFeature());
-
+        // Check task have subtask
+        boolean isNotHaveSubTask = subTaskRepository.findByTaskId(taskDtoResult.getId()).isEmpty();
+        taskDtoResult.setHaveSubtask(!isNotHaveSubTask);
         return taskDtoResult;
     }
 
     @Override
     public TaskEntity getById(Long id) {
-        if (iTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
-        return this.repository.findById(id).orElseThrow(() -> new CustomHandleException(251));
+        try {
+            // Check task is deleted
+            if (iTaskRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
+        } catch (Exception e) {
+            // Task not found
+            throw new CustomHandleException(251);
+        }
+        return this.repository.findById(id).get();
     }
 
     @Override
@@ -190,8 +197,8 @@ public class TaskServiceImpl implements ITaskService {
         Long idUser = SecurityUtils.getCurrentUserId();
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
-        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getFeatureId(),listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getFeatureId(), listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -316,8 +323,8 @@ public class TaskServiceImpl implements ITaskService {
         Long idUser = SecurityUtils.getCurrentUserId();
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
-        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getId(),listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getId(), listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -331,7 +338,7 @@ public class TaskServiceImpl implements ITaskService {
         TaskEntity taskExist = (TaskEntity) Const.copy(this.getById(model.getId()));
 
         // Check task exist by name
-        if (!taskExist.getName().equals(model.getName())){
+        if (!taskExist.getName().equals(model.getName())) {
             checkTaskExistByName(model.getName(), model.getFeatureId());
         }
 
@@ -433,7 +440,7 @@ public class TaskServiceImpl implements ITaskService {
         // add follower
         // delete dev old
         List<UserProjectEntity> oldUserFollowerProject = this.userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskOld.getId(), Const.type.TYPE_FOLLOWER.name());
-        if (oldUserFollowerProject.size() != 0){
+        if (oldUserFollowerProject.size() != 0) {
             oldUserFollowerProject.stream().forEach(oldUserProject -> this.userProjectRepository.delete(oldUserProject));
         }
 //        List<UserDto> followerList = new ArrayList<>();
@@ -475,8 +482,8 @@ public class TaskServiceImpl implements ITaskService {
             Long idUser = SecurityUtils.getCurrentUserId();
             List<String> listType = new ArrayList<>();
             listType.add(Const.type.TYPE_DEV.toString());
-            List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(id,listType);
-            if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(id, listType);
+            if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
                 throw new CustomHandleException(5);
             }
             // delete subTask
@@ -539,7 +546,7 @@ public class TaskServiceImpl implements ITaskService {
         oldTask.setIsDeleted(true);
         this.repository.saveAndFlush(oldTask);
 //        changeStatusFeature(id);
-        iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK,oldTask.getName());
+        iHistoryLogService.logDelete(id, oldTask, Const.tableName.TASK, oldTask.getName());
         return true;
     }
 
@@ -593,12 +600,12 @@ public class TaskServiceImpl implements ITaskService {
             qCount.setParameter("featureId", taskModel.getFeatureId());
         }
         if (taskModel.getStartDate() != null) {
-            q.setParameter("startDate", taskModel.getStartDate() +"00:00:00");
-            qCount.setParameter("startDate", taskModel.getStartDate() +"00:00:00");
+            q.setParameter("startDate", taskModel.getStartDate() + "00:00:00");
+            qCount.setParameter("startDate", taskModel.getStartDate() + "00:00:00");
         }
         if (taskModel.getEndDate() != null) {
-            q.setParameter("endDate", taskModel.getEndDate() +"23:59:59");
-            qCount.setParameter("endDate", taskModel.getEndDate() +"23:59:59");
+            q.setParameter("endDate", taskModel.getEndDate() + "23:59:59");
+            qCount.setParameter("endDate", taskModel.getEndDate() + "23:59:59");
         }
         if (taskModel.getTextSearch() != null) {
             q.setParameter("textSearch", "%" + taskModel.getTextSearch() + "%");
@@ -629,9 +636,9 @@ public class TaskServiceImpl implements ITaskService {
         }
         sql += " WHERE 1=1 ";
 
-        if (taskSearchModel.getStartDate() != null && taskSearchModel.getEndDate() != null){
+        if (taskSearchModel.getStartDate() != null && taskSearchModel.getEndDate() != null) {
             sql += " AND task.startDate >= :startDate AND task.endDate <= :endDate";
-        }else {
+        } else {
             if (taskSearchModel.getStartDate() != null) {
                 sql += " AND task.startDate >= :startDate ";
             }
@@ -677,7 +684,7 @@ public class TaskServiceImpl implements ITaskService {
         queryResult.stream().forEach(data -> {
             data.setCountSubtask(iTaskRepository.countSubtask(data.getId()));
             data.setCountSubtaskDone(iTaskRepository.countSubtaskDone(data.getId()));
-            List<UserDto> listUserDev= userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), data.getId()).stream().map(e -> UserDto.toDto(e)).collect(Collectors.toList());
+            List<UserDto> listUserDev = userRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.TASK.name(), Const.type.TYPE_DEV.name(), data.getId()).stream().map(e -> UserDto.toDto(e)).collect(Collectors.toList());
 
             data.setDevList(listUserDev);
         });
@@ -701,8 +708,8 @@ public class TaskServiceImpl implements ITaskService {
         Long idUser = SecurityUtils.getCurrentUserId();
         List<String> listType = new ArrayList<>();
         listType.add(Const.type.TYPE_DEV.toString());
-        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(taskId,listType);
-        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(taskId, listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
             throw new CustomHandleException(5);
         }
 
@@ -718,15 +725,15 @@ public class TaskServiceImpl implements ITaskService {
             throw new CustomHandleException(252);
         }
         // check only reviewer can change status to done
-        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.DONE.name())){
-            Set<Long> idReviewer = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId,Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.DONE.name())) {
+            Set<Long> idReviewer = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
             if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(idReviewer::contains)) {
                 throw new CustomHandleException(254);
             }
         }
 
         // If current status is in review -> delete reviewer
-        if(taskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())){
+        if (taskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
             for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name())) {
                 userProjectRepository.deleteByIdNative(userProjectEntity.getId());
             }
@@ -770,7 +777,7 @@ public class TaskServiceImpl implements ITaskService {
             featureRepository.updateStatusFeature(idParent, allStatus.get(0));
         } else if (countStatus == 2 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains) && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
             featureRepository.updateStatusFeature(idParent, Const.status.IN_REVIEW.name());
-        } else if (countStatus != 0){
+        } else if (countStatus != 0) {
             featureRepository.updateStatusFeature(idParent, Const.status.IN_PROGRESS.name());
         }
     }
@@ -780,12 +787,10 @@ public class TaskServiceImpl implements ITaskService {
         String sqlQueryGetProjectId = "SELECT p.id FROM tbl_projects p INNER JOIN tbl_features f ON p.id = f.project_id INNER JOIN tbl_tasks t ON f.id = t.feature_id WHERE t.id = " + taskDto.getId();
         Query nativeQueryGetProjectId = manager.createNativeQuery(sqlQueryGetProjectId);
         BigInteger projectId = (BigInteger) nativeQueryGetProjectId.getSingleResult();
-        if(projectId == null) {
+        if (projectId == null) {
             throw new CustomHandleException(209);
-        }else {
-            String sqlQueryGetDevList = "SELECT * FROM tbl_user WHERE user_id IN (SELECT user_id FROM tbl_user_projects WHERE object_id = "
-                    + projectId + " AND type = '" + Const.type.TYPE_DEV.name() + "'"
-                    + " AND category = '" + Const.tableName.PROJECT.name() + "')";
+        } else {
+            String sqlQueryGetDevList = "SELECT * FROM tbl_user WHERE user_id IN (SELECT user_id FROM tbl_user_projects WHERE object_id = " + projectId + " AND type = '" + Const.type.TYPE_DEV.name() + "'" + " AND category = '" + Const.tableName.PROJECT.name() + "')";
             Query nativeQuery = manager.createNativeQuery(sqlQueryGetDevList, UserEntity.class);
             List<UserEntity> listUserDev = nativeQuery.getResultList();
             List<UserDto> listUserDto = new ArrayList<>();
@@ -798,10 +803,10 @@ public class TaskServiceImpl implements ITaskService {
 
     private void checkTaskExistByName(String name, Long featureId) {
         // MySQL query is NOT case-sensitive
-        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "' and is_deleted = 0 and feature_id = " +featureId;
+        String sqlQuery = "SELECT COUNT(*) FROM tbl_tasks WHERE name = '" + name + "' and is_deleted = 0 and feature_id = " + featureId;
         Query nativeQuery = manager.createNativeQuery(sqlQuery);
         BigInteger count = (BigInteger) nativeQuery.getSingleResult();
-        if(count.intValue() > 0) {
+        if (count.intValue() > 0) {
             throw new CustomHandleException(210);
         }
     }
@@ -813,7 +818,7 @@ public class TaskServiceImpl implements ITaskService {
         taskDto.setBugList(listBugDto);
     }
 
-    private void setBreadcrumb(TaskDto taskDto, FeatureEntity featureEntity){
+    private void setBreadcrumb(TaskDto taskDto, FeatureEntity featureEntity) {
         // Project name / Feature name / Task name
         List<String> breadcrumbElementList = new ArrayList<>();
         ProjectEntity projectEntity = featureEntity.getProject();
@@ -826,17 +831,17 @@ public class TaskServiceImpl implements ITaskService {
         Long featureId = 0L;
         Long projectId = 0L;
 
-        if(taskDto != null){
+        if (taskDto != null) {
             taskName = taskDto.getName();
             taskId = taskDto.getId();
         }
 
-        if(featureEntity != null){
+        if (featureEntity != null) {
             featureName = featureEntity.getName();
             featureId = featureEntity.getId();
         }
 
-        if(projectEntity != null){
+        if (projectEntity != null) {
             projectName = projectEntity.getName();
             projectId = projectEntity.getId();
         }
@@ -855,7 +860,7 @@ public class TaskServiceImpl implements ITaskService {
         this.setBreadcrumbUrlList(taskDto, breadcrumbIdList);
     }
 
-    private void setBreadcrumbUrlList(TaskDto taskDto, List<Long> breadcrumbIdList){
+    private void setBreadcrumbUrlList(TaskDto taskDto, List<Long> breadcrumbIdList) {
         List<String> breadcrumbUrlList = new ArrayList<>();
         String fullProjectUrl = PROJECT_DETAIL_URL + breadcrumbIdList.get(0);
         String fullFeatureUrl = FEATURE_DETAIL_URL + breadcrumbIdList.get(1) + "&projectId=" + breadcrumbIdList.get(0);
