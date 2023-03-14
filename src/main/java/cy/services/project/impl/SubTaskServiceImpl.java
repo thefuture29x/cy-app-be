@@ -888,6 +888,16 @@ public class SubTaskServiceImpl implements ISubTaskService {
     @Override
     public boolean changeStatus(Long subTaskId, SubTaskUpdateModel subTaskUpdateModel) {
         SubTaskEntity subTaskEntityExist = subTaskRepository.findById(subTaskId).orElseThrow(() -> new CustomHandleException(204));
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(subTaskId, listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+            throw new CustomHandleException(5);
+        }
+
         if (subTaskEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
             throw new CustomHandleException(205);
         }

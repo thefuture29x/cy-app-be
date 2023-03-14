@@ -90,35 +90,35 @@ public class CommentServiceImpl implements ICommentService {
         listType.add(Const.type.TYPE_DEV.toString());
         listType.add(Const.type.TYPE_FOLLOWER.toString());
 
-        if (model.getCategory().toString().equals("FEATURE")){
-            List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
-            if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
-                throw new CustomHandleException(5);
-            }
-        }
-
-//        switch (model.getCategory().toString()){
-//            case "FEATURE":
-//                List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
-//                if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
-//                    throw new CustomHandleException(5);
-//                }
-//            case "TASK":
-//                List<Long> listIdDevInProject_Task = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getObjectId(), listType);
-//                if(!listIdDevInProject_Task.stream().anyMatch(idUser::equals)){
-//                    throw new CustomHandleException(5);
-//                }
-//            case "SUBTASK":
-//                List<Long> listIdDevInProject_Subtask = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(model.getObjectId(), listType);
-//                if(!listIdDevInProject_Subtask.stream().anyMatch(idUser::equals)){
-//                    throw new CustomHandleException(5);
-//                }
-//            case "BUG":
-//                List<Long> listIdDevInProject_Bug = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(model.getObjectId(), listType);
-//                if(!listIdDevInProject_Bug.stream().anyMatch(idUser::equals)){
-//                    throw new CustomHandleException(5);
-//                }
+//        if (model.getCategory().toString().equals("FEATURE")){
+//            List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
+//            if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
+//                throw new CustomHandleException(5);
+//            }
 //        }
+
+        switch (model.getCategory().toString()){
+            case "FEATURE":
+                List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
+                if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
+                    throw new CustomHandleException(5);
+                }
+            case "TASK":
+                List<Long> listIdDevInProject_Task = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getObjectId(), listType);
+                if(!listIdDevInProject_Task.stream().anyMatch(idUser::equals)){
+                    throw new CustomHandleException(5);
+                }
+            case "SUBTASK":
+                List<Long> listIdDevInProject_Subtask = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(model.getObjectId(), listType);
+                if(!listIdDevInProject_Subtask.stream().anyMatch(idUser::equals)){
+                    throw new CustomHandleException(5);
+                }
+            case "BUG":
+                List<Long> listIdDevInProject_Bug = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(model.getObjectId(), listType);
+                if(!listIdDevInProject_Bug.stream().anyMatch(idUser::equals)){
+                    throw new CustomHandleException(5);
+                }
+        }
 
         if (model.getIdParent() != null) {
             CommentEntity parentComment = this.getById(model.getIdParent());

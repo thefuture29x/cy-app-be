@@ -533,6 +533,14 @@ public class FeatureServiceImp implements IFeatureService {
     }
 
     public boolean updateStatusFeature(Long id, String status) {
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(id, listType);
+        if(!listIdDevInProject.stream().anyMatch(idUser::equals)){
+            throw new CustomHandleException(5);
+        }
         featureRepository.updateStatusFeature(status, id);
         return true;
     }
