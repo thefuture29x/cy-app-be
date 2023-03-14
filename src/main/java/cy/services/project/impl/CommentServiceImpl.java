@@ -103,26 +103,31 @@ public class CommentServiceImpl implements ICommentService {
                 if(!listIdDevInProject_Project.stream().anyMatch(idUser::equals)){
                     throw new CustomHandleException(5);
                 }
+                break;
             case "FEATURE":
                 List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
                 if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
                     throw new CustomHandleException(5);
                 }
+                break;
             case "TASK":
                 List<Long> listIdDevInProject_Task = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(model.getObjectId(), listType);
                 if(!listIdDevInProject_Task.stream().anyMatch(idUser::equals)){
                     throw new CustomHandleException(5);
                 }
+                break;
             case "SUBTASK":
                 List<Long> listIdDevInProject_Subtask = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(model.getObjectId(), listType);
                 if(!listIdDevInProject_Subtask.stream().anyMatch(idUser::equals)){
                     throw new CustomHandleException(5);
                 }
+                break;
             case "BUG":
                 List<Long> listIdDevInProject_Bug = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(model.getObjectId(), listType);
                 if(!listIdDevInProject_Bug.stream().anyMatch(idUser::equals)){
                     throw new CustomHandleException(5);
                 }
+                break;
         }
 
         if (model.getIdParent() != null) {
