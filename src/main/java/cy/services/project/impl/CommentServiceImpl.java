@@ -98,6 +98,11 @@ public class CommentServiceImpl implements ICommentService {
 //        }
 
         switch (model.getCategory().toString()){
+            case "PROJECT":
+                List<Long> listIdDevInProject_Project = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), model.getObjectId(), Const.type.TYPE_DEV.name());
+                if(!listIdDevInProject_Project.stream().anyMatch(idUser::equals)){
+                    throw new CustomHandleException(5);
+                }
             case "FEATURE":
                 List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
                 if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
