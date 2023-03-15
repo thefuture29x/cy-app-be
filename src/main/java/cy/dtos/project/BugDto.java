@@ -31,8 +31,6 @@ public class BugDto {
     private Date createdDate;
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updatedDate;
-
-
     private Boolean isDefault;
     private Boolean isDelete;
     private List<TagDto> tagList;
@@ -47,6 +45,9 @@ public class BugDto {
     private String featureName;
     private String taskName;
     private String subTaskName;
+    private Long featureId;
+    private Long taskId;
+    private Long subTaskId;
 
     public static BugDto entityToDto(BugEntity obj) {
         return BugDto.builder()
