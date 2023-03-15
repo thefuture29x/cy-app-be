@@ -76,7 +76,8 @@ public class BugServiceImpl implements IRequestBugService {
     ISubTaskRepository iSubTaskRepository;
     @Autowired
     IPendingHistoryRepository iPendingHistoryRepository;
-
+    @Autowired
+    EntityManager manager;
 
     @Override
     public List<BugDto> findAll() {
@@ -115,15 +116,44 @@ public class BugServiceImpl implements IRequestBugService {
         bugDto.setReviewerList(reviewerList);
         bugDto.setResponsibleList(responsibleList);
         bugDto.setTagList(tagEntityList);
-        if (bugEntity.getSubTask() != null){
+        if (bugEntity.getSubTask() != null) {
             bugDto.setSubTaskName(bugEntity.getSubTask().getName());
             bugDto.setTaskName(bugEntity.getSubTask().getTask().getName());
             bugDto.setFeatureName(bugEntity.getSubTask().getTask().getFeature().getName());
-        }else if (bugEntity.getTask() != null){
+        } else if (bugEntity.getTask() != null) {
             bugDto.setTaskName(bugEntity.getTask().getName());
             bugDto.setFeatureName(bugEntity.getTask().getFeature().getName());
         }
+
+        this.setFeatureId(bugDto, bugEntity);
+
+        this.setTaskId(bugDto, bugEntity);
+
+        this.setSubTaskId(bugDto);
+
         return bugDto;
+    }
+
+    private void setSubTaskId(BugDto bugDto) {
+        if (bugDto.getSubTask() != null) {
+            bugDto.setSubTaskId(bugDto.getSubTask());
+        }
+    }
+
+    private void setTaskId(BugDto bugDto, BugEntity bugEntity) {
+        if (bugDto.getTask() != null) {
+            bugDto.setTaskId(bugDto.getTask());
+        } else if (bugDto.getSubTask() != null) {
+            bugDto.setTaskId(bugEntity.getSubTask().getTask().getId());
+        }
+    }
+
+    private void setFeatureId(BugDto bugDto, BugEntity bugEntity) {
+        if (bugDto.getSubTask() != null) {
+            bugDto.setFeatureId(bugEntity.getSubTask().getTask().getFeature().getId());
+        } else if (bugDto.getTask() != null) {
+            bugDto.setFeatureId(bugEntity.getTask().getFeature().getId());
+        }
     }
 
     @Override
@@ -161,7 +191,7 @@ public class BugServiceImpl implements IRequestBugService {
         }
 
         try {
-            BugEntity bugEntity = model.modelToEntity(model);
+            BugEntity bugEntity = BugModel.modelToEntity(model);
             bugEntity.setCreateBy(SecurityUtils.getCurrentUser().getUser());
             bugEntity.setIsDeleted(false);
             //  if (bugEntity.getStartDate().compareTo(bugEntity.getCreatedDate()) != 0) {
@@ -192,7 +222,7 @@ public class BugServiceImpl implements IRequestBugService {
 
 
             //create file
-            if (model.getFiles() != null && model.getFiles().length > 0) {
+            if (model.getFiles() != null) {
                 for (MultipartFile m : model.getFiles()) {
                     if (!m.isEmpty()) {
                         String urlFile = null;
@@ -315,11 +345,9 @@ public class BugServiceImpl implements IRequestBugService {
                 bugEntityOriginal.setTagList(listTagEntityOriginal);
                 bugEntityOriginal.setAttachFiles(fileOriginal);
 
-                if (bugEntity == null)
-                    return null;
+                if (bugEntity == null) return null;
                 Long userId = SecurityUtils.getCurrentUserId();
-                if (userId == null)
-                    return null;
+                if (userId == null) return null;
                 UserEntity userEntity = userRepository.findById(userId).orElse(null);
                 bugEntity.setCreateBy(userEntity);
                 Date currentDate = new Date();
@@ -419,7 +447,7 @@ public class BugServiceImpl implements IRequestBugService {
                 }
 
 //                bugEntity.getAttachFiles().clear();
-                if (model.getFiles() != null && model.getFiles().length > 0) {
+                if (model.getFiles() != null) {
                     for (MultipartFile m : model.getFiles()) {
                         if (!m.isEmpty()) {
                             String urlFile = fileUploadProvider.uploadFile("bug", m);
@@ -550,7 +578,7 @@ public class BugServiceImpl implements IRequestBugService {
         Date now = Date.from(Instant.now());
         Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (status) {
                 case 1:
                     //dev bắt đầu fix bug
@@ -560,12 +588,7 @@ public class BugServiceImpl implements IRequestBugService {
                     List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
                         return FileEntity.builder()
 //                                .id(f.getId())
-                                .fileName(f.getFileName())
-                                .fileType(f.getFileType())
-                                .link(f.getLink())
-                                .uploadedBy(f.getUploadedBy())
-                                .category("BUG_HISTORY")
-                                .build();
+                                .fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category("BUG_HISTORY").build();
                     }).collect(Collectors.toList());
                     iBugRepository.flush();
                     saveDataInHistoryTable(bugEntity.getId(), now, null, files);
@@ -634,19 +657,13 @@ public class BugServiceImpl implements IRequestBugService {
         Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
-        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (bugEntity.getStatus()) {
                 case "TO_DO":
                     switch (newStatusOfBug) {
                         case "IN_PROGRESS":
                             List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
-                                return FileEntity.builder()
-                                        .fileName(f.getFileName())
-                                        .fileType(f.getFileType())
-                                        .link(f.getLink())
-                                        .uploadedBy(f.getUploadedBy())
-                                        .category(Const.tableName.BUG_HISTORY.name())
-                                        .build();
+                                return FileEntity.builder().fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category(Const.tableName.BUG_HISTORY.name()).build();
                             }).collect(Collectors.toList());
                             this.startFixBug(idSubtask, null, bugEntity, files);
                             break;
@@ -685,10 +702,8 @@ public class BugServiceImpl implements IRequestBugService {
                     PendingHistoryEntity pendingHistoryEntity = iPendingHistoryRepository.findByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
                     switch (pendingHistoryEntity.getStatusBeforePending()) {
                         case "TO_DO":
-                            switch (newStatusOfBug) {
-                                case "IN_PROGRESS":
-                                    this.startFixBug(idSubtask, null, bugEntity, null);
-                                    break;
+                            if (newStatusOfBug.equals("IN_PROGRESS")) {
+                                this.startFixBug(idSubtask, null, bugEntity, null);
                             }
                             break;
                         case "IN_PROGRESS":
@@ -705,17 +720,13 @@ public class BugServiceImpl implements IRequestBugService {
                             }
                             break;
                         case "IN_REVIEW":
-                            switch (newStatusOfBug) {
-                                case "IN_PROGRESS":
-                                    this.startFixBug(idSubtask, null, bugEntity, null);
-                                    break;
+                            if (newStatusOfBug.equals("IN_PROGRESS")) {
+                                this.startFixBug(idSubtask, null, bugEntity, null);
                             }
                             break;
                         case "DONE":
-                            switch (newStatusOfBug) {
-                                case "IN_PROGRESS":
-                                    this.startFixBug(idSubtask, null, bugEntity, null);
-                                    break;
+                            if (newStatusOfBug.equals("IN_PROGRESS")) {
+                                this.startFixBug(idSubtask, null, bugEntity, null);
                             }
                             break;
                     }
@@ -799,7 +810,7 @@ public class BugServiceImpl implements IRequestBugService {
         Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
         Date now = Date.from(Instant.now());
-        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (status) {
                 case 1:
                     //dev bắt đầu fix bug
@@ -809,12 +820,7 @@ public class BugServiceImpl implements IRequestBugService {
                     List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
                         return FileEntity.builder()
 //                                .id(f.getId())
-                                .fileName(f.getFileName())
-                                .fileType(f.getFileType())
-                                .link(f.getLink())
-                                .uploadedBy(f.getUploadedBy())
-                                .category("BUG_HISTORY")
-                                .build();
+                                .fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category("BUG_HISTORY").build();
                     }).collect(Collectors.toList());
                     iBugRepository.flush();
                     saveDataInHistoryTable(bugEntity.getId(), now, null, files);
@@ -873,19 +879,13 @@ public class BugServiceImpl implements IRequestBugService {
         Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
-        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) == true || responsibleIdList.contains(SecurityUtils.getCurrentUserId()) == true) {//dev fix bug mới có thể đổi trạng thái bug để start
+        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (bugEntity.getStatus()) {
                 case "TO_DO":
                     switch (newStatusOfBug) {
                         case "IN_PROGRESS":
                             List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
-                                return FileEntity.builder()
-                                        .fileName(f.getFileName())
-                                        .fileType(f.getFileType())
-                                        .link(f.getLink())
-                                        .uploadedBy(f.getUploadedBy())
-                                        .category(Const.tableName.BUG_HISTORY.name())
-                                        .build();
+                                return FileEntity.builder().fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category(Const.tableName.BUG_HISTORY.name()).build();
                             }).collect(Collectors.toList());
                             this.startFixBug(null, idTask, bugEntity, files);
                             break;
@@ -924,10 +924,8 @@ public class BugServiceImpl implements IRequestBugService {
                     PendingHistoryEntity pendingHistoryEntity = iPendingHistoryRepository.findByCategoryAndObjectId(Const.tableName.BUG.name(), bugEntity.getId());
                     switch (pendingHistoryEntity.getStatusBeforePending()) {
                         case "TO_DO":
-                            switch (newStatusOfBug) {
-                                case "IN_PROGRESS":
-                                    this.startFixBug(null, idTask, bugEntity, null);
-                                    break;
+                            if (newStatusOfBug.equals("IN_PROGRESS")) {
+                                this.startFixBug(null, idTask, bugEntity, null);
                             }
                             break;
                         case "IN_PROGRESS":
@@ -944,17 +942,13 @@ public class BugServiceImpl implements IRequestBugService {
                             }
                             break;
                         case "IN_REVIEW":
-                            switch (newStatusOfBug) {
-                                case "IN_PROGRESS":
-                                    this.startFixBug(null, idTask, bugEntity, null);
-                                    break;
+                            if (newStatusOfBug.equals("IN_PROGRESS")) {
+                                this.startFixBug(null, idTask, bugEntity, null);
                             }
                             break;
                         case "DONE":
-                            switch (newStatusOfBug) {
-                                case "IN_PROGRESS":
-                                    this.startFixBug(null, idTask, bugEntity, null);
-                                    break;
+                            if (newStatusOfBug.equals("IN_PROGRESS")) {
+                                this.startFixBug(null, idTask, bugEntity, null);
                             }
                             break;
                     }
@@ -1084,9 +1078,6 @@ public class BugServiceImpl implements IRequestBugService {
         return iBugRepository.findAllBySubTaskId(id, pageable).map(data -> BugDto.entityToDtoInProject(data, showListUserInBug(Const.type.TYPE_DEV.name(), data.getId()), showListUserInBug(Const.type.TYPE_REVIEWER.name(), data.getId())));
     }
 
-    @Autowired
-    EntityManager manager;
-
     public Page<BugDto> findByPage(Integer pageIndex, Integer pageSize, BugModel bugModel) {
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         String sql = "SELECT distinct new cy.dtos.project.BugDto(p) FROM BugEntity p";
@@ -1162,15 +1153,10 @@ public class BugServiceImpl implements IRequestBugService {
         int countStatus = allStatus.size();
         if (countStatus == 1) {
             iTaskRepository.updateStatusTask(idParent, allStatus.get(0));
-            return;
-        } else if (countStatus == 2
-                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
-                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
+        } else if (countStatus == 2 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains) && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
             iTaskRepository.updateStatusTask(idParent, Const.status.IN_REVIEW.name());
-            return;
         } else if (countStatus != 0) {
             iTaskRepository.updateStatusTask(idParent, Const.status.IN_PROGRESS.name());
-            return;
         }
     }
 
@@ -1179,15 +1165,10 @@ public class BugServiceImpl implements IRequestBugService {
         int countStatus = allStatus.size();
         if (countStatus == 1) {
             iSubTaskRepository.updateStatusSubTask(idParent, allStatus.get(0));
-            return;
-        } else if (countStatus == 2
-                && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains)
-                && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
+        } else if (countStatus == 2 && allStatus.stream().anyMatch(Const.status.IN_REVIEW.name()::contains) && allStatus.stream().anyMatch(Const.status.DONE.name()::contains)) {
             iSubTaskRepository.updateStatusSubTask(idParent, Const.status.IN_REVIEW.name());
-            return;
         } else if (countStatus != 0) {
             iSubTaskRepository.updateStatusSubTask(idParent, Const.status.IN_PROGRESS.name());
-            return;
         }
     }
 
@@ -1224,15 +1205,7 @@ public class BugServiceImpl implements IRequestBugService {
     }
 
     public void startPending(BugEntity bugEntity, String oldStatus) {
-        iPendingHistoryRepository.save(
-                PendingHistoryEntity
-                        .builder()
-                        .startDate(Date.from(Instant.now()))
-                        .endDate(null)
-                        .objectId(bugEntity.getId())
-                        .category(Const.tableName.BUG.name())
-                        .statusBeforePending(oldStatus)
-                        .build());
+        iPendingHistoryRepository.save(PendingHistoryEntity.builder().startDate(Date.from(Instant.now())).endDate(null).objectId(bugEntity.getId()).category(Const.tableName.BUG.name()).statusBeforePending(oldStatus).build());
     }
 
 }
