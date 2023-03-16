@@ -42,12 +42,14 @@ public class FileUploadProvider {
     //Upload file to aws s3
     public String uploadFile(String folder, MultipartFile file) throws IOException {
         StringBuilder checkFileName = new StringBuilder(folder+ "/");
-        checkFileName.append(file.getOriginalFilename());
+        // Replace all special characters in file name with _
+        // Special characters regex expression: [^a-zA-Z0-9._-]
+        checkFileName.append(file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", ""));
         if (isFileExist(checkFileName.toString())) { //Check if file exist, make a copy with increase prefix
 //            int i = 1;
 //            while (true) {
                 checkFileName.setLength(0);
-                checkFileName.append(folder + "/").append(file.getOriginalFilename());
+                checkFileName.append(folder + "/").append(file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", ""));
 //                if (!isFileExist(checkFileName.toString()))
 //                    break;
 //            }
