@@ -24,7 +24,6 @@ public class BugHistoryEntity {
     private Long id;
 
     @HistoryLogTitle(title = "", ignore = true)
-//    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bug_id")
     private Long bugId;
 
@@ -44,5 +43,15 @@ public class BugHistoryEntity {
 
     @HistoryLogTitle(title = "chi tiết")
     private String detail;
+
+    @HistoryLogTitle(title = "ngày bắt đầu ước tính")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date startDateEstimate;
+    @HistoryLogTitle(title = "ngày kết thúc ước tính")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date endDateEstimate;
+
+    private int timeEstimate;
+    private int timeExecution;
 
 }

@@ -96,8 +96,10 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
                 iFileService.add(fileModel);
             }
         }
+
         BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
         bugEntity.setStatus(Const.status.TO_DO.name());
+
         iBugRepository.save(bugEntity);
 
         HistoryEntity newHistoryEntity = HistoryEntity
