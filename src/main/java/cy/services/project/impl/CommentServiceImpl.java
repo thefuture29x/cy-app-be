@@ -90,13 +90,6 @@ public class CommentServiceImpl implements ICommentService {
         listType.add(Const.type.TYPE_DEV.toString());
         listType.add(Const.type.TYPE_FOLLOWER.toString());
 
-//        if (model.getCategory().toString().equals("FEATURE")){
-//            List<Long> listIdDevInProject_Feature = userProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(model.getObjectId(), listType);
-//            if(!listIdDevInProject_Feature.stream().anyMatch(idUser::equals)){
-//                throw new CustomHandleException(5);
-//            }
-//        }
-
         switch (model.getCategory().toString()){
             case "PROJECT":
                 List<Long> listIdDevInProject_Project = userProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), model.getObjectId(), Const.type.TYPE_DEV.name());
