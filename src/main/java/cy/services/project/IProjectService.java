@@ -12,7 +12,7 @@ import java.text.ParseException;
 import java.util.List;
 
 public interface IProjectService {
-    ProjectDto findById(Long id);
+    ProjectDto findById(Long id, boolean view);
     ProjectDto createProject(ProjectModel projectModel) throws IOException;
     ProjectDto updateProject(ProjectModel projectModel) throws IOException, ParseException;
     Boolean deleteProject(Long id);

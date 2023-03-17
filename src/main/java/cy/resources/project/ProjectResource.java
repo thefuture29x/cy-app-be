@@ -22,8 +22,8 @@ public class ProjectResource {
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping(value = "/findById")
-    public ResponseDto findById(@RequestParam(name = "id") Long id) {
-        return ResponseDto.of(iProjectService.findById(id));
+    public ResponseDto findById(@RequestParam(name = "id") Long id,@RequestParam(name = "view") boolean view) {
+        return ResponseDto.of(iProjectService.findById(id,view));
     }
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})

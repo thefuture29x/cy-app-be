@@ -68,10 +68,12 @@ public class ProjectServiceImpl implements IProjectService {
     IUserViewProjectService iUserViewProjectService;
 
     @Override
-    public ProjectDto findById(Long id) {
+    public ProjectDto findById(Long id, boolean view) {
         if (iProjectRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
-        UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-        iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
+        if (view){
+            UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
+            iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
+        }
         ProjectEntity projectEntity = this.iProjectRepository.findById(id).orElse(null);
         ProjectDto projectDto = ProjectDto.toDto(iProjectRepository.findById(id).orElse(null));
         if (projectDto == null)
