@@ -145,17 +145,17 @@ public class TestController {
             return;
         }
     }
-    @PostMapping ("test-nef")
-    public ResponseDto testCheckDeleted(@RequestParam(value = "id") Long taskId)  {
+    @GetMapping ("test-nef")
+    public ResponseDto testCheckDeleted(@RequestParam(value = "taskId") Long taskId,@RequestParam(name = "idTest") Long idTest)  {
 
-        Long idUser = SecurityUtils.getCurrentUserId();
-        List<String> listType = new ArrayList<>();
-        listType.add(Const.type.TYPE_DEV.toString());
-        List<Long> listIdDevInProject = iUserProjectRepository.getAllIdDevOfProjectByFeatureIdInThisProject(taskId,listType);
-        if(listIdDevInProject.stream().anyMatch(idUser::equals)){
-            System.out.println("ahihihihi");
+        if (taskId != null){
+
+            System.out.println(taskId);
         }
+        if (idTest != null){
 
+            System.out.println(idTest);
+        }
         return null;
     }
 

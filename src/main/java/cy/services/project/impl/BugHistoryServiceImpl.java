@@ -106,7 +106,7 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
                 .ObjectId(model.getBugId())
                 .category(Const.tableName.BUG.name())
                 .userId(userEntity)
-                .content(" đã mở lại bug \"" + iBugRepository.findById(model.getBugId()).get().getName() +"\"")
+                .content("<p> đã mở lại bug <b>" + iBugRepository.findById(model.getBugId()).get().getName() +"</b></p>")
                 .build();
         iHistoryLogRepository.saveAndFlush(newHistoryEntity);
 
