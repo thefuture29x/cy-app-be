@@ -138,8 +138,12 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
                 iFileService.add(fileModel);
             }
         }
-        iBugHistoryRepository.updateDetailHistoryBug(model.getDetail(),model.getId());
-        iBugHistoryRepository.flush();
+        BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findById(model.getId()).get();
+        bugHistoryEntity.setDetail(model.getDetail());
+        bugHistoryEntity.setStartDate(model.getStartDate());
+
+//        iBugHistoryRepository.updateDetailHistoryBug(model.getDetail(),model.getId());
+        iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
         return null;
     }
 
