@@ -52,10 +52,11 @@ public class BugHistoryEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDateEstimate;
 
-    private int timeEstimate;
-    private int timeExecution;
+    private int totalMinuteEstimate;
+    private int totalMinuteExecution;
 
-//    @Temporal(TemporalType.TIME)
-//    private Time timeEstimateTest;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deadLine;
+    private String timeEstimate;
 
 }

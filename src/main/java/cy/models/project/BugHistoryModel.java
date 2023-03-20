@@ -30,9 +30,11 @@ public class BugHistoryModel {
     private MultipartFile[] files;
     private String detail;
     private List<String> fileUrlsKeeping;
-    @Temporal(TemporalType.TIME)
-    @DateTimeFormat(pattern="HH:mm:ss")
-    private Time timeEstimateTest;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date deadLine;
+    private String timeEstimate;
 
 
     public static BugHistoryEntity modelToEntity(BugHistoryModel model) {

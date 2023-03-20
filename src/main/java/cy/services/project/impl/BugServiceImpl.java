@@ -33,11 +33,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -169,8 +169,26 @@ public class BugServiceImpl implements IRequestBugService {
         bugHistoryEntity.setStartDate(startDate);
         bugHistoryEntity.setEndDate(endDate);
         bugHistoryEntity.setAttachFiles(files);
-        bugHistoryEntity.setStartDateEstimate(bugEntity1.getStartDate());
-        bugHistoryEntity.setEndDateEstimate(bugEntity1.getEndDate());
+//        bugHistoryEntity.setStartDateEstimate(bugEntity1.getStartDate());
+//        bugHistoryEntity.setEndDateEstimate(bugEntity1.getEndDate());
+        bugHistoryEntity.setDeadLine(bugEntity1.getEndDate());
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+        try {
+            Date firstDate = sdf.parse(bugEntity1.getStartDate().toString());
+            Date secondDate = sdf.parse(bugEntity1.getEndDate().toString());
+            long diffInMillies = Math.abs(secondDate.getTime() - firstDate.getTime());
+            long diffDay = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            bugHistoryEntity.setTimeEstimate(diffDay + " ngày " + diffHours + " giờ " + diffMin + " phút");
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
         iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
     }
 
@@ -1217,6 +1235,7 @@ public class BugServiceImpl implements IRequestBugService {
             for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
                 // Check if reviewer user is not existed
                 userRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
+
                 UserProjectEntity userProjectEntity = new UserProjectEntity();
                 userProjectEntity.setCategory(Const.tableName.BUG.name());
                 userProjectEntity.setObjectId(idBug);
@@ -1227,4 +1246,19 @@ public class BugServiceImpl implements IRequestBugService {
         }
     }
 
+
+    public static void main(String[] args) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+        Date firstDate = sdf.parse("2023-03-20 12:09:44");
+        Date secondDate = sdf.parse("2023-03-22 12:09:44");
+
+        long diffInMillies = Math.abs(secondDate.getTime() - firstDate.getTime());
+        long diffDate = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+        long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+        long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+        System.out.println(diffDate);
+        System.out.println(diffHours);
+        System.out.println(diffMin);
+    }
 }

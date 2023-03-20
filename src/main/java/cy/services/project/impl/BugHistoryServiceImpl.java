@@ -89,10 +89,14 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setStartDate(now);
         bugHistoryEntity.setEndDate(null);
         bugHistoryEntity.setDetail(model.getDetail());
-        bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
-        bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
+        bugHistoryEntity.setDeadLine(model.getDeadLine());
+        bugHistoryEntity.setTimeEstimate(model.getTimeEstimate());
+//        bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
+//        bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
 //        bugHistoryEntity.setTimeEstimateTest(Time.valueOf(java.time.LocalTime.now()));
 //        bugHistoryEntity.setTimeEstimateTest(model.getTimeEstimateTest());
+        bugHistoryEntity.setDeadLine(model.getDeadLine());
+        bugHistoryEntity.setTimeEstimate(model.getTimeEstimate());
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
         if (model.getFiles() != null){
@@ -150,8 +154,10 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findById(model.getId()).get();
         bugHistoryEntity.setDetail(model.getDetail());
         bugHistoryEntity.setStartDate(model.getStartDate());
-        bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
-        bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
+//        bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
+//        bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
+        bugHistoryEntity.setDeadLine(model.getDeadLine());
+        bugHistoryEntity.setTimeEstimate(model.getTimeEstimate());
 
 //        iBugHistoryRepository.updateDetailHistoryBug(model.getDetail(),model.getId());
         iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
