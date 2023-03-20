@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +33,8 @@ public class BugHistoryDto {
     private String detail;
     private int timeEstimate;
     private int timeExecution;
+    @DateTimeFormat(pattern="HH:mm:ss")
+    private Time timeEstimateTest;
 
     public static BugHistoryDto entityToDto(BugHistoryEntity obj) {
         return BugHistoryDto.builder()
@@ -44,6 +47,7 @@ public class BugHistoryDto {
                 .detail(obj.getDetail())
                 .timeEstimate(obj.getTimeEstimate())
                 .timeExecution(obj.getTimeExecution())
+//                .timeEstimateTest(obj.getTimeEstimateTest())
                 .build();
     }
 }

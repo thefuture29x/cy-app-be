@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 
@@ -53,5 +54,8 @@ public class BugHistoryEntity {
 
     private int timeEstimate;
     private int timeExecution;
+
+//    @Temporal(TemporalType.TIME)
+//    private Time timeEstimateTest;
 
 }

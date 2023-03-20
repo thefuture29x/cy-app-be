@@ -92,7 +92,7 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
         bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
 //        bugHistoryEntity.setTimeEstimateTest(Time.valueOf(java.time.LocalTime.now()));
-        bugHistoryEntity.setTimeEstimateTest(model.getTimeEstimateTest());
+//        bugHistoryEntity.setTimeEstimateTest(model.getTimeEstimateTest());
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
         if (model.getFiles() != null){

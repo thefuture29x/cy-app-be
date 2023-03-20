@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +30,9 @@ public class BugHistoryModel {
     private MultipartFile[] files;
     private String detail;
     private List<String> fileUrlsKeeping;
+    @Temporal(TemporalType.TIME)
+    @DateTimeFormat(pattern="HH:mm:ss")
+    private Time timeEstimateTest;
 
 
     public static BugHistoryEntity modelToEntity(BugHistoryModel model) {
