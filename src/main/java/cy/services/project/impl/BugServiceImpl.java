@@ -179,10 +179,14 @@ public class BugServiceImpl implements IRequestBugService {
             Date firstDate = sdf.parse(bugEntity1.getStartDate().toString());
             Date secondDate = sdf.parse(bugEntity1.getEndDate().toString());
             long diffInMillies = Math.abs(secondDate.getTime() - firstDate.getTime());
-            long diffDay = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-            long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+//            long diffDay = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+//            long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
             long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
-            bugHistoryEntity.setTimeEstimate(diffDay + " ngày " + diffHours + " giờ " + diffMin + " phút");
+
+//            System.out.println(diffMin / 1440);
+//            System.out.println((diffMin % 1440) / 60);
+//            System.out.println(((diffMin % 1440) % 60) % 60);
+            bugHistoryEntity.setTimeEstimate((diffMin / 1440) + " ngày " + ((diffMin % 1440) / 60) + " giờ " + (((diffMin % 1440) % 60) % 60) + " phút");
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -1250,15 +1254,24 @@ public class BugServiceImpl implements IRequestBugService {
     public static void main(String[] args) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         Date firstDate = sdf.parse("2023-03-20 12:09:44");
-        Date secondDate = sdf.parse("2023-03-22 12:09:44");
+        Date secondDate = sdf.parse("2023-03-22 14:15:49");
 
         long diffInMillies = Math.abs(secondDate.getTime() - firstDate.getTime());
         long diffDate = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-        long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+//        long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
         long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
 
-        System.out.println(diffDate);
-        System.out.println(diffHours);
+
+//        long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
+//        diffMin = (diffMin % 24);
+//        long diffHours = (diffMin / 24);
+//        diffHours = (diffHours / 60);
+
+
         System.out.println(diffMin);
+//        System.out.println(diffMin % 60);
+        System.out.println(diffMin / 1440);
+        System.out.println((diffMin % 1440) / 60);
+        System.out.println(((diffMin % 1440) % 60) % 60);
     }
 }
