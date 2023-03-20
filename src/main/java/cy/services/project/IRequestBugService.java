@@ -4,6 +4,7 @@ import cy.dtos.project.AllBugDto;
 import cy.dtos.project.BugDto;
 import cy.entities.project.BugEntity;
 import cy.models.project.BugModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.services.IBaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,5 @@ public interface IRequestBugService extends IBaseService<BugEntity, BugDto, BugM
     AllBugDto getAllBug(Long idProject);
     BugDto updateStatusBugOfSubtask(Long idSubtask, String newStatusOfBug);
     BugDto updateStatusBugOfTask(Long idTask, String newStatusOfBug);
+    void addReviewerToBug(Long idBug, SubTaskUpdateModel subTaskUpdateModel);
 }

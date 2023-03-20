@@ -24,6 +24,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.sql.Time;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,6 +91,8 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setDetail(model.getDetail());
         bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
         bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
+//        bugHistoryEntity.setTimeEstimateTest(Time.valueOf(java.time.LocalTime.now()));
+        bugHistoryEntity.setTimeEstimateTest(model.getTimeEstimateTest());
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
         if (model.getFiles() != null){

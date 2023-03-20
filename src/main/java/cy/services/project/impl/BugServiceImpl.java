@@ -8,6 +8,7 @@ import cy.dtos.project.UserMetaDto;
 import cy.entities.UserEntity;
 import cy.entities.project.*;
 import cy.models.project.BugModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.models.project.TagModel;
 import cy.models.project.UserProjectModel;
 import cy.repositories.IUserRepository;
@@ -1209,6 +1210,21 @@ public class BugServiceImpl implements IRequestBugService {
 
     public void startPending(BugEntity bugEntity, String oldStatus) {
         iPendingHistoryRepository.save(PendingHistoryEntity.builder().startDate(Date.from(Instant.now())).endDate(null).objectId(bugEntity.getId()).category(Const.tableName.BUG.name()).statusBeforePending(oldStatus).build());
+    }
+    @Override
+    public void addReviewerToBug(Long idBug, SubTaskUpdateModel subTaskUpdateModel){
+        if (subTaskUpdateModel.getReviewerIdList() != null){
+            for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
+                // Check if reviewer user is not existed
+                userRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.BUG.name());
+                userProjectEntity.setObjectId(idBug);
+                userProjectEntity.setIdUser(reviewerId);
+                userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                userProjectRepository.save(userProjectEntity);
+            }
+        }
     }
 
 }

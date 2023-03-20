@@ -3,6 +3,7 @@ package cy.resources.project;
 import cy.configs.FrontendConfiguration;
 import cy.dtos.ResponseDto;
 import cy.models.project.BugModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.services.project.impl.BugServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -74,6 +75,11 @@ public class BugResource {
     @GetMapping(value = "getAllBug")
     public ResponseDto getAllBug(@RequestParam(name = "id") Long idProject){
         return ResponseDto.of(bugService.getAllBug(idProject));
+    }
+    @PostMapping(value = "addReviewerToBug/{idBug}")
+    public ResponseDto addReviewerToBug(@PathVariable Long idBug,@RequestBody SubTaskUpdateModel subTaskUpdateModel){
+        bugService.addReviewerToBug(idBug,subTaskUpdateModel);
+        return ResponseDto.of(null);
     }
 
 }
