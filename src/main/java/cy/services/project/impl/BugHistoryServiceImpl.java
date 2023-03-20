@@ -76,6 +76,9 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
 
     @Override
     public BugHistoryDto add(BugHistoryModel model) {
+        BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
+        bugEntity.setStatus(Const.status.TO_DO.name());
+        iBugRepository.save(bugEntity);
 
         Date now = Date.from(Instant.now());
         UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
@@ -85,6 +88,8 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
         bugHistoryEntity.setStartDate(now);
         bugHistoryEntity.setEndDate(null);
         bugHistoryEntity.setDetail(model.getDetail());
+        bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
+        bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
 
         BugHistoryDto bugHistoryEntityAfterSave = BugHistoryDto.entityToDto(iBugHistoryRepository.save(bugHistoryEntity));
         if (model.getFiles() != null){
@@ -97,10 +102,8 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
             }
         }
 
-        BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
-        bugEntity.setStatus(Const.status.TO_DO.name());
 
-        iBugRepository.save(bugEntity);
+
 
         HistoryEntity newHistoryEntity = HistoryEntity
                 .builder()
@@ -140,9 +143,12 @@ public class BugHistoryServiceImpl implements IBugHistoryService {
                 iFileService.add(fileModel);
             }
         }
+        BugEntity bugEntity = iBugRepository.findById(model.getBugId()).get();
         BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findById(model.getId()).get();
         bugHistoryEntity.setDetail(model.getDetail());
         bugHistoryEntity.setStartDate(model.getStartDate());
+        bugHistoryEntity.setStartDateEstimate(bugEntity.getStartDate());
+        bugHistoryEntity.setEndDateEstimate(bugEntity.getEndDate());
 
 //        iBugHistoryRepository.updateDetailHistoryBug(model.getDetail(),model.getId());
         iBugHistoryRepository.saveAndFlush(bugHistoryEntity);

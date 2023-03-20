@@ -162,11 +162,14 @@ public class BugServiceImpl implements IRequestBugService {
     }
 
     public void saveDataInHistoryTable(Long bugEntity, Date startDate, Date endDate, List<FileEntity> files) {
+        BugEntity bugEntity1 = iBugRepository.findById(bugEntity).get();
         BugHistoryEntity bugHistoryEntity = new BugHistoryEntity();
         bugHistoryEntity.setBugId(bugEntity);
         bugHistoryEntity.setStartDate(startDate);
         bugHistoryEntity.setEndDate(endDate);
         bugHistoryEntity.setAttachFiles(files);
+        bugHistoryEntity.setStartDateEstimate(bugEntity1.getStartDate());
+        bugHistoryEntity.setEndDateEstimate(bugEntity1.getEndDate());
         iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
     }
 
