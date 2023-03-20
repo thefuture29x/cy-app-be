@@ -30,6 +30,8 @@ public class BugHistoryDto {
     private List<FileDto> attachFiles;
     private Boolean isPending;
     private String detail;
+    private int timeEstimate;
+    private int timeExecution;
 
     public static BugHistoryDto entityToDto(BugHistoryEntity obj) {
         return BugHistoryDto.builder()
@@ -40,6 +42,8 @@ public class BugHistoryDto {
                 .attachFiles(obj.getAttachFiles() != null ? obj.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
                 .isPending(obj.getIsPending())
                 .detail(obj.getDetail())
+                .timeEstimate(obj.getTimeEstimate())
+                .timeExecution(obj.getTimeExecution())
                 .build();
     }
 }
