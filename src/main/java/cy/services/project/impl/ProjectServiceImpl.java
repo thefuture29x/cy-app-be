@@ -329,7 +329,7 @@ public class ProjectServiceImpl implements IProjectService {
         listUserDev.stream().forEach(data -> listIdUserDevOld.add(data.getUserId()));
         projectModel.getUserDev().stream().forEach(data -> listIdUserDevNew.add(data));
 
-        deleteOldUserAndSaveNewUser(listIdUserDevOld,listIdUserDevNew,Const.type.TYPE_DEV, projectEntity.getId());
+        deleteOldUserAndSaveNewUser(listIdUserDevOld,listIdUserDevNew,Const.type.TYPE_DEV, projectEntity.getId(), Const.tableName.PROJECT);
 
         // get list id follower old and new of project
         List<Long> listIdUserFollowOld = new ArrayList<>();
@@ -338,7 +338,7 @@ public class ProjectServiceImpl implements IProjectService {
         listUserFollow.stream().forEach(data -> listIdUserFollowOld.add(data.getUserId()));
         projectModel.getUserFollow().stream().forEach(data -> listIdUserFollowNew.add(data));
 
-        deleteOldUserAndSaveNewUser(listIdUserFollowOld,listIdUserFollowNew,Const.type.TYPE_FOLLOWER, projectEntity.getId());
+        deleteOldUserAndSaveNewUser(listIdUserFollowOld,listIdUserFollowNew,Const.type.TYPE_FOLLOWER, projectEntity.getId(), Const.tableName.PROJECT);
 
         // get list id follower old and new of project
         List<Long> listIdUserViewerOld = new ArrayList<>();
@@ -347,7 +347,7 @@ public class ProjectServiceImpl implements IProjectService {
         listUserView.stream().forEach(data -> listIdUserViewerOld.add(data.getUserId()));
         projectModel.getUserViewer().stream().forEach(data -> listIdUserViewerNew.add(data));
 
-        deleteOldUserAndSaveNewUser(listIdUserViewerOld,listIdUserViewerNew,Const.type.TYPE_VIEWER, projectEntity.getId());
+        deleteOldUserAndSaveNewUser(listIdUserViewerOld,listIdUserViewerNew,Const.type.TYPE_VIEWER, projectEntity.getId(), Const.tableName.PROJECT);
 
 
         List<TagRelationEntity> tagRelationEntities = iTagRelationRepository.getByCategoryAndObjectId(Const.tableName.PROJECT.name(), projectEntity.getId());
@@ -568,7 +568,7 @@ public class ProjectServiceImpl implements IProjectService {
         Page<ProjectDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
 
         result.stream().forEach(data -> {
-            List<Long> listIdDev = userRepository.getAllIdDevByTypeAndObjectId(Const.tableName.PROJECT.name(), data.getId());
+            List<Long> listIdDev = userRepository.getAllIdDevByTypeAndObjectId(Const.tableName.PROJECT.name(), data.getId(),Const.type.TYPE_DEV.name());
             List<Long> listIdDevCheck = listIdDev != null ? listIdDev : new ArrayList<>();
 
             data.setEditable(false);
@@ -585,7 +585,7 @@ public class ProjectServiceImpl implements IProjectService {
         return userRepository.getAllByCategoryAndTypeAndObjectId(category,type, idProject).stream().map(data -> UserMetaDto.toDto(data)).collect(Collectors.toList());
     }
 
-    public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId){
+    public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId,Const.tableName catogory){
         // find user in listIdOld but not in listIdNew
         List<Long> diff1 = new ArrayList<>(listIdOld);
         diff1.removeAll(listIdNew);
@@ -606,7 +606,7 @@ public class ProjectServiceImpl implements IProjectService {
                 UserEntity user = userRepository.findById(idUser).orElse(null);
                 if (user != null) {
                     UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setCategory(Const.tableName.PROJECT.name());
+                    userProjectEntity.setCategory(catogory.name());
                     userProjectEntity.setObjectId(projectId);
                     userProjectEntity.setType(userType.name());
                     userProjectEntity.setIdUser(idUser);

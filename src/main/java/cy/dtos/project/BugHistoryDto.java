@@ -38,6 +38,7 @@ public class BugHistoryDto {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date deadLine;
     private String timeEstimate;
+    private String timeExecution;
 
     public static BugHistoryDto entityToDto(BugHistoryEntity obj) {
         return BugHistoryDto.builder()
@@ -52,6 +53,7 @@ public class BugHistoryDto {
                 .totalMinuteExecution(obj.getTotalMinuteExecution())
                 .deadLine(obj.getDeadLine())
                 .timeEstimate(obj.getTimeEstimate())
+                .timeExecution(obj.getTimeExecution())
 //                .timeEstimateTest(obj.getTimeEstimateTest())
                 .build();
     }

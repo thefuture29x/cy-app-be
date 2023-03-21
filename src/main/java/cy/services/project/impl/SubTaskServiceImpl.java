@@ -905,11 +905,11 @@ public class SubTaskServiceImpl implements ISubTaskService {
         SubTaskEntity subTaskEntityOriginal = subTaskEntityExist;
 
         // If current status is IN_REVIEW -> delete all reviewer
-        if (subTaskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
-            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_REVIEWER.name())) {
-                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
-            }
-        }
+//        if (subTaskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
+//            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.SUBTASK.name(), subTaskId, Const.type.TYPE_REVIEWER.name())) {
+//                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+//            }
+//        }
 
         subTaskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
         SubTaskEntity saveResult = subTaskRepository.save(subTaskEntityExist);

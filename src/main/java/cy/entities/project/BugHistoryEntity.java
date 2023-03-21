@@ -58,5 +58,6 @@ public class BugHistoryEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date deadLine;
     private String timeEstimate;
+    private String timeExecution;
 
 }

@@ -56,7 +56,8 @@ public class TaskServiceImpl implements ITaskService {
 
     @Autowired
     BugServiceImpl bugService;
-
+    @Autowired
+    ProjectServiceImpl projectService;
     @Autowired
     EntityManager manager;
 
@@ -733,11 +734,11 @@ public class TaskServiceImpl implements ITaskService {
         }
 
         // If current status is in review -> delete reviewer
-        if (taskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
-            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name())) {
-                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
-            }
-        }
+//        if (taskEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
+//            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name())) {
+//                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+//            }
+//        }
 
         taskEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
         TaskEntity saveResult = iTaskRepository.save(taskEntityExist);
@@ -754,6 +755,11 @@ public class TaskServiceImpl implements ITaskService {
             for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name())) {
                 userProjectRepository.deleteByIdNative(userProjectEntity.getId());
             }
+
+//            List<Long> listIdReviewer = userRepository.getAllIdDevByTypeAndObjectId(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name());
+//            projectService.deleteOldUserAndSaveNewUser(listIdReviewer,subTaskUpdateModel.getReviewerIdList(),Const.type.TYPE_REVIEWER,taskId,Const.tableName.TASK);
+
+
             for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
                 // Check if reviewer user is not existed
                 userRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));

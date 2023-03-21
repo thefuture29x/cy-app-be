@@ -35,6 +35,7 @@ public class BugHistoryModel {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date deadLine;
     private String timeEstimate;
+    private String timeExecution;
 
 
     public static BugHistoryEntity modelToEntity(BugHistoryModel model) {
