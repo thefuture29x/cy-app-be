@@ -170,6 +170,7 @@ public class BugServiceImpl implements IRequestBugService {
         bugHistoryEntity.setEndDate(endDate);
         bugHistoryEntity.setAttachFiles(files);
         bugHistoryEntity.setDeadLine(bugEntity1.getEndDate());
+        bugHistoryEntity.setStartDateEstimate(startDate);
 
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
@@ -609,7 +610,7 @@ public class BugServiceImpl implements IRequestBugService {
                                 .fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category("BUG_HISTORY").build();
                     }).collect(Collectors.toList());
                     iBugRepository.flush();
-                    saveDataInHistoryTable(bugEntity.getId(), now, null, files);
+//                    saveDataInHistoryTable(bugEntity.getId(), now, null, files);
                     changeStatusSubTask(bugEntity.getSubTask().getId());
                     break;
                 case 2:
@@ -841,7 +842,7 @@ public class BugServiceImpl implements IRequestBugService {
                                 .fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category("BUG_HISTORY").build();
                     }).collect(Collectors.toList());
                     iBugRepository.flush();
-                    saveDataInHistoryTable(bugEntity.getId(), now, null, files);
+//                    saveDataInHistoryTable(bugEntity.getId(), now, null, files);
                     changeStatusTask(bugEntity.getTask().getId());
                     break;
                 case 2:
