@@ -169,8 +169,6 @@ public class BugServiceImpl implements IRequestBugService {
         bugHistoryEntity.setStartDate(startDate);
         bugHistoryEntity.setEndDate(endDate);
         bugHistoryEntity.setAttachFiles(files);
-//        bugHistoryEntity.setStartDateEstimate(bugEntity1.getStartDate());
-//        bugHistoryEntity.setEndDateEstimate(bugEntity1.getEndDate());
         bugHistoryEntity.setDeadLine(bugEntity1.getEndDate());
 
 
@@ -179,13 +177,7 @@ public class BugServiceImpl implements IRequestBugService {
             Date firstDate = sdf.parse(bugEntity1.getStartDate().toString());
             Date secondDate = sdf.parse(bugEntity1.getEndDate().toString());
             long diffInMillies = Math.abs(secondDate.getTime() - firstDate.getTime());
-//            long diffDay = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-//            long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
             long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
-
-//            System.out.println(diffMin / 1440);
-//            System.out.println((diffMin % 1440) / 60);
-//            System.out.println(((diffMin % 1440) % 60) % 60);
             bugHistoryEntity.setTimeEstimate((diffMin / 1440) + " ngày " + ((diffMin % 1440) / 60) + " giờ " + (((diffMin % 1440) % 60) % 60) + " phút");
         } catch (ParseException e) {
             throw new RuntimeException(e);
@@ -709,9 +701,9 @@ public class BugServiceImpl implements IRequestBugService {
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
-                        case "DONE":
-                            changeStatusSubTask(bugEntity.getSubTask().getId());
-                            break;
+//                        case "DONE":
+//                            changeStatusSubTask(bugEntity.getSubTask().getId());
+//                            break;
                     }
                     break;
                 case "IN_REVIEW":
@@ -931,9 +923,9 @@ public class BugServiceImpl implements IRequestBugService {
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
-                        case "DONE":
-                            changeStatusSubTask(bugEntity.getSubTask().getId());
-                            break;
+//                        case "DONE":
+//                            changeStatusSubTask(bugEntity.getSubTask().getId());
+//                            break;
                     }
                     break;
                 case "IN_REVIEW":
@@ -1202,10 +1194,10 @@ public class BugServiceImpl implements IRequestBugService {
         //dev bắt đầu fix bug
         if (idTask != null) {
             iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
-            changeStatusTask(bugEntity.getTask().getId());
+//            changeStatusTask(bugEntity.getTask().getId());
         } else if (idSubtask != null) {
             subTaskRepository.updateStatusSubTask(idSubtask, Const.status.IN_PROGRESS.name());
-            changeStatusSubTask(bugEntity.getSubTask().getId());
+//            changeStatusSubTask(bugEntity.getSubTask().getId());
         }
         iBugRepository.flush();
         saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
@@ -1215,10 +1207,10 @@ public class BugServiceImpl implements IRequestBugService {
         //dev kết thúc fix bug
         if (idTask != null) {
             iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
-            changeStatusTask(bugEntity.getTask().getId());
+//            changeStatusTask(bugEntity.getTask().getId());
         } else if (idSubtask != null) {
             subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
-            changeStatusSubTask(bugEntity.getSubTask().getId());
+//            changeStatusSubTask(bugEntity.getSubTask().getId());
         }
 
         List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity.getId());
@@ -1248,30 +1240,5 @@ public class BugServiceImpl implements IRequestBugService {
                 userProjectRepository.save(userProjectEntity);
             }
         }
-    }
-
-
-    public static void main(String[] args) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-        Date firstDate = sdf.parse("2023-03-20 12:09:44");
-        Date secondDate = sdf.parse("2023-03-22 14:15:49");
-
-        long diffInMillies = Math.abs(secondDate.getTime() - firstDate.getTime());
-        long diffDate = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-//        long diffHours = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-        long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
-
-
-//        long diffMin = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
-//        diffMin = (diffMin % 24);
-//        long diffHours = (diffMin / 24);
-//        diffHours = (diffHours / 60);
-
-
-        System.out.println(diffMin);
-//        System.out.println(diffMin % 60);
-        System.out.println(diffMin / 1440);
-        System.out.println((diffMin % 1440) / 60);
-        System.out.println(((diffMin % 1440) % 60) % 60);
     }
 }
