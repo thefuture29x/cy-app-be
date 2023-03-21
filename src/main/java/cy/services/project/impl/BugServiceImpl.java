@@ -701,9 +701,9 @@ public class BugServiceImpl implements IRequestBugService {
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
-//                        case "DONE":
-//                            changeStatusSubTask(bugEntity.getSubTask().getId());
-//                            break;
+                        case "DONE":
+                            changeStatusSubTask(bugEntity.getSubTask().getId());
+                            break;
                     }
                     break;
                 case "IN_REVIEW":
@@ -923,9 +923,9 @@ public class BugServiceImpl implements IRequestBugService {
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
-//                        case "DONE":
-//                            changeStatusSubTask(bugEntity.getSubTask().getId());
-//                            break;
+                        case "DONE":
+                            changeStatusSubTask(bugEntity.getSubTask().getId());
+                            break;
                     }
                     break;
                 case "IN_REVIEW":
@@ -1194,10 +1194,10 @@ public class BugServiceImpl implements IRequestBugService {
         //dev bắt đầu fix bug
         if (idTask != null) {
             iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
-//            changeStatusTask(bugEntity.getTask().getId());
+            changeStatusTask(bugEntity.getTask().getId());
         } else if (idSubtask != null) {
             subTaskRepository.updateStatusSubTask(idSubtask, Const.status.IN_PROGRESS.name());
-//            changeStatusSubTask(bugEntity.getSubTask().getId());
+            changeStatusSubTask(bugEntity.getSubTask().getId());
         }
         iBugRepository.flush();
         saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
@@ -1207,10 +1207,10 @@ public class BugServiceImpl implements IRequestBugService {
         //dev kết thúc fix bug
         if (idTask != null) {
             iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
-//            changeStatusTask(bugEntity.getTask().getId());
+            changeStatusTask(bugEntity.getTask().getId());
         } else if (idSubtask != null) {
             subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
-//            changeStatusSubTask(bugEntity.getSubTask().getId());
+            changeStatusSubTask(bugEntity.getSubTask().getId());
         }
 
         List<BugHistoryEntity> bugHistoryEntities = iBugHistoryRepository.findAllByBugId(bugEntity.getId());
