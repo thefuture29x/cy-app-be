@@ -57,8 +57,6 @@ public class TaskServiceImpl implements ITaskService {
     @Autowired
     BugServiceImpl bugService;
     @Autowired
-    ProjectServiceImpl projectService;
-    @Autowired
     EntityManager manager;
 
     public TaskServiceImpl(ITaskRepository repository, IFileService fileService, IFileRepository fileRepository, IFeatureRepository featureRepository, IUserProjectRepository userProjectRepository, IUserRepository userRepository, ITagRelationService tagRelationService, ITagRelationRepository tagRelationRepository, ITagService tagService, ITagRepository tagRepository, IHistoryLogService iHistoryLogService, ISubTaskService subTaskService, ISubTaskRepository subTaskRepository, ITaskRepository iTaskRepository, IProjectRepository iProjectRepository) {
