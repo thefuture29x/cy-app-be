@@ -343,7 +343,7 @@ public class BugServiceImpl implements IRequestBugService {
         BugEntity bug = iBugRepository.findById(model.getId()).orElseThrow(() -> new CustomHandleException(11));
         List<FileEntity> fileOriginal = iFileRepository.getByCategoryAndObjectId(Const.tableName.BUG.name(), model.getId());
 
-        if (bug.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
+//        if (bug.getCreateBy().getUserId() == SecurityUtils.getCurrentUserId()) {//người tạo bug mới có thể đổi trạng thái
             try {
                 if (model.getFileUrlsKeeping() != null) {
                     iFileRepository.deleteFileExistInObject(model.getFileUrlsKeeping(), Const.tableName.BUG.name(), model.getId());
@@ -505,9 +505,9 @@ public class BugServiceImpl implements IRequestBugService {
                 System.out.println(e);
                 return null;
             }
-        } else {
-            throw new CustomHandleException(311);
-        }
+//        } else {
+//            throw new CustomHandleException(311);
+//        }
 
     }
 
