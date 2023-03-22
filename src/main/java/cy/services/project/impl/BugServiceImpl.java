@@ -1205,7 +1205,9 @@ public class BugServiceImpl implements IRequestBugService {
         }else {
             BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findLastBugHistoryOfBug(bugEntity.getId());
             bugHistoryEntity.setStartDate(Date.from(Instant.now()));
+            bugHistoryEntity.setStartDateEstimate(Date.from(Instant.now()));
             iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
+            
         }
     }
 
