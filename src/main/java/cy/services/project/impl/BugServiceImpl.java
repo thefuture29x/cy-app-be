@@ -172,7 +172,6 @@ public class BugServiceImpl implements IRequestBugService {
         bugHistoryEntity.setDeadLine(bugEntity1.getEndDate());
         bugHistoryEntity.setStartDateEstimate(startDate);
 
-
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         try {
             Date firstDate = sdf.parse(bugEntity1.getStartDate().toString());
@@ -183,8 +182,6 @@ public class BugServiceImpl implements IRequestBugService {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-
-
 
         iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
     }
@@ -673,8 +670,8 @@ public class BugServiceImpl implements IRequestBugService {
             throw new CustomHandleException(5);
         }
         // get list user review and dev of this bug
-        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+//        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+//        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
 //        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (bugEntity.getStatus()) {
@@ -684,7 +681,7 @@ public class BugServiceImpl implements IRequestBugService {
                             List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
                                 return FileEntity.builder().fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category(Const.tableName.BUG_HISTORY.name()).build();
                             }).collect(Collectors.toList());
-                            this.startFixBug(idSubtask, null, bugEntity, files);
+                            this.startFixBug(idSubtask, null, bugEntity, files, false);
                             break;
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.TO_DO.name());
@@ -710,7 +707,7 @@ public class BugServiceImpl implements IRequestBugService {
                 case "IN_REVIEW":
                     switch (newStatusOfBug) {
                         case "IN_PROGRESS":
-                            this.startFixBug(idSubtask, null, bugEntity, null);
+                            this.startFixBug(idSubtask, null, bugEntity, null, true);
                             break;
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.IN_REVIEW.name());
@@ -722,7 +719,7 @@ public class BugServiceImpl implements IRequestBugService {
                     switch (pendingHistoryEntity.getStatusBeforePending()) {
                         case "TO_DO":
                             if (newStatusOfBug.equals("IN_PROGRESS")) {
-                                this.startFixBug(idSubtask, null, bugEntity, null);
+                                this.startFixBug(idSubtask, null, bugEntity, null, false);
                             }
                             break;
                         case "IN_PROGRESS":
@@ -740,12 +737,12 @@ public class BugServiceImpl implements IRequestBugService {
                             break;
                         case "IN_REVIEW":
                             if (newStatusOfBug.equals("IN_PROGRESS")) {
-                                this.startFixBug(idSubtask, null, bugEntity, null);
+                                this.startFixBug(idSubtask, null, bugEntity, null, true);
                             }
                             break;
                         case "DONE":
                             if (newStatusOfBug.equals("IN_PROGRESS")) {
-                                this.startFixBug(idSubtask, null, bugEntity, null);
+                                this.startFixBug(idSubtask, null, bugEntity, null, true);
                             }
                             break;
                     }
@@ -758,7 +755,7 @@ public class BugServiceImpl implements IRequestBugService {
                 case "DONE":
                     switch (newStatusOfBug) {
                         case "IN_PROGRESS":
-                            this.startFixBug(idSubtask, null, bugEntity, null);
+                            this.startFixBug(idSubtask, null, bugEntity, null, true);
                             break;
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.DONE.name());
@@ -906,7 +903,7 @@ public class BugServiceImpl implements IRequestBugService {
                             List<FileEntity> files = bugEntity.getAttachFiles().stream().map(f -> {
                                 return FileEntity.builder().fileName(f.getFileName()).fileType(f.getFileType()).link(f.getLink()).uploadedBy(f.getUploadedBy()).category(Const.tableName.BUG_HISTORY.name()).build();
                             }).collect(Collectors.toList());
-                            this.startFixBug(null, idTask, bugEntity, files);
+                            this.startFixBug(null, idTask, bugEntity, files, false);
                             break;
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.TO_DO.name());
@@ -932,7 +929,7 @@ public class BugServiceImpl implements IRequestBugService {
                 case "IN_REVIEW":
                     switch (newStatusOfBug) {
                         case "IN_PROGRESS":
-                            this.startFixBug(null, idTask, bugEntity, null);
+                            this.startFixBug(null, idTask, bugEntity, null, true);
                             break;
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.IN_REVIEW.name());
@@ -944,7 +941,7 @@ public class BugServiceImpl implements IRequestBugService {
                     switch (pendingHistoryEntity.getStatusBeforePending()) {
                         case "TO_DO":
                             if (newStatusOfBug.equals("IN_PROGRESS")) {
-                                this.startFixBug(null, idTask, bugEntity, null);
+                                this.startFixBug(null, idTask, bugEntity, null, false);
                             }
                             break;
                         case "IN_PROGRESS":
@@ -962,12 +959,12 @@ public class BugServiceImpl implements IRequestBugService {
                             break;
                         case "IN_REVIEW":
                             if (newStatusOfBug.equals("IN_PROGRESS")) {
-                                this.startFixBug(null, idTask, bugEntity, null);
+                                this.startFixBug(null, idTask, bugEntity, null, true);
                             }
                             break;
                         case "DONE":
                             if (newStatusOfBug.equals("IN_PROGRESS")) {
-                                this.startFixBug(null, idTask, bugEntity, null);
+                                this.startFixBug(null, idTask, bugEntity, null, true);
                             }
                             break;
                     }
@@ -980,7 +977,7 @@ public class BugServiceImpl implements IRequestBugService {
                 case "DONE":
                     switch (newStatusOfBug) {
                         case "IN_PROGRESS":
-                            this.startFixBug(null, idTask, bugEntity, null);
+                            this.startFixBug(null, idTask, bugEntity, null, true);
                             break;
                         case "PENDING":
                             this.startPending(bugEntity, Const.status.DONE.name());
@@ -1191,7 +1188,7 @@ public class BugServiceImpl implements IRequestBugService {
         }
     }
 
-    public void startFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, List<FileEntity> files) {
+    public void startFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, List<FileEntity> files, boolean createNew) {
         //dev bắt đầu fix bug
         if (idTask != null) {
             iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
@@ -1201,13 +1198,19 @@ public class BugServiceImpl implements IRequestBugService {
             changeStatusSubTask(bugEntity.getSubTask().getId());
         }
         iBugRepository.flush();
-        saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
+        if (createNew){
+            saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
+        }else {
+            BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findLastBugHistoryOfBug(bugEntity.getId());
+            bugHistoryEntity.setStartDate(Date.from(Instant.now()));
+            iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
+        }
     }
 
     public void endFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, String newStatus) {
         //dev kết thúc fix bug
         if (idTask != null) {
-            iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
+            iTaskRepository.updateStatusTask(idTask, newStatus);
             changeStatusTask(bugEntity.getTask().getId());
         } else if (idSubtask != null) {
             subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
