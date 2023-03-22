@@ -700,7 +700,8 @@ public class BugServiceImpl implements IRequestBugService {
                             this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
                         case "DONE":
-                            changeStatusSubTask(bugEntity.getSubTask().getId());
+                            this.endFixBug(idSubtask, null, bugEntity, Const.status.DONE.name());
+//                            changeStatusSubTask(bugEntity.getSubTask().getId());
                             break;
                     }
                     break;
@@ -922,7 +923,8 @@ public class BugServiceImpl implements IRequestBugService {
                             this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
                         case "DONE":
-                            changeStatusTask(bugEntity.getTask().getId());
+                            this.endFixBug(null, idTask, bugEntity, Const.status.DONE.name());
+//                            changeStatusTask(bugEntity.getTask().getId());
                             break;
                     }
                     break;
@@ -1191,10 +1193,10 @@ public class BugServiceImpl implements IRequestBugService {
     public void startFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, List<FileEntity> files, boolean createNew) {
         //dev bắt đầu fix bug
         if (idTask != null) {
-            iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
+//            iTaskRepository.updateStatusTask(idTask, Const.status.IN_PROGRESS.name());
             changeStatusTask(bugEntity.getTask().getId());
         } else if (idSubtask != null) {
-            subTaskRepository.updateStatusSubTask(idSubtask, Const.status.IN_PROGRESS.name());
+//            subTaskRepository.updateStatusSubTask(idSubtask, Const.status.IN_PROGRESS.name());
             changeStatusSubTask(bugEntity.getSubTask().getId());
         }
         iBugRepository.flush();
@@ -1210,10 +1212,10 @@ public class BugServiceImpl implements IRequestBugService {
     public void endFixBug(Long idSubtask, Long idTask, BugEntity bugEntity, String newStatus) {
         //dev kết thúc fix bug
         if (idTask != null) {
-            iTaskRepository.updateStatusTask(idTask, newStatus);
+//            iTaskRepository.updateStatusTask(idTask, newStatus);
             changeStatusTask(bugEntity.getTask().getId());
         } else if (idSubtask != null) {
-            subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
+//            subTaskRepository.updateStatusSubTask(idSubtask, newStatus);
             changeStatusSubTask(bugEntity.getSubTask().getId());
         }
 
