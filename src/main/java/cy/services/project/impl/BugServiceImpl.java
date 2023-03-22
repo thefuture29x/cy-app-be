@@ -922,7 +922,7 @@ public class BugServiceImpl implements IRequestBugService {
                             this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                             break;
                         case "DONE":
-                            changeStatusSubTask(bugEntity.getSubTask().getId());
+                            changeStatusTask(bugEntity.getTask().getId());
                             break;
                     }
                     break;
