@@ -676,7 +676,7 @@ public class BugServiceImpl implements IRequestBugService {
         Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
-        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
+//        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (bugEntity.getStatus()) {
                 case "TO_DO":
                     switch (newStatusOfBug) {
@@ -766,9 +766,9 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                     break;
             }
-        } else {
-            throw new CustomHandleException(311);
-        }
+//        } else {
+//            throw new CustomHandleException(311);
+//        }
 
         bugEntity.setStatus(newStatusOfBug);
         iBugRepository.save(bugEntity);
@@ -898,7 +898,7 @@ public class BugServiceImpl implements IRequestBugService {
         Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
         Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
-        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
+//        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
             switch (bugEntity.getStatus()) {
                 case "TO_DO":
                     switch (newStatusOfBug) {
@@ -988,9 +988,9 @@ public class BugServiceImpl implements IRequestBugService {
                     }
                     break;
             }
-        } else {
-            throw new CustomHandleException(311);
-        }
+//        } else {
+//            throw new CustomHandleException(311);
+//        }
         bugEntity.setStatus(newStatusOfBug);
         iBugRepository.save(bugEntity);
 

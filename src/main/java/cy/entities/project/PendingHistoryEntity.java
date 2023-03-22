@@ -27,7 +27,7 @@ public class PendingHistoryEntity {
     @HistoryLogTitle(title = "thời gian kết thúc")
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
-    @Column(name = "objectid")
+    @Column(name = "object_id")
     private Long objectId;
     private String category;
     private String statusBeforePending;
