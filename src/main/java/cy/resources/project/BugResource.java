@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "bug")
 @RestController
 public class BugResource {
@@ -51,6 +53,10 @@ public class BugResource {
     @PutMapping(value = "/updateStatusTaskToBug")
     public ResponseDto updateStatusTaskToBug(@RequestParam(name = "id")Long id,@RequestParam(name = "status")int status) {
         return ResponseDto.of(bugService.updateStatusTaskToBug(id,status));
+    }
+    @PostMapping(value = "filterBug")
+    public ResponseDto filterBug(Pageable pageable, @RequestBody BugModel bugModel){
+        return ResponseDto.of(bugService.filterBug(pageable, bugModel));
     }
     @GetMapping(value = "findAllBugOfProject")
     public ResponseDto findAllBugOfProject(@RequestParam(name = "id")Long idProject ,Pageable pageable){

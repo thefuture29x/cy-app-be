@@ -35,6 +35,8 @@ public class BugModel {
     private String textSearch;
     private String status;
     private String reason;
+    private Long projectId;
+    private Long featureId;
     public static BugEntity modelToEntity(BugModel model) {
        return BugEntity.builder()
                .id(model.getId())
