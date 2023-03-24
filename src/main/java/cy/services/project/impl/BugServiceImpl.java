@@ -1148,6 +1148,15 @@ public class BugServiceImpl implements IRequestBugService {
             }
         }
 
+        // Get sort by and sort type
+        try {
+            String sortBy = pageable.getSort().toString().split(":")[0].replace(" ", "");
+            String sortType = pageable.getSort().toString().split(":")[1].replace(" ", "");
+            sql += " ORDER BY p." + sortBy + " " + sortType;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         Query q = manager.createQuery(sql, BugEntity.class);
         Query qCount = manager.createQuery(countSQL);
 
@@ -1192,6 +1201,7 @@ public class BugServiceImpl implements IRequestBugService {
         }
         q.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
         q.setMaxResults(pageable.getPageSize());
+
 
         Long numberResult = (Long) qCount.getSingleResult();
         Page<BugEntity> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
