@@ -103,6 +103,8 @@ public class BugDto {
                 .reviewerList(reviewerList != null ? reviewerList : null)
                 .responsibleList(responsibleList != null ? responsibleList : null)
 //                .reason(obj.getReason()!=null ? obj.getReason() : null)
+                .historyLogBug(obj.getHistoryBugList() != null
+                        ? obj.getHistoryBugList().stream().map(data -> BugHistoryDto.entityToDto(data)).collect(Collectors.toList()) : null)
                 .build();
     }
 
