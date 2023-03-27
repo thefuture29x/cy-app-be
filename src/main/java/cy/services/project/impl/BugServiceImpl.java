@@ -1329,7 +1329,7 @@ public class BugServiceImpl implements IRequestBugService {
         }
         iBugRepository.flush();
         BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findLastBugHistoryOfBug(bugEntity.getId());
-        if (bugHistoryEntity != null) {
+        if (bugHistoryEntity == null) {
             saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
         } else {
 //            BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findLastBugHistoryOfBug(bugEntity.getId());
