@@ -1328,10 +1328,11 @@ public class BugServiceImpl implements IRequestBugService {
             changeStatusSubTask(bugEntity.getSubTask().getId());
         }
         iBugRepository.flush();
-        if (createNew) {
+        BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findLastBugHistoryOfBug(bugEntity.getId());
+        if (bugHistoryEntity != null) {
             saveDataInHistoryTable(bugEntity.getId(), Date.from(Instant.now()), null, files);
         } else {
-            BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findLastBugHistoryOfBug(bugEntity.getId());
+//            BugHistoryEntity bugHistoryEntity = iBugHistoryRepository.findLastBugHistoryOfBug(bugEntity.getId());
             bugHistoryEntity.setStartDate(Date.from(Instant.now()));
             bugHistoryEntity.setStartDateEstimate(Date.from(Instant.now()));
             iBugHistoryRepository.saveAndFlush(bugHistoryEntity);
