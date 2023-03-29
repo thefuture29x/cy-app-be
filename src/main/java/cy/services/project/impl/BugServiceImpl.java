@@ -754,6 +754,12 @@ public class BugServiceImpl implements IRequestBugService {
                 }
                 break;
             case "DONE":
+                List<String> listTypeReviewer = new ArrayList<>();
+                listTypeReviewer.add(Const.type.TYPE_REVIEWER.toString());
+                List<Long> listIdReviewerInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(idSubtask, listType);
+                if (!listIdReviewerInProject.stream().anyMatch(idUser::equals)) {
+                    throw new CustomHandleException(5);
+                }
                 switch (newStatusOfBug) {
                     case "IN_PROGRESS":
                         this.startFixBug(idSubtask, null, bugEntity, null, true);
@@ -977,6 +983,12 @@ public class BugServiceImpl implements IRequestBugService {
                 }
                 break;
             case "DONE":
+                List<String> listTypeReviewer = new ArrayList<>();
+                listTypeReviewer.add(Const.type.TYPE_REVIEWER.toString());
+                List<Long> listIdReviewerInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(idTask, listType);
+                if (!listIdReviewerInProject.stream().anyMatch(idUser::equals)) {
+                    throw new CustomHandleException(5);
+                }
                 switch (newStatusOfBug) {
                     case "IN_PROGRESS":
                         this.startFixBug(null, idTask, bugEntity, null, true);

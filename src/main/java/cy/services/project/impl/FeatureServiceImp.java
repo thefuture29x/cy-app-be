@@ -318,7 +318,7 @@ public class FeatureServiceImp implements IFeatureService {
                 oldFeature.getAttachFiles().add(this.fileService.addEntity(fileModel));
 
             });
-        }
+        } 
 
         clearDevTeam(oldFeature.getId());
 //        List<Long> currentAvailableDev = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.PROJECT.name(), projectEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toList());
