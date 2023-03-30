@@ -662,7 +662,7 @@ public class BugServiceImpl implements IRequestBugService {
         BugEntity bugEntity = iBugRepository.findById(idSubtask).orElseThrow(() -> new CustomHandleException(313));
 
         // check the user is on the project's dev list
-        this.checkTypeUser(idSubtask, Const.type.TYPE_REVIEWER,Const.tableName.BUG);
+        this.checkTypeUser(idSubtask, Const.type.TYPE_DEV,Const.tableName.BUG);
 //        Long idUser = SecurityUtils.getCurrentUserId();
 //        List<String> listType = new ArrayList<>();
 //        listType.add(Const.type.TYPE_DEV.toString());
