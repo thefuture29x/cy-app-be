@@ -889,11 +889,11 @@ public class BugServiceImpl implements IRequestBugService {
         List<String> listType = new ArrayList<>();
         listType.add(typeUser.name());
         List<Long> listIdDevInProject = new ArrayList<>();
-        if (category.equals(Const.tableName.TASK.name())){
+        if (category.toString().equals("TASK")){
             listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(idObject, listType);
-        }else if (category.equals(Const.tableName.SUBTASK.name())){
+        }else if (category.toString().equals("SUBTASK")){
             listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(idObject, listType);
-        }else if (category.equals(Const.tableName.BUG.name())){
+        }else if (category.toString().equals("BUG")){
             listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idObject, listType);
         }
         if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
