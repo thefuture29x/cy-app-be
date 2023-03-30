@@ -662,13 +662,14 @@ public class BugServiceImpl implements IRequestBugService {
         BugEntity bugEntity = iBugRepository.findById(idSubtask).orElseThrow(() -> new CustomHandleException(313));
 
         // check the user is on the project's dev list
-        Long idUser = SecurityUtils.getCurrentUserId();
-        List<String> listType = new ArrayList<>();
-        listType.add(Const.type.TYPE_DEV.toString());
-        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idSubtask, listType);
-        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
-            throw new CustomHandleException(5);
-        }
+        this.checkTypeUser(idSubtask, Const.type.TYPE_REVIEWER,Const.tableName.BUG);
+//        Long idUser = SecurityUtils.getCurrentUserId();
+//        List<String> listType = new ArrayList<>();
+//        listType.add(Const.type.TYPE_DEV.toString());
+//        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idSubtask, listType);
+//        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+//            throw new CustomHandleException(5);
+//        }
         // get list user review and dev of this bug
 //        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 //        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
@@ -700,6 +701,7 @@ public class BugServiceImpl implements IRequestBugService {
                         this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                         break;
                     case "DONE":
+                        this.checkTypeUser(idSubtask, Const.type.TYPE_REVIEWER,Const.tableName.SUBTASK);
                         this.endFixBug(idSubtask, null, bugEntity, Const.status.DONE.name());
 //                            changeStatusSubTask(bugEntity.getSubTask().getId());
                         break;
@@ -732,6 +734,7 @@ public class BugServiceImpl implements IRequestBugService {
                                 this.endFixBug(idSubtask, null, bugEntity, Const.status.IN_REVIEW.name());
                                 break;
                             case "DONE":
+                                this.checkTypeUser(idSubtask, Const.type.TYPE_REVIEWER,Const.tableName.SUBTASK);
                                 this.endFixBug(idSubtask, null, bugEntity, Const.status.DONE.name());
                                 break;
                         }
@@ -742,6 +745,7 @@ public class BugServiceImpl implements IRequestBugService {
                         }
                         break;
                     case "DONE":
+                        this.checkTypeUser(idSubtask, Const.type.TYPE_REVIEWER,Const.tableName.SUBTASK);
                         if (newStatusOfBug.equals("IN_PROGRESS")) {
                             this.startFixBug(idSubtask, null, bugEntity, null, true);
                         }
@@ -754,12 +758,7 @@ public class BugServiceImpl implements IRequestBugService {
                 }
                 break;
             case "DONE":
-                List<String> listTypeReviewer = new ArrayList<>();
-                listTypeReviewer.add(Const.type.TYPE_REVIEWER.toString());
-                List<Long> listIdReviewerInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(idSubtask, listType);
-                if (!listIdReviewerInProject.stream().anyMatch(idUser::equals)) {
-                    throw new CustomHandleException(5);
-                }
+                this.checkTypeUser(idSubtask, Const.type.TYPE_REVIEWER,Const.tableName.SUBTASK);
                 switch (newStatusOfBug) {
                     case "IN_PROGRESS":
                         this.startFixBug(idSubtask, null, bugEntity, null, true);
@@ -884,6 +883,23 @@ public class BugServiceImpl implements IRequestBugService {
         return bugDto;
     }
 
+    public void checkTypeUser(Long idObject, Const.type typeUser, Const.tableName category){
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(typeUser.name());
+        List<Long> listIdDevInProject = new ArrayList<>();
+        if (category.equals(Const.tableName.TASK.name())){
+            listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(idObject, listType);
+        }else if (category.equals(Const.tableName.SUBTASK.name())){
+            listIdDevInProject = userProjectRepository.getAllIdDevOfProjectBySubTaskIdInThisProject(idObject, listType);
+        }else if (category.equals(Const.tableName.BUG.name())){
+            listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idObject, listType);
+        }
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+            throw new CustomHandleException(5);
+        }
+    }
     @Override
     public BugDto updateStatusBugOfTask(Long idTask, String newStatusOfBug) {
         // check bug is deleted
@@ -891,16 +907,18 @@ public class BugServiceImpl implements IRequestBugService {
         BugEntity bugEntity = iBugRepository.findById(idTask).orElseThrow(() -> new CustomHandleException(313));
 
         // check the user is on the project's dev list
-        Long idUser = SecurityUtils.getCurrentUserId();
-        List<String> listType = new ArrayList<>();
-        listType.add(Const.type.TYPE_DEV.toString());
-        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idTask, listType);
-        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
-            throw new CustomHandleException(5);
-        }
 
-        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
-        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+        this.checkTypeUser(idTask, Const.type.TYPE_DEV,Const.tableName.BUG);
+//        Long idUser = SecurityUtils.getCurrentUserId();
+//        List<String> listType = new ArrayList<>();
+//        listType.add(Const.type.TYPE_DEV.toString());
+//        List<Long> listIdDevInProject = userProjectRepository.getAllIdDevOfProjectByBugIdInThisProject(idTask, listType);
+//        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+//            throw new CustomHandleException(5);
+//        }
+
+//        Set<Long> reviewerIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+//        Set<Long> responsibleIdList = userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.BUG.name(), bugEntity.getId(), Const.type.TYPE_DEV.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
 
 //        if (reviewerIdList.contains(SecurityUtils.getCurrentUserId()) || responsibleIdList.contains(SecurityUtils.getCurrentUserId())) {//dev fix bug mới có thể đổi trạng thái bug để start
         switch (bugEntity.getStatus()) {
@@ -929,6 +947,7 @@ public class BugServiceImpl implements IRequestBugService {
                         this.startPending(bugEntity, Const.status.IN_PROGRESS.name());
                         break;
                     case "DONE":
+                        this.checkTypeUser(idTask, Const.type.TYPE_REVIEWER,Const.tableName.TASK);
                         this.endFixBug(null, idTask, bugEntity, Const.status.DONE.name());
 //                            changeStatusTask(bugEntity.getTask().getId());
                         break;
@@ -961,6 +980,7 @@ public class BugServiceImpl implements IRequestBugService {
                                 this.endFixBug(null, idTask, bugEntity, Const.status.IN_REVIEW.name());
                                 break;
                             case "DONE":
+                                this.checkTypeUser(idTask, Const.type.TYPE_REVIEWER,Const.tableName.TASK);
                                 this.endFixBug(null, idTask, bugEntity, Const.status.DONE.name());
                                 break;
                         }
@@ -971,6 +991,7 @@ public class BugServiceImpl implements IRequestBugService {
                         }
                         break;
                     case "DONE":
+                        this.checkTypeUser(idTask, Const.type.TYPE_REVIEWER,Const.tableName.TASK);
                         if (newStatusOfBug.equals("IN_PROGRESS")) {
                             this.startFixBug(null, idTask, bugEntity, null, true);
                         }
@@ -983,12 +1004,7 @@ public class BugServiceImpl implements IRequestBugService {
                 }
                 break;
             case "DONE":
-                List<String> listTypeReviewer = new ArrayList<>();
-                listTypeReviewer.add(Const.type.TYPE_REVIEWER.toString());
-                List<Long> listIdReviewerInProject = userProjectRepository.getAllIdDevOfProjectByTaskIdInThisProject(idTask, listType);
-                if (!listIdReviewerInProject.stream().anyMatch(idUser::equals)) {
-                    throw new CustomHandleException(5);
-                }
+                this.checkTypeUser(idTask, Const.type.TYPE_REVIEWER,Const.tableName.TASK);
                 switch (newStatusOfBug) {
                     case "IN_PROGRESS":
                         this.startFixBug(null, idTask, bugEntity, null, true);
