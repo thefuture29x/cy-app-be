@@ -3,8 +3,8 @@ package cy.configs;
 
 import cy.configs.jwt.JwtAuthenticationProvider;
 import cy.configs.jwt.JwtFilter;
-import cy.dtos.CustomHandleException;
-import cy.services.IUserService;
+import cy.dtos.common.CustomHandleException;
+import cy.services.common.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

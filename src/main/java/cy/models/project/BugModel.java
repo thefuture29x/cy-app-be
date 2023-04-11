@@ -1,6 +1,8 @@
 package cy.models.project;
 
 import cy.entities.project.BugEntity;
+import cy.models.common.TagModel;
+import cy.models.common.UserProjectModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

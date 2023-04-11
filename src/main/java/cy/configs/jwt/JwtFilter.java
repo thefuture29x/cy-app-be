@@ -1,7 +1,7 @@
 package cy.configs.jwt;
 
-import cy.dtos.ResponseDto;
-import cy.services.IUserService;
+import cy.dtos.common.ResponseDto;
+import cy.services.common.IUserService;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

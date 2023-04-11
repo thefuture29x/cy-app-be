@@ -3,7 +3,7 @@ package cy.services.attendance;
 import cy.dtos.attendance.NotificationDto;
 import cy.entities.attendance.NotificationEntity;
 import cy.models.attendance.NotificationModel;
-import cy.services.IBaseService;
+import cy.services.common.IBaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -1,7 +1,7 @@
 package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.models.project.ProjectModel;
 import cy.services.project.IProjectService;
 import cy.services.project.IUserViewProjectService;

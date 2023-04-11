@@ -1,5 +1,8 @@
 package cy.dtos.project;
 
+import cy.dtos.common.FileDto;
+import cy.dtos.common.TagDto;
+import cy.dtos.common.UserMetaDto;
 import cy.entities.project.BugEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

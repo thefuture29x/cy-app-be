@@ -1,15 +1,22 @@
 package cy.services.project.impl;
 
-import cy.dtos.CustomHandleException;
-import cy.dtos.UserDto;
+import cy.dtos.common.CustomHandleException;
+import cy.dtos.common.UserDto;
+import cy.dtos.common.FileDto;
+import cy.dtos.common.TagDto;
+import cy.dtos.common.UserProjectDto;
 import cy.dtos.project.*;
-import cy.entities.UserEntity;
+import cy.entities.common.UserEntity;
+import cy.entities.common.FileEntity;
+import cy.entities.common.TagEntity;
+import cy.entities.common.TagRelationEntity;
+import cy.entities.common.UserProjectEntity;
 import cy.entities.project.*;
 import cy.models.project.SubTaskModel;
 import cy.models.project.SubTaskUpdateModel;
-import cy.repositories.IUserRepository;
+import cy.repositories.common.*;
 import cy.repositories.project.*;
-import cy.services.project.IHistoryLogService;
+import cy.services.common.IHistoryLogService;
 import cy.services.project.IRequestBugService;
 import cy.services.project.ISubTaskService;
 import cy.utils.Const;

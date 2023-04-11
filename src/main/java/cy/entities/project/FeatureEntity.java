@@ -1,20 +1,19 @@
 package cy.entities.project;
 
-import cy.dtos.project.FeatureDto;
-import cy.entities.UserEntity;
+import cy.entities.common.HistoryLogTitle;
+import cy.entities.common.UserEntity;
+import cy.entities.common.FileEntity;
 import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Where;
-import org.hibernate.annotations.WhereJoinTable;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
 @HistoryLogTitle(title = "feature")
 @EntityListeners(ProjectListener.class)
 @Data

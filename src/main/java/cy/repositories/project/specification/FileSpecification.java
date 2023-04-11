@@ -1,7 +1,7 @@
 package cy.repositories.project.specification;
 
-import cy.entities.project.FileEntity;
-import cy.entities.project.FileEntity_;
+import cy.entities.common.FileEntity;
+import cy.entities.common.FileEntity_;
 import cy.utils.Const;
 import org.springframework.data.jpa.domain.Specification;
 

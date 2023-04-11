@@ -3,7 +3,7 @@ package cy.dtos.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import cy.dtos.UserDto;
+import cy.dtos.common.UserDto;
 import cy.entities.attendance.RequestDeviceEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

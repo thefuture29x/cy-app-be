@@ -5,11 +5,7 @@ import cy.dtos.project.BugDto;
 import cy.entities.project.BugEntity;
 import cy.models.project.BugModel;
 import cy.models.project.SubTaskUpdateModel;
-import cy.services.IBaseService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
+import cy.services.common.IBaseService;
 
 public interface IRequestBugService extends IBaseService<BugEntity, BugDto, BugModel,Long> {
     void deleteBug(Long id);

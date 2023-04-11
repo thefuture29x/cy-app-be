@@ -1,20 +1,20 @@
 package cy.services.attendance.impl;
 
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.RequestAttendDto;
 import cy.dtos.attendance.RequestModifiDto;
 import cy.entities.attendance.HistoryRequestEntity;
 import cy.entities.attendance.NotificationEntity;
 import cy.entities.attendance.RequestAttendEntity;
 import cy.entities.attendance.RequestModifiEntity;
-import cy.entities.UserEntity;
+import cy.entities.common.UserEntity;
 import cy.models.attendance.AcceptRequestModifiModel;
 import cy.models.attendance.RequestModifiModel;
-import cy.repositories.*;
 import cy.repositories.attendance.IHistoryRequestRepository;
 import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.attendance.IRequestAttendRepository;
 import cy.repositories.attendance.IRequestModifiRepository;
+import cy.repositories.common.IUserRepository;
 import cy.services.attendance.IRequestModifiService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;

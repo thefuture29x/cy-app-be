@@ -1,9 +1,9 @@
 package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.RequestDayOffDto;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.models.attendance.GetRequestDayOffModel;
 import cy.models.attendance.RequestDayOffModel;
 import cy.repositories.attendance.IRequestDayOffRepository;

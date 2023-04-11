@@ -1,12 +1,10 @@
 package cy.services.project;
 
 import cy.dtos.project.FeatureDto;
-import cy.dtos.project.ProjectDto;
 import cy.entities.project.FeatureEntity;
 import cy.models.project.FeatureFilterModel;
 import cy.models.project.FeatureModel;
-import cy.models.project.ProjectModel;
-import cy.services.IBaseService;
+import cy.services.common.IBaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

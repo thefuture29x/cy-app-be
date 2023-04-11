@@ -1,23 +1,23 @@
 package cy.services.attendance.impl;
 
 import cy.dtos.attendance.NotificationDto;
-import cy.entities.*;
 import cy.entities.attendance.HistoryRequestEntity;
 import cy.entities.attendance.NotificationEntity;
 import cy.entities.attendance.RequestAttendEntity;
+import cy.entities.common.RoleEntity;
 import cy.models.attendance.CreateUpdateRequestAttend;
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.RequestAttendDto;
-import cy.dtos.UserDto;
+import cy.dtos.common.UserDto;
 
-import cy.entities.UserEntity;
+import cy.entities.common.UserEntity;
 import cy.models.attendance.NotificationModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.models.attendance.RequestAttendModel;
 import cy.repositories.attendance.IHistoryRequestRepository;
 import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.attendance.IRequestAttendRepository;
-import cy.repositories.IUserRepository;
+import cy.repositories.common.IUserRepository;
 import cy.repositories.attendance.specification.RequestAttendSpecification;
 import cy.services.attendance.INotificationService;
 import cy.services.attendance.IRequestAttendService;

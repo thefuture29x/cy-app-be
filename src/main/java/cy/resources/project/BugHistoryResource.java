@@ -1,7 +1,7 @@
 package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.models.project.BugHistoryModel;
 import cy.services.project.impl.BugHistoryServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;

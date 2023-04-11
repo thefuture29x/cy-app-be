@@ -1,15 +1,13 @@
 package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.models.project.BugModel;
 import cy.models.project.SubTaskUpdateModel;
 import cy.services.project.impl.BugServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 @RequestMapping(value = FrontendConfiguration.PREFIX_API + "bug")
 @RestController

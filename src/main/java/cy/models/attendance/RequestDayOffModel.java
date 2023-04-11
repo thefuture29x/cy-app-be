@@ -2,15 +2,10 @@ package cy.models.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cy.entities.UserEntity;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import java.sql.Date;
-import java.util.List;
 
 @Getter
 @Setter

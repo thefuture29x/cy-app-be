@@ -1,12 +1,11 @@
 package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.dtos.project.SubTaskDto;
 import cy.models.project.SubTaskModel;
 import cy.models.project.SubTaskUpdateModel;
 import cy.services.project.ISubTaskService;
-import cy.utils.Const;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

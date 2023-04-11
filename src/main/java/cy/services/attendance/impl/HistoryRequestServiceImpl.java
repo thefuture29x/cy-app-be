@@ -1,6 +1,6 @@
 package cy.services.attendance.impl;
 
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.HistoryRequestDto;
 import cy.entities.attendance.HistoryRequestEntity;
 import cy.models.attendance.HistoryRequestModel;

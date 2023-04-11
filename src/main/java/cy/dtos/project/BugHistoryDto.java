@@ -1,5 +1,6 @@
 package cy.dtos.project;
 
+import cy.dtos.common.FileDto;
 import cy.entities.project.BugHistoryEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +10,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;

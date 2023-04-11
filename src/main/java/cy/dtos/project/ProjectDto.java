@@ -1,6 +1,7 @@
 package cy.dtos.project;
 
-import cy.dtos.UserDto;
+import cy.dtos.common.UserDto;
+import cy.dtos.common.FileDto;
 import cy.entities.project.ProjectEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

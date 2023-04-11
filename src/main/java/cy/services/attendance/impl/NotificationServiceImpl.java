@@ -1,13 +1,13 @@
 package cy.services.attendance.impl;
 
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.NotificationDto;
 import cy.entities.attendance.NotificationEntity;
-import cy.entities.UserEntity;
+import cy.entities.common.UserEntity;
 import cy.models.attendance.NotificationModel;
 import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.attendance.IRequestAttendRepository;
-import cy.repositories.IUserRepository;
+import cy.repositories.common.IUserRepository;
 import cy.services.attendance.*;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;

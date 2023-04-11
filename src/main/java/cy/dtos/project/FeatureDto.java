@@ -1,11 +1,11 @@
 package cy.dtos.project;
 
-import cy.dtos.UserDto;
-import cy.entities.UserEntity;
+import cy.dtos.common.UserDto;
+import cy.dtos.common.FileDto;
+import cy.dtos.common.TagDto;
 import cy.entities.project.FeatureEntity;
 import lombok.*;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

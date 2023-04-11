@@ -2,7 +2,7 @@ package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.attendance.NotificationDto;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.models.attendance.NotificationModel;
 import cy.services.attendance.INotificationService;
 import org.springframework.beans.factory.annotation.Autowired;

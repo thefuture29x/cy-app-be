@@ -1,17 +1,17 @@
 package cy.services.attendance.impl;
 
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.RequestDayOffDto;
 import cy.entities.attendance.HistoryRequestEntity;
 import cy.entities.attendance.NotificationEntity;
 import cy.entities.attendance.RequestDayOffEntity;
-import cy.entities.UserEntity;
-import cy.entities.*;
+import cy.entities.common.RoleEntity;
+import cy.entities.common.UserEntity;
 import cy.models.attendance.RequestDayOffModel;
 import cy.repositories.attendance.IHistoryRequestRepository;
 import cy.repositories.attendance.INotificationRepository;
 import cy.repositories.attendance.IRequestDayOffRepository;
-import cy.repositories.IUserRepository;
+import cy.repositories.common.IUserRepository;
 import cy.services.attendance.IRequestDayOffService;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;

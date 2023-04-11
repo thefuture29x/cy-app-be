@@ -2,11 +2,11 @@ package cy.services.attendance.impl;
 
 import cy.dtos.attendance.PayRollDto;
 import cy.entities.attendance.PayRollEntity;
-import cy.entities.UserEntity;
+import cy.entities.common.UserEntity;
 import cy.models.attendance.PayRollModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.repositories.attendance.IPayRollRepository;
-import cy.repositories.IUserRepository;
+import cy.repositories.common.IUserRepository;
 import cy.services.attendance.IRequestAttendService;
 import cy.services.attendance.IRequestDayOffService;
 import cy.services.attendance.IRequestOTService;

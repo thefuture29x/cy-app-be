@@ -2,7 +2,7 @@ package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.attendance.HistoryRequestDto;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.models.attendance.HistoryRequestModel;
 import cy.services.attendance.IHistoryRequestService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.ResponseDto;
-import cy.entities.RoleEntity;
+import cy.dtos.common.ResponseDto;
+import cy.entities.common.RoleEntity;
 import cy.models.project.SubTaskUpdateModel;
 import cy.models.project.TaskModel;
 import cy.models.project.TaskSearchModel;

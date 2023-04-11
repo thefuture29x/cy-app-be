@@ -1,6 +1,6 @@
 package cy.services.attendance.impl;
 
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.OptionDto;
 import cy.entities.attendance.OptionEntity;
 import cy.repositories.attendance.IOptionRepository;

@@ -1,9 +1,7 @@
 package cy.dtos.attendance;
 
-import cy.dtos.UserDto;
-import cy.dtos.project.FileDto;
+import cy.dtos.common.UserDto;
 import cy.entities.attendance.TextQrEntity;
-import cy.entities.project.FileEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,31 +1,18 @@
 package cy.repositories.project.specification;
 
-import cy.entities.UserEntity;
-import cy.entities.UserEntity_;
+import cy.entities.common.UserEntity;
+import cy.entities.common.UserEntity_;
+import cy.entities.common.TagEntity;
+import cy.entities.common.TagRelationEntity;
+import cy.entities.common.TagRelationEntity_;
 import cy.entities.project.*;
 import cy.models.project.FeatureFilterModel;
-import cy.models.project.FeatureModel;
-import cy.utils.Const;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.jpa.domain.Specification;
-import org.yaml.snakeyaml.util.EnumUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.persistence.criteria.*;
-import javax.swing.*;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-
-import static org.springframework.data.jpa.domain.Specification.*;
 
 public class FeatureSpecification {
 

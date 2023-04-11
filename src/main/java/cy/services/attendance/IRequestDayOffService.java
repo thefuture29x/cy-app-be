@@ -3,7 +3,7 @@ package cy.services.attendance;
 import cy.dtos.attendance.RequestDayOffDto;
 import cy.entities.attendance.RequestDayOffEntity;
 import cy.models.attendance.RequestDayOffModel;
-import cy.services.IBaseService;
+import cy.services.common.IBaseService;
 import org.springframework.data.domain.Pageable;
 
 import javax.transaction.Transactional;

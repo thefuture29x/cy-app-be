@@ -1,6 +1,9 @@
 package cy.entities.project;
 
-import cy.entities.UserEntity;
+import cy.entities.common.HistoryLogTitle;
+import cy.entities.common.UserEntity;
+import cy.entities.common.FileEntity;
+import cy.entities.common.TagEntity;
 import cy.entities.project.Listener.ProjectListener;
 import lombok.AllArgsConstructor;
 import lombok.Data;

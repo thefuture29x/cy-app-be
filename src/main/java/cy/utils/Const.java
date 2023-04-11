@@ -1,7 +1,7 @@
 package cy.utils;
 
-import cy.dtos.CustomHandleException;
-import cy.entities.project.FileEntity;
+import cy.dtos.common.CustomHandleException;
+import cy.entities.common.FileEntity;
 import cy.entities.project.ProjectEntity;
 import org.springframework.beans.BeanUtils;
 
@@ -122,7 +122,7 @@ public class Const {
 
 
     public enum tableName {
-        PROJECT, FEATURE, TASK, SUBTASK, BUG, BUG_HISTORY, FILE, TAG, HISTORY, COMMENT, USER_PROJECT, TAG_RELATION,LIST_BUG
+        PROJECT, FEATURE, TASK, SUBTASK, BUG, BUG_HISTORY, FILE, TAG, HISTORY, COMMENT, USER_PROJECT, TAG_RELATION,LIST_BUG,MISSION,PROPOSE,ASSIGNMENT
     }
 
 

@@ -1,7 +1,7 @@
 package cy.repositories.project.specification;
 
-import cy.entities.project.CommentEntity;
-import cy.entities.project.CommentEntity_;
+import cy.entities.common.CommentEntity;
+import cy.entities.common.CommentEntity_;
 import cy.utils.Const;
 import org.springframework.data.jpa.domain.Specification;
 

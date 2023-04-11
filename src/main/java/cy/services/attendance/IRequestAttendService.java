@@ -3,7 +3,7 @@ package cy.services.attendance;
 import cy.dtos.attendance.RequestAttendDto;
 import cy.entities.attendance.RequestAttendEntity;
 import cy.models.attendance.RequestAttendModel;
-import cy.services.IBaseService;
+import cy.services.common.IBaseService;
 
 import java.sql.Date;
 

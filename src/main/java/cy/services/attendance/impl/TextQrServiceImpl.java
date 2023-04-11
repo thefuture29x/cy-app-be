@@ -1,11 +1,11 @@
 package cy.services.attendance.impl;
 
 import cy.configs.Base64ToMultipartFile;
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.TextQrDto;
 import cy.entities.attendance.TextQrEntity;
 import cy.models.attendance.TextQrModel;
-import cy.repositories.IUserRepository;
+import cy.repositories.common.IUserRepository;
 import cy.repositories.attendance.ITextQrRepository;
 import cy.services.attendance.ITextQrService;
 import cy.utils.FileUploadProvider;

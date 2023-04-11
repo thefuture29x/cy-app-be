@@ -2,7 +2,7 @@ package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.attendance.RequestDeviceDto;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.models.attendance.RequestDeviceModel;
 import cy.models.attendance.RequestDeviceUpdateStatusModel;
 import cy.services.attendance.impl.RequestDeviceServiceImpl;

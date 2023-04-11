@@ -1,7 +1,7 @@
 package cy.configs.jwt;
 
-import cy.dtos.CustomHandleException;
-import cy.services.CustomUserDetail;
+import cy.dtos.common.CustomHandleException;
+import cy.services.common.CustomUserDetail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.MessageSourceAccessor;

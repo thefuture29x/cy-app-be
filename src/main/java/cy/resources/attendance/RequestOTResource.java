@@ -1,10 +1,10 @@
 package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.RequestOTDto;
-import cy.dtos.ResponseDto;
-import cy.entities.RoleEntity;
+import cy.dtos.common.ResponseDto;
+import cy.entities.common.RoleEntity;
 import cy.models.attendance.RequestOTModel;
 import cy.services.attendance.IRequestOTService;
 import io.swagger.v3.oas.annotations.Operation;

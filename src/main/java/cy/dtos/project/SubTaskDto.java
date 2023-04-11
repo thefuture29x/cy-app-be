@@ -1,6 +1,10 @@
 package cy.dtos.project;
 
-import cy.dtos.UserDto;
+import cy.dtos.common.UserDto;
+import cy.dtos.common.FileDto;
+import cy.dtos.common.TagDto;
+import cy.dtos.common.UserMetaDto;
+import cy.dtos.common.UserProjectDto;
 import cy.entities.project.SubTaskEntity;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;

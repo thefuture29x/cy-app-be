@@ -2,8 +2,8 @@ package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
 import cy.dtos.attendance.OptionDto;
-import cy.dtos.ResponseDto;
-import cy.entities.RoleEntity;
+import cy.dtos.common.ResponseDto;
+import cy.entities.common.RoleEntity;
 import cy.services.attendance.IOptionService;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,12 +1,6 @@
 package cy.entities.project.Listener;
 
-import cy.entities.UserEntity;
-import cy.entities.project.*;
-import cy.utils.Const;
-
 import javax.persistence.*;
-import java.lang.reflect.Field;
-import java.util.List;
 
 public class ProjectListener {
 

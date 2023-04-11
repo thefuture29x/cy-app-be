@@ -5,7 +5,7 @@ import cy.entities.project.TaskEntity;
 import cy.models.project.SubTaskUpdateModel;
 import cy.models.project.TaskModel;
 import cy.models.project.TaskSearchModel;
-import cy.services.IBaseService;
+import cy.services.common.IBaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

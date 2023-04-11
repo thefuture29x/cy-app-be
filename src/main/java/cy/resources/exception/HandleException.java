@@ -1,7 +1,7 @@
 package cy.resources.exception;
 
-import cy.dtos.CustomHandleException;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.CustomHandleException;
+import cy.dtos.common.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

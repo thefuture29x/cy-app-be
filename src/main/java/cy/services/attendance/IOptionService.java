@@ -2,7 +2,7 @@ package cy.services.attendance;
 
 import cy.dtos.attendance.OptionDto;
 import cy.entities.attendance.OptionEntity;
-import cy.services.IBaseService;
+import cy.services.common.IBaseService;
 
 import java.util.List;
 

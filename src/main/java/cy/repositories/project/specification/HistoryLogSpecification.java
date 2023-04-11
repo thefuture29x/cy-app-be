@@ -1,7 +1,7 @@
 package cy.repositories.project.specification;
 
-import cy.entities.project.HistoryEntity;
-import cy.entities.project.HistoryEntity_;
+import cy.entities.common.HistoryEntity;
+import cy.entities.common.HistoryEntity_;
 import cy.utils.Const;
 import org.springframework.data.jpa.domain.Specification;
 

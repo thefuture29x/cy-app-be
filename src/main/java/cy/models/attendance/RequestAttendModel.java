@@ -2,7 +2,7 @@ package cy.models.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cy.dtos.UserDto;
+import cy.dtos.common.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

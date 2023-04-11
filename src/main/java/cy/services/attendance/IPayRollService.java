@@ -4,7 +4,7 @@ import cy.dtos.attendance.PayRollDto;
 import cy.entities.attendance.PayRollEntity;
 import cy.models.attendance.PayRollModel;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
-import cy.services.IBaseService;
+import cy.services.common.IBaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

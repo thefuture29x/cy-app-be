@@ -1,7 +1,7 @@
 package cy.dtos.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import cy.dtos.UserDto;
+import cy.dtos.common.UserDto;
 import cy.entities.attendance.RequestModifiEntity;
 import lombok.*;
 import org.json.JSONObject;

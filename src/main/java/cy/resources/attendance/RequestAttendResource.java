@@ -1,11 +1,11 @@
 package cy.resources.attendance;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.dtos.attendance.RequestAttendDto;
-import cy.dtos.ResponseDto;
+import cy.dtos.common.ResponseDto;
 import cy.entities.attendance.RequestAttendEntity;
-import cy.entities.RoleEntity;
+import cy.entities.common.RoleEntity;
 import cy.models.attendance.CreateUpdateRequestAttend;
 import cy.models.attendance.RequestAttendByNameAndYearMonth;
 import cy.models.attendance.RequestAttendModel;

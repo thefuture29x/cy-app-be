@@ -1,20 +1,18 @@
 package cy.services.project.impl;
 
 import cy.dtos.project.BugHistoryDto;
-import cy.dtos.project.FileDto;
-import cy.entities.UserEntity;
+import cy.entities.common.UserEntity;
 import cy.entities.project.BugEntity;
 import cy.entities.project.BugHistoryEntity;
-import cy.entities.project.FileEntity;
-import cy.entities.project.HistoryEntity;
+import cy.entities.common.HistoryEntity;
 import cy.models.project.BugHistoryModel;
-import cy.models.project.FileModel;
+import cy.models.common.FileModel;
 import cy.repositories.project.IBugHistoryRepository;
 import cy.repositories.project.IBugRepository;
-import cy.repositories.project.IFileRepository;
-import cy.repositories.project.IHistoryLogRepository;
+import cy.repositories.common.IFileRepository;
+import cy.repositories.common.IHistoryLogRepository;
 import cy.services.project.IBugHistoryService;
-import cy.services.project.IFileService;
+import cy.services.common.IFileService;
 import cy.utils.Const;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +22,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Time;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class BugHistoryServiceImpl implements IBugHistoryService {

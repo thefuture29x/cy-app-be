@@ -1,6 +1,6 @@
 package cy.dtos.attendance;
 
-import cy.dtos.UserDto;
+import cy.dtos.common.UserDto;
 import cy.entities.attendance.RequestOTEntity;
 import lombok.*;
 

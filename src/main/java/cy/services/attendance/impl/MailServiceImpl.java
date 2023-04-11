@@ -1,6 +1,6 @@
 package cy.services.attendance.impl;
 
-import cy.services.MailService;
+import cy.services.common.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;

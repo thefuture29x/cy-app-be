@@ -1,11 +1,9 @@
 package cy.services.project;
 
-import cy.dtos.UserDto;
 import cy.dtos.project.ProjectDto;
-import cy.dtos.project.UserMetaDto;
+import cy.dtos.common.UserMetaDto;
 import cy.models.project.ProjectModel;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.parameters.P;
 
 import java.io.IOException;
 import java.text.ParseException;

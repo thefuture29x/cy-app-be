@@ -2,7 +2,7 @@ package cy.models.attendance;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import cy.dtos.CustomHandleException;
+import cy.dtos.common.CustomHandleException;
 import cy.entities.attendance.RequestDeviceEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package cy.entities.attendance;
 
-import cy.entities.UserEntity;
+import cy.entities.common.UserEntity;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 

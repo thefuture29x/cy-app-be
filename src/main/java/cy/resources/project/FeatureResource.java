@@ -1,11 +1,10 @@
 package cy.resources.project;
 
 import cy.configs.FrontendConfiguration;
-import cy.dtos.ResponseDto;
-import cy.entities.RoleEntity;
+import cy.dtos.common.ResponseDto;
+import cy.entities.common.RoleEntity;
 import cy.models.project.FeatureFilterModel;
 import cy.models.project.FeatureModel;
-import cy.repositories.project.specification.FeatureSpecification;
 import cy.services.project.IFeatureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
