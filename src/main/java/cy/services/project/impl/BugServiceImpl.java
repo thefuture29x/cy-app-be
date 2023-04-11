@@ -708,6 +708,7 @@ public class BugServiceImpl implements IRequestBugService {
                 }
                 break;
             case "IN_REVIEW":
+                this.checkTypeUser(idSubtask, Const.type.TYPE_REVIEWER,Const.tableName.SUBTASK);
                 switch (newStatusOfBug) {
                     case "IN_PROGRESS":
                         this.startFixBug(idSubtask, null, bugEntity, null, true);
@@ -954,6 +955,7 @@ public class BugServiceImpl implements IRequestBugService {
                 }
                 break;
             case "IN_REVIEW":
+                this.checkTypeUser(idTask, Const.type.TYPE_REVIEWER,Const.tableName.TASK);
                 switch (newStatusOfBug) {
                     case "IN_PROGRESS":
                         this.startFixBug(null, idTask, bugEntity, null, true);
