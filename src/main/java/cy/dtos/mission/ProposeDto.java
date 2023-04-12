@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,6 +25,8 @@ public class ProposeDto {
     private Date updatedDate;
     private String description;
     private List<FileDto> attachFiles;
+//    private UserDto userCreate;
+    private String userName;
 
     public static ProposeDto toDto(ProposeEntity entity){
         if(entity == null)
@@ -33,6 +36,8 @@ public class ProposeDto {
                 .description(entity.getDescription())
                 .createdDate(entity.getCreatedDate())
                 .updatedDate(entity.getUpdatedDate())
+//                .userCreate(entity.getCreateBy() != null ? UserDto.toDto(entity.getCreateBy()) : null)
+                .userName(entity.getCreateBy().getFullName())
                 .attachFiles(entity.getAttachFiles()!=null
                         ? entity.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();

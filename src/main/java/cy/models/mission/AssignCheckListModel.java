@@ -22,10 +22,9 @@ import java.util.List;
 @AllArgsConstructor
 public class AssignCheckListModel {
     private Long id;
-    private String content;
-    private MultipartFile[] files;
-    private List<String> fileUrlsKeeping;
-    private String category;
-    private Long objectId;
+    private String description;
+    private Boolean isDone = false;
+    private Long idAssign;
+
 }
 

@@ -3,6 +3,9 @@ package cy.models.mission;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -10,7 +13,9 @@ import lombok.NoArgsConstructor;
 public class ProposeModel {
     private Long id;
     private String description;
-    private Boolean isDone = false; 
-    private Long idAssign;
+    private MultipartFile[] files;
+    private List<String> fileUrlsKeeping;
+    private String category;
+    private Long objectId;
 }
 

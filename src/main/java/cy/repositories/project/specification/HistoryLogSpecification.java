@@ -21,11 +21,18 @@ public class HistoryLogSpecification {
                     cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới project%"),
                     cb.like(root.get(HistoryEntity_.CONTENT),"%đã cập nhật project%"),
                     cb.like(root.get(HistoryEntity_.CONTENT),"%đã xóa project%"));
-        }else {
+        }else if (category.equals("BUG")){
             return (root, query, cb) -> cb.or(
                     cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới bug%"),
                     cb.like(root.get(HistoryEntity_.CONTENT),"%đã cập nhật bug%"),
                     cb.like(root.get(HistoryEntity_.CONTENT),"%đã xóa bug%"));
+        } else if (category.equals("MISSION")) {
+            return (root, query, cb) -> cb.or(
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã thêm mới mission%"),
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã cập nhật mission%"),
+                    cb.like(root.get(HistoryEntity_.CONTENT),"%đã xóa mission%"));
+        }else {
+            return null;
         }
     }
     public static Specification<HistoryEntity> byObjectAndCategory(Long objectId, Const.tableName category) {
