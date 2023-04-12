@@ -12,4 +12,7 @@ import java.util.List;
 
 @Repository
 public interface IMissionRepository extends JpaRepository<MissionEntity, Long> {
+    List<MissionEntity> getAllByNameAndIsDeleted(String name, Boolean isDeleted);
+    @Query(value = "SELECT is_deleted FROM `tbl_mission` WHERE id = ?1", nativeQuery = true)
+    boolean checkIsDeleted(Long id);
 }

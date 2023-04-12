@@ -31,8 +31,8 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM `tbl_user_projects` WHERE user_id = ?1 AND category = 'PROJECT' AND type = ?2 AND object_id = ?3", nativeQuery = true)
-    void deleteByIdUserAndTypeAndObjectId(Long idUser,String type,Long objectId);
+    @Query(value = "DELETE FROM `tbl_user_projects` WHERE user_id = ?1 AND category = ?4 AND type = ?2 AND object_id = ?3", nativeQuery = true)
+    void deleteByIdUserAndTypeAndObjectId(Long idUser,String type,Long objectId,String category);
 
     @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
             "JOIN tbl_projects pr ON uspr.object_id = pr.id AND category = 'PROJECT' and type IN ?2 \n" +

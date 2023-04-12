@@ -18,14 +18,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@HistoryLogTitle(title = "assign")
+@HistoryLogTitle(title = "propose")
 @EntityListeners(ProjectListener.class)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder(toBuilder = true)
 @Entity
-@Table(name = "tbl_assign")
+@Table(name = "tbl_propose")
 public class ProposeEntity {
     @HistoryLogTitle(title = "", ignore = true)
     @Id
@@ -38,7 +38,7 @@ public class ProposeEntity {
     @HistoryLogTitle(title = "file đính kèm", isMultipleFiles = true)
     @OneToMany(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "object_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    @Where(clause = "category='FEATURE'")
+    @Where(clause = "category='PROPOSE'")
     private List<FileEntity> attachFiles;
 
     @HistoryLogTitle(title = "", ignore = true)

@@ -589,7 +589,7 @@ public class ProjectServiceImpl implements IProjectService {
         return userRepository.getAllByCategoryAndTypeAndObjectId(category,type, idProject).stream().map(data -> UserMetaDto.toDto(data)).collect(Collectors.toList());
     }
 
-    public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId,Const.tableName catogory){
+    public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId,Const.tableName category){
         // find user in listIdOld but not in listIdNew
         List<Long> diff1 = new ArrayList<>(listIdOld);
         diff1.removeAll(listIdNew);
@@ -601,7 +601,7 @@ public class ProjectServiceImpl implements IProjectService {
         // delete old user not in listIdNew
         if (diff1.size() > 0){
             for (Long idUser : diff1) {
-                iUserProjectRepository.deleteByIdUserAndTypeAndObjectId(idUser,userType.name(),projectId);
+                iUserProjectRepository.deleteByIdUserAndTypeAndObjectId(idUser,userType.name(),projectId,category.toString());
             }
         }
         // save new user in listIdNew
@@ -610,7 +610,7 @@ public class ProjectServiceImpl implements IProjectService {
                 UserEntity user = userRepository.findById(idUser).orElse(null);
                 if (user != null) {
                     UserProjectEntity userProjectEntity = new UserProjectEntity();
-                    userProjectEntity.setCategory(catogory.name());
+                    userProjectEntity.setCategory(category.name());
                     userProjectEntity.setObjectId(projectId);
                     userProjectEntity.setType(userType.name());
                     userProjectEntity.setIdUser(idUser);

@@ -54,6 +54,10 @@ public class MissionDto {
                 .isDeleted(entity.getIsDeleted())
                 .name(entity.getName())
                 .description(entity.getDescription())
+                .type(entity.getType())
+                .nature(entity.getNature())
+                .isAssign(entity.getIsAssign())
+                .isDefault(entity.getIsDefault())
                 .attachFiles(entity.getAttachFiles()!=null
                         ? entity.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
                 .userDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
@@ -61,7 +65,7 @@ public class MissionDto {
                 .userView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x-> UserDto.toDto(x)).collect(Collectors.toList()) : null)
                 .build();
     }
-    public MissionDto(ProjectEntity entity){
+    public MissionDto(MissionEntity entity){
         if(entity != null){
             this.setId(entity.getId());
             this.setCreatedDate(entity.getCreatedDate());
@@ -79,6 +83,8 @@ public class MissionDto {
             this.setUserDevs(entity.getDevTeam() != null ? entity.getDevTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
             this.setUserFollows(entity.getFollowTeam() != null ? entity.getFollowTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
             this.setUserView(entity.getViewTeam() != null ? entity.getViewTeam().stream().map(x->UserDto.toDto(x)).collect(Collectors.toList()) : null);
+            this.setType(entity.getType());
+            this.setNature(entity.getNature());
         }
     }
 }

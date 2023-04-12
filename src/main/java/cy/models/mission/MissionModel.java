@@ -27,6 +27,7 @@ public class MissionModel {
     private String description;
     private MultipartFile[] files;
     private List<String> fileUrlsKeeping;
+    private Boolean isDefault;
     private Boolean isAssign;
     private String textSearch;
     private List<TagModel> tags;
