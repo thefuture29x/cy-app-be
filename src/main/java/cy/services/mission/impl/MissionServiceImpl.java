@@ -12,11 +12,13 @@ import cy.models.mission.MissionModel;
 import cy.models.project.UserViewProjectModel;
 import cy.repositories.common.*;
 import cy.repositories.mission.IMissionRepository;
+import cy.repositories.mission.IUserViewMissionRepository;
 import cy.repositories.project.IFeatureRepository;
 import cy.services.common.IFileService;
 import cy.services.common.IHistoryLogService;
 import cy.services.common.ITagService;
 import cy.services.mission.IMissionService;
+import cy.services.mission.IUserViewMissionService;
 import cy.services.project.IFeatureService;
 import cy.services.project.IUserViewProjectService;
 import cy.utils.Const;
@@ -73,14 +75,14 @@ public class MissionServiceImpl implements IMissionService {
     @Autowired
     IHistoryLogService iHistoryLogService;
     @Autowired
-    IUserViewProjectService iUserViewProjectService;
+    IUserViewMissionService iUserViewMissionService;
 
     @Override
     public MissionDto findById(Long id, boolean view) {
         if (iMissionRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         if (view){
             UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();
-            iUserViewProjectService.add(new UserViewProjectModel(userEntity.getUserId(), id));
+            iUserViewMissionService.add(new UserViewProjectModel(userEntity.getUserId(), id));
         }
         MissionEntity missionEntity = this.iMissionRepository.findById(id).orElse(null);
         MissionDto missionDto = MissionDto.toDto(iMissionRepository.findById(id).orElse(null));

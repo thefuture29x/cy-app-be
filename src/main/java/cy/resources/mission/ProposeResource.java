@@ -5,6 +5,7 @@ import cy.dtos.common.ResponseDto;
 import cy.models.mission.ProposeModel;
 import cy.models.project.ProjectModel;
 import cy.services.mission.IProposeService;
+import cy.services.mission.IUserViewMissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -29,4 +30,5 @@ public class ProposeResource {
                                        @RequestParam(name = "category") String category){
         return ResponseDto.of(iProposeService.findAllOfObject(id, category));
     }
+
 }

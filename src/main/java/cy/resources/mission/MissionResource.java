@@ -5,6 +5,7 @@ import cy.dtos.common.ResponseDto;
 import cy.models.mission.MissionModel;
 import cy.models.project.ProjectModel;
 import cy.services.mission.IMissionService;
+import cy.services.mission.IUserViewMissionService;
 import cy.services.project.IProjectService;
 import cy.services.project.IUserViewProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ import java.text.ParseException;
 public class MissionResource {
     @Autowired
     IMissionService iMissionService;
+    @Autowired
+    IUserViewMissionService iUserViewMissionService;
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @GetMapping(value = "/findById")
@@ -60,5 +63,11 @@ public class MissionResource {
                                            @RequestParam(name = "type") String type,
                                            @RequestParam(name = "idObject") Long idObject) {
         return ResponseDto.of(iMissionService.getAllUserInMission(category,type,idObject));
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @GetMapping(value = "/findMissionRecentlyViewed")
+    public ResponseDto findMissionRecentlyViewed() {
+        return ResponseDto.of(iUserViewMissionService.findProjectRecentlyViewed());
     }
 }
