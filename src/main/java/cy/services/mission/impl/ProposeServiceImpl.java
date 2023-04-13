@@ -76,8 +76,7 @@ public class ProposeServiceImpl implements IProposeService {
     @Override
     public List<ProposeDto> findAllOfObject(Long idObject, String category) {
         List<ProposeDto> proposeDtoList = new ArrayList<>();
-        List<ProposeEntity> proposeEntitys = iProposeRepository.findAllByCategoryAndObjectId(category,idObject);
-        proposeEntitys.stream().forEach(data -> {
+        iProposeRepository.findAllByCategoryAndObjectId(category,idObject).stream().forEach(data -> {
             ProposeDto proposeDto = ProposeDto.toDto(data);
             proposeDto.setCommentDtos(iCommentRepository.findAllByCategoryAndObjectIdAndIdParent(Const.tableName.PROPOSE.name(), data.getId(), null).stream().map(cm -> CommentDto.toDto(cm)).collect(Collectors.toList()));
             proposeDtoList.add(proposeDto);

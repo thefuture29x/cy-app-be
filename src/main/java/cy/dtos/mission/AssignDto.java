@@ -27,6 +27,7 @@ public class AssignDto {
     private String type;
     private String nature;
     private Boolean isDeleted = false;
+    private Boolean isDefault = false;
     private String name;
     private String description;
     private List<FileDto> attachFiles;
@@ -45,6 +46,7 @@ public class AssignDto {
                 .type(entity.getType())
                 .nature(entity.getNature())
                 .isDeleted(entity.getIsDeleted())
+                .isDefault(entity.getIsDefault())
                 .name(entity.getName())
                 .description(entity.getDescription())
                 .attachFiles(entity.getAttachFiles()!=null

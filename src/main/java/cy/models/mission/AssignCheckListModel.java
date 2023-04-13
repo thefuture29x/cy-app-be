@@ -22,7 +22,7 @@ import java.util.List;
 @AllArgsConstructor
 public class AssignCheckListModel {
     private Long id;
-    private String description;
+    private String content;
     private Boolean isDone = false;
     private Long idAssign;
 

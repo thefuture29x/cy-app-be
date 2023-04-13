@@ -28,6 +28,7 @@ public class ProposeDto {
     private List<FileDto> attachFiles;
 //    private UserDto userCreate;
     private String userName;
+    private String avatar;
     private List<CommentDto> commentDtos;
 
     public static ProposeDto toDto(ProposeEntity entity){
@@ -40,6 +41,7 @@ public class ProposeDto {
                 .updatedDate(entity.getUpdatedDate())
 //                .userCreate(entity.getCreateBy() != null ? UserDto.toDto(entity.getCreateBy()) : null)
                 .userName(entity.getCreateBy().getFullName())
+                .avatar(entity.getCreateBy().getAvatar())
                 .attachFiles(entity.getAttachFiles()!=null
                         ? entity.getAttachFiles().stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()) : null)
                 .build();

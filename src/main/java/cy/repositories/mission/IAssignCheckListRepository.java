@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IAssignCheckListRepository extends JpaRepository<AssignCheckListEntity, Long> {
+    AssignCheckListEntity findByContent(String content);
 }

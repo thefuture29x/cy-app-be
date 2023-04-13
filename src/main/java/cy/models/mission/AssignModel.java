@@ -22,14 +22,15 @@ public class AssignModel {
     private String type;
     private String nature;
     private Boolean isDeleted;
+    private Boolean isDefault;
     private String name;
     private String description;
     private MultipartFile[] files;
     private List<String> fileUrlsKeeping;
     private String textSearch;
-    private List<TagModel> tags;
-    private String[] tagArray;
     private List<Long> userDev;
     private List<Long> userFollow;
+    private Long idMission;
+    private List<AssignCheckListModel> assignCheckListModels;
 }
 
