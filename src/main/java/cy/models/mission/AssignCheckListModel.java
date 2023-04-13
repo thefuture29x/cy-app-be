@@ -23,7 +23,7 @@ import java.util.List;
 public class AssignCheckListModel {
     private Long id;
     private String content;
-    private Boolean isDone = false;
+    private Boolean isDone;
     private Long idAssign;
 
 }

@@ -216,7 +216,6 @@ public class AssignServiceImpl implements IAssignService {
 
         List<UserEntity> listUserDev = iUserRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.ASSIGNMENT.name(), Const.type.TYPE_DEV.name(), assignEntity.getId());
         List<UserEntity> listUserFollow = iUserRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.ASSIGNMENT.name(), Const.type.TYPE_FOLLOWER.name(), assignEntity.getId());
-        List<UserEntity> listUserView = iUserRepository.getAllByCategoryAndTypeAndObjectId(Const.tableName.ASSIGNMENT.name(), Const.type.TYPE_VIEWER.name(), assignEntity.getId());
         List<TagEntity> listTag = iTagRepository.getAllByObjectIdAndCategory(assignEntity.getId(), Const.tableName.ASSIGNMENT.name());
         missionOriginal.setDevTeam(listUserDev);
         missionOriginal.setFollowTeam(listUserFollow);
@@ -280,16 +279,24 @@ public class AssignServiceImpl implements IAssignService {
             }
         }
         // delete all assign list old
-//        iAssignCheckListRepository
+        // get list id dev old and new of project
+        List<String> listContentOld = new ArrayList<>();
+        List<String> listContentNew = new ArrayList<>();
+
+        iAssignCheckListRepository.findAllByAssign_Id(assignEntity.getId()).stream().forEach(data -> listContentOld.add(data.getContent()));
+        assignModel.getAssignCheckListModels().stream().forEach(data -> listContentNew.add(data.getContent()));
+
+        deleteOldAssignCheckListAndSaveNew(listContentOld,listContentNew, assignEntity.getId());
         // add new assign check list
         if (assignModel.getAssignCheckListModels() != null && assignModel.getAssignCheckListModels().size() > 0) {
             for (AssignCheckListModel assignCheckListModel : assignModel.getAssignCheckListModels()) {
-
-
-                AssignCheckListEntity assignCheckListEntity = iAssignCheckListRepository.findByContentAndAssign_Id(assignCheckListModel.getContent(),assignCheckListModel.getIdAssign());
+                AssignCheckListEntity assignCheckListEntity = iAssignCheckListRepository.findByContentAndAssign_Id(assignCheckListModel.getContent(), assignEntity.getId());
                 if (assignCheckListEntity != null){
                     assignCheckListEntity.setId(assignCheckListEntity.getId());
-                    assignCheckListEntity.setIsDone(assignCheckListEntity.getIsDone());
+                    assignCheckListEntity.setIsDone(assignCheckListModel.getIsDone());
+                }else {
+                    assignCheckListEntity = new AssignCheckListEntity();
+                    assignCheckListEntity.setIsDone(false);
                 }
                 assignCheckListEntity.setContent(assignCheckListModel.getContent());
                 assignCheckListEntity.setAssign(assignEntity);
@@ -369,24 +376,19 @@ public class AssignServiceImpl implements IAssignService {
         diff2.removeAll(listContentOld);
 
         // delete old user not in listContentNew
-//        if (diff1.size() > 0){
-//            for (String content : diff1) {
-//                iAssignCheckListRepository.deleteByIdUserAndTypeAndObjectId(idUser,userType.name(),projectId,category.toString());
-//            }
-//        }
-//        // save new user in listIdNew
-//        if (diff2.size() > 0){
-//            for (Long idUser : diff2) {
-//                UserEntity user = iUserRepository.findById(idUser).orElse(null);
-//                if (user != null) {
-//                    UserProjectEntity userProjectEntity = new UserProjectEntity();
-//                    userProjectEntity.setCategory(category.name());
-//                    userProjectEntity.setObjectId(projectId);
-//                    userProjectEntity.setType(userType.name());
-//                    userProjectEntity.setIdUser(idUser);
-//                    iUserProjectRepository.save(userProjectEntity);
-//                }
-//            }
-//        }
+        if (diff1.size() > 0){
+            for (String content : diff1) {
+                iAssignCheckListRepository.deleteByContentCheckListAndAssignId(content, objectId);
+            }
+        }
+        // save new user in listIdNew
+        if (diff2.size() > 0){
+            for (String content : diff2) {
+                AssignCheckListEntity assignCheckListEntity = new AssignCheckListEntity();
+                assignCheckListEntity.setContent(content);
+                assignCheckListEntity.setAssign(iAssignRepository.findById(objectId).get());
+                iAssignCheckListRepository.save(assignCheckListEntity);
+            }
+        }
     }
 }
