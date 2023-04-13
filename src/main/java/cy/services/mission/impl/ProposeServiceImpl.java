@@ -79,8 +79,7 @@ public class ProposeServiceImpl implements IProposeService {
         List<ProposeEntity> proposeEntitys = iProposeRepository.findAllByCategoryAndObjectId(category,idObject);
         proposeEntitys.stream().forEach(data -> {
             ProposeDto proposeDto = ProposeDto.toDto(data);
-            List<CommentDto> list = iCommentRepository.findAllByCategoryAndObjectIdAndIdParent(Const.tableName.PROPOSE.name(), data.getId(), null).stream().map(cm -> CommentDto.toDto(cm)).collect(Collectors.toList());
-            proposeDto.setCommentDtos(list);
+            proposeDto.setCommentDtos(iCommentRepository.findAllByCategoryAndObjectIdAndIdParent(Const.tableName.PROPOSE.name(), data.getId(), null).stream().map(cm -> CommentDto.toDto(cm)).collect(Collectors.toList()));
             proposeDtoList.add(proposeDto);
         });
         return proposeDtoList;

@@ -20,7 +20,7 @@ public class ProposeResource {
 
     @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
     @PostMapping(value = "/create")
-    public ResponseDto createPropose(@ModelAttribute ProposeModel proposeModel) throws IOException {
+    public ResponseDto createPropose(ProposeModel proposeModel) throws IOException {
         return ResponseDto.of(iProposeService.createPropose(proposeModel));
     }
 
