@@ -502,12 +502,14 @@ public class MissionServiceImpl implements IMissionService {
         result.stream().forEach(data -> {
             List<Long> listIdDev = iUserRepository.getAllIdDevByTypeAndObjectId(Const.tableName.MISSION.name(), data.getId(),Const.type.TYPE_DEV.name());
             List<Long> listIdDevCheck = listIdDev != null ? listIdDev : new ArrayList<>();
-
+            List<UserDto> userDev = iUserRepository.getByCategoryAndTypeAndObjectid(Const.tableName.MISSION.name(), Const.type.TYPE_DEV.name(), data.getId());
+            data.setUserDevs(userDev);
             data.setEditable(false);
 
             if (listIdDevCheck.stream().anyMatch(userIdd::equals)){
                 data.setEditable(true);
             }
+
         });
         return result;
     }
