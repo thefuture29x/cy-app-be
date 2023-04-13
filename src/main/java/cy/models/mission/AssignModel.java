@@ -30,6 +30,7 @@ public class AssignModel {
     private String textSearch;
     private List<Long> userDev;
     private List<Long> userFollow;
+    private String[] tagArray;
     private Long idMission;
     private List<AssignCheckListModel> assignCheckListModels;
 }

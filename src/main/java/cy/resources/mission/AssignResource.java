@@ -24,11 +24,11 @@ public class AssignResource {
         return ResponseDto.of(iAssignService.createAssign(assignModel));
     }
 
-//    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
-//    @PostMapping(value = "/update")
-//    public ResponseDto update(@ModelAttribute MissionModel missionModel) throws IOException, ParseException {
-//        return ResponseDto.of(iMissionService.updateMission(missionModel));
-//    }
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @PostMapping(value = "/update")
+    public ResponseDto update(AssignModel assignModel) throws IOException, ParseException {
+        return ResponseDto.of(iAssignService.updateAssign(assignModel));
+    }
 //    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
 //    @DeleteMapping(value = "/delete")
 //    public ResponseDto delete(@RequestParam(name = "id")Long id) {

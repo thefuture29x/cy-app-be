@@ -9,10 +9,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @HistoryLogTitle(title = "assignCheckList")
@@ -39,4 +42,15 @@ public class AssignCheckListEntity {
     @HistoryLogTitle(title = "hoàn thành", ignore = true)
     private Boolean isDone = false;
 
+    @HistoryLogTitle(title = "", ignore = true)
+    @CreationTimestamp
+    @Column(name = "created_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+
+    @HistoryLogTitle(title = "", ignore = true)
+    @UpdateTimestamp
+    @Column(name = "updated_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedDate;
 }

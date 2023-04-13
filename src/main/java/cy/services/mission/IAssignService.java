@@ -6,8 +6,9 @@ import cy.models.mission.AssignModel;
 import cy.models.mission.MissionModel;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 public interface IAssignService {
     AssignDto createAssign(AssignModel assignModel) throws IOException;
-
+    AssignDto updateAssign(AssignModel assignModel) throws IOException, ParseException;
 }
