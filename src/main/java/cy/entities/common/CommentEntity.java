@@ -53,6 +53,6 @@ public class CommentEntity {
     private CommentEntity idParent;
 
     @HistoryLogTitle(title = "", ignore = true)
-    private Long ObjectId;
+    private Long objectId;
 
 }

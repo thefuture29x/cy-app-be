@@ -1,5 +1,6 @@
 package cy.dtos.mission;
 
+import cy.dtos.common.CommentDto;
 import cy.dtos.common.FileDto;
 import cy.dtos.common.UserDto;
 import cy.entities.mission.AssignEntity;
@@ -27,6 +28,7 @@ public class ProposeDto {
     private List<FileDto> attachFiles;
 //    private UserDto userCreate;
     private String userName;
+    private List<CommentDto> commentDtos;
 
     public static ProposeDto toDto(ProposeEntity entity){
         if(entity == null)

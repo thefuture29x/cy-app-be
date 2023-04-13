@@ -36,7 +36,7 @@ public class CommentModel {
                 .id(commentModel.getId())
                 .category(commentModel.getCategory().name())
                 .content(commentModel.getContent())
-                .ObjectId(commentModel.getObjectId())
+                .objectId(commentModel.getObjectId())
                 .build();
     }
 }

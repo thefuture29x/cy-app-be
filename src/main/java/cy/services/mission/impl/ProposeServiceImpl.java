@@ -1,5 +1,6 @@
 package cy.services.mission.impl;
 
+import cy.dtos.common.CommentDto;
 import cy.dtos.mission.ProposeDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.common.FileEntity;
@@ -7,6 +8,7 @@ import cy.entities.common.UserEntity;
 import cy.entities.mission.ProposeEntity;
 import cy.entities.project.ProjectEntity;
 import cy.models.mission.ProposeModel;
+import cy.repositories.common.ICommentRepository;
 import cy.repositories.common.IFileRepository;
 import cy.repositories.mission.IProposeRepository;
 import cy.services.common.IHistoryLogService;
@@ -21,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,8 @@ public class ProposeServiceImpl implements IProposeService {
     IFileRepository iFileRepository;
     @Autowired
     IHistoryLogService iHistoryLogService;
+    @Autowired
+    ICommentRepository iCommentRepository;
 
     @Override
     public ProposeDto createPropose(ProposeModel proposeModel) throws IOException {
@@ -70,6 +75,14 @@ public class ProposeServiceImpl implements IProposeService {
 
     @Override
     public List<ProposeDto> findAllOfObject(Long idObject, String category) {
-        return iProposeRepository.findAllByCategoryAndObjectId(category,idObject).stream().map(data -> ProposeDto.toDto(data)).collect(Collectors.toList());
+        List<ProposeDto> proposeDtoList = new ArrayList<>();
+        List<ProposeEntity> proposeEntitys = iProposeRepository.findAllByCategoryAndObjectId(category,idObject);
+        proposeEntitys.stream().forEach(data -> {
+            ProposeDto proposeDto = ProposeDto.toDto(data);
+            List<CommentDto> list = iCommentRepository.findAllByCategoryAndObjectIdAndIdParent(Const.tableName.PROPOSE.name(), data.getId(), null).stream().map(cm -> CommentDto.toDto(cm)).collect(Collectors.toList());
+            proposeDto.setCommentDtos(list);
+            proposeDtoList.add(proposeDto);
+        });
+        return proposeDtoList;
     }
 }
