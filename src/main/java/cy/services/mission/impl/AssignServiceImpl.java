@@ -1,6 +1,8 @@
 package cy.services.mission.impl;
 
 import cy.dtos.common.CustomHandleException;
+import cy.dtos.common.UserDto;
+import cy.dtos.mission.AssignCheckListDto;
 import cy.dtos.mission.AssignDto;
 import cy.dtos.mission.MissionDto;
 import cy.entities.common.*;
@@ -9,6 +11,8 @@ import cy.entities.mission.AssignEntity;
 import cy.entities.mission.MissionEntity;
 import cy.models.mission.AssignCheckListModel;
 import cy.models.mission.AssignModel;
+import cy.models.mission.MissionModel;
+import cy.models.project.UserViewProjectModel;
 import cy.repositories.common.*;
 import cy.repositories.mission.IAssignCheckListRepository;
 import cy.repositories.mission.IAssignRepository;
@@ -22,9 +26,15 @@ import cy.utils.Const;
 import cy.utils.FileUploadProvider;
 import cy.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.text.ParseException;
@@ -59,6 +69,23 @@ public class AssignServiceImpl implements IAssignService {
     ITagRepository iTagRepository;
     @Autowired
     ITagRelationRepository iTagRelationRepository;
+    @Autowired
+    EntityManager manager;
+
+    @Override
+    public AssignDto findById(Long id) {
+        if (iAssignRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
+        AssignEntity assignEntity = this.iAssignRepository.findById(id).orElse(null);
+        AssignDto assignDto = AssignDto.toDto(iAssignRepository.findById(id).orElse(null));
+        List<UserDto> userDev = iUserRepository.getByCategoryAndTypeAndObjectid(Const.tableName.ASSIGNMENT.name(), Const.type.TYPE_DEV.name(), assignEntity.getId());
+        List<UserDto> userFollow = iUserRepository.getByCategoryAndTypeAndObjectid(Const.tableName.ASSIGNMENT.name(), Const.type.TYPE_FOLLOWER.name(), assignEntity.getId());
+        assignDto.setUserDevs(userDev);
+        assignDto.setUserFollows(userFollow);
+        assignDto.setTagArray(iTagRelationRepository.getNameTagByCategoryAndObjectId(Const.tableName.ASSIGNMENT.name(), assignEntity.getId()));
+        assignDto.setAssignCheckListDtos(iAssignCheckListRepository.findAllByAssign_Id(id).stream().map(data -> AssignCheckListDto.toDto(data)).collect(Collectors.toList()));
+        return assignDto;
+    }
+
     @Override
     public AssignDto createAssign(AssignModel assignModel) throws IOException {
         AssignEntity assignEntity = new AssignEntity();
@@ -332,6 +359,139 @@ public class AssignServiceImpl implements IAssignService {
 
         iHistoryLogService.logUpdate(assignEntity.getId(), missionOriginal, assignEntity, Const.tableName.ASSIGNMENT);
         AssignDto result = AssignDto.toDto(assignEntity);
+        return result;
+    }
+
+    @Override
+    public Boolean changIsDeleteById(Long id) {
+        AssignEntity oldProject = this.iAssignRepository.findById(id).orElseThrow(() -> new RuntimeException("Assign not exist!!"));
+        oldProject.setIsDeleted(true);
+        this.iAssignRepository.saveAndFlush(oldProject);
+        iHistoryLogService.logDelete(id, oldProject, Const.tableName.ASSIGNMENT, oldProject.getName());
+        return true;
+    }
+
+    @Override
+    public Page<AssignDto> findByPage(Integer pageIndex, Integer pageSize, String sortBy, String sortType, AssignModel assignModel) {
+        Long userIdd = SecurityUtils.getCurrentUserId();
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        String sql = "SELECT distinct new cy.dtos.mission.AssignDto(p) FROM AssignEntity p " +
+                "inner join UserProjectEntity up on up.objectId = p.id ";
+        String countSQL = "select count(distinct(p)) from AssignEntity p  " +
+                "inner join UserProjectEntity up on up.objectId = p.id ";
+        if (assignModel.getTextSearch() != null && assignModel.getTextSearch().charAt(0) == '#') {
+            sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+            countSQL += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
+        }
+        sql += " WHERE (up.category like 'ASSIGNMENT') AND p.isDeleted = false and (p.mission.id = :idMission) ";
+        countSQL += " WHERE (up.category like 'ASSIGNMENT') AND p.isDeleted = false and (p.mission.id = :idMission) ";
+
+        if (assignModel.getStatus() != null) {
+            sql += " AND p.status = :status ";
+            countSQL += " AND p.status = :status ";
+        }
+        if (assignModel.getNature() != null) {
+            sql += " AND p.nature = :nature ";
+            countSQL += " AND p.nature = :nature ";
+        }
+        if (assignModel.getType() != null) {
+            sql += " AND p.type = :type ";
+            countSQL += " AND p.type = :type ";
+        }
+        if (assignModel.getMonthFilter() != null) {
+            sql += " AND MONTH(p.startDate) = :monthFilter ";
+            countSQL += " AND MONTH(p.startDate) = :monthFilter ";
+        }
+        if (assignModel.getYearFilter() != null) {
+            sql += " AND YEAR(p.startDate) = :yearFilter ";
+            countSQL += " AND YEAR(p.startDate) = :yearFilter ";
+        }
+        if (assignModel.getTextSearch() != null) {
+            if (assignModel.getTextSearch().charAt(0) == '#') {
+                sql += " AND (t.name = :textSearch ) AND (tr.category LIKE 'ASSIGNMENT') ";
+                countSQL += " AND (t.name = :textSearch ) AND (tr.category LIKE 'ASSIGNMENT') ";
+            } else {
+                sql += " AND (p.name LIKE :textSearch ) ";
+                countSQL += "AND (p.name LIKE :textSearch ) ";
+            }
+        }
+        if (sortBy != ""){
+            switch (sortBy){
+                case "startDate":
+                    sql += " order by p.startDate";
+                    break;
+                case "endDate":
+                    sql += " order by p.endDate";
+                    break;
+            }
+        }else {
+            sql += " order by up.createdDate";
+        }
+        if (sortType != ""){
+            sql += " " + sortType;
+        }else {
+            sql += " desc";
+        }
+
+        Query q = manager.createQuery(sql, AssignDto.class);
+        Query qCount = manager.createQuery(countSQL);
+
+//        if (assignModel.getOtherProject()) {
+//            q.setParameter("currentUserId", userIdd);
+//            qCount.setParameter("currentUserId", userIdd);
+//        }
+        q.setParameter("idMission", assignModel.getIdMission());
+        qCount.setParameter("idMission", assignModel.getIdMission());
+
+        if (assignModel.getStatus() != null) {
+            q.setParameter("status", assignModel.getStatus());
+            qCount.setParameter("status", assignModel.getStatus());
+        }
+        if (assignModel.getNature() != null) {
+            q.setParameter("nature", assignModel.getNature());
+            qCount.setParameter("nature", assignModel.getNature());
+        }
+        if (assignModel.getType() != null) {
+            q.setParameter("type", assignModel.getType());
+            qCount.setParameter("type", assignModel.getType());
+        }
+        if (assignModel.getMonthFilter() != null) {
+            q.setParameter("monthFilter", Integer.parseInt(assignModel.getMonthFilter()));
+            qCount.setParameter("monthFilter", Integer.parseInt(assignModel.getMonthFilter()));
+        }
+        if (assignModel.getYearFilter() != null) {
+            q.setParameter("yearFilter", Integer.parseInt(assignModel.getYearFilter()));
+            qCount.setParameter("yearFilter", Integer.parseInt(assignModel.getYearFilter()));
+        }
+        if (assignModel.getTextSearch() != null) {
+            String textSearch = assignModel.getTextSearch();
+            if (assignModel.getTextSearch().charAt(0) == '#') {
+                q.setParameter("textSearch", textSearch.substring(1));
+                qCount.setParameter("textSearch", textSearch.substring(1));
+            } else {
+                q.setParameter("textSearch", "%" + textSearch + "%");
+                qCount.setParameter("textSearch", "%" + textSearch + "%");
+            }
+        }
+
+        q.setFirstResult(pageIndex * pageSize);
+        q.setMaxResults(pageSize);
+
+        Long numberResult = (Long) qCount.getSingleResult();
+        Page<AssignDto> result = new PageImpl<>(q.getResultList(), pageable, numberResult);
+
+        result.stream().forEach(data -> {
+            List<Long> listIdDev = iUserRepository.getAllIdDevByTypeAndObjectId(Const.tableName.ASSIGNMENT.name(), data.getId(),Const.type.TYPE_DEV.name());
+            List<Long> listIdDevCheck = listIdDev != null ? listIdDev : new ArrayList<>();
+            List<UserDto> userDev = iUserRepository.getByCategoryAndTypeAndObjectid(Const.tableName.ASSIGNMENT.name(), Const.type.TYPE_DEV.name(), data.getId());
+            data.setUserDevs(userDev);
+            data.setEditable(false);
+
+            if (listIdDevCheck.stream().anyMatch(userIdd::equals)){
+                data.setEditable(true);
+            }
+
+        });
         return result;
     }
 

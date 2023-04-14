@@ -78,7 +78,7 @@ public class MissionServiceImpl implements IMissionService {
     IUserViewMissionService iUserViewMissionService;
 
     @Override
-    public MissionDto findById(Long id, boolean view) {
+    public MissionDto  findById(Long id, boolean view) {
         if (iMissionRepository.checkIsDeleted(id)) throw new CustomHandleException(491);
         if (view){
             UserEntity userEntity = SecurityUtils.getCurrentUser().getUser();

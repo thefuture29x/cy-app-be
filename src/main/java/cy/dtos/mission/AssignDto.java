@@ -34,6 +34,10 @@ public class AssignDto {
     private List<UserDto> userDevs;
     private List<UserDto> userFollows;
     private List<String> tagArray = new ArrayList<>();
+    private Boolean editable;
+    private Long idMission;
+    private List<AssignCheckListDto> assignCheckListDtos;
+
 
     public static AssignDto toDto(AssignEntity entity){
         if(entity == null)

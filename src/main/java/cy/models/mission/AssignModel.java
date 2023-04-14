@@ -21,6 +21,7 @@ public class AssignModel {
     private Date endDate;
     private String type;
     private String nature;
+    private String status;
     private Boolean isDeleted;
     private Boolean isDefault;
     private String name;
@@ -33,5 +34,7 @@ public class AssignModel {
     private String[] tagArray;
     private Long idMission;
     private List<AssignCheckListModel> assignCheckListModels;
+    private String monthFilter;
+    private String yearFilter;
 }
 
