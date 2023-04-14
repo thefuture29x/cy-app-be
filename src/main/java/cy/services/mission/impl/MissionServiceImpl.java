@@ -393,7 +393,7 @@ public class MissionServiceImpl implements IMissionService {
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         String sql = "SELECT distinct new cy.dtos.mission.MissionDto(p) FROM MissionEntity p " +
                 "inner join UserProjectEntity up on up.objectId = p.id ";
-        String countSQL = "select count(distinct(p)) from ProjectEntity p  " +
+        String countSQL = "select count(distinct(p)) from MissionEntity p  " +
                 "inner join UserProjectEntity up on up.objectId = p.id ";
         if (missionModel.getTextSearch() != null && missionModel.getTextSearch().charAt(0) == '#') {
             sql += " inner join TagRelationEntity tr on tr.objectId = p.id inner join TagEntity t on t.id = tr.idTag ";
@@ -426,8 +426,8 @@ public class MissionServiceImpl implements IMissionService {
             countSQL += " AND p.nature = :nature ";
         }
         if (missionModel.getType() != null) {
-            sql += " AND p.type = :type ";
-            countSQL += " AND p.type = :type ";
+            sql += " AND p.type = :typeMission ";
+            countSQL += " AND p.type = :typeMission ";
         }
         if (missionModel.getMonthFilter() != null) {
             sql += " AND MONTH(p.startDate) = :monthFilter ";
@@ -483,8 +483,8 @@ public class MissionServiceImpl implements IMissionService {
             qCount.setParameter("nature", missionModel.getNature());
         }
         if (missionModel.getType() != null) {
-            q.setParameter("type", missionModel.getType());
-            qCount.setParameter("type", missionModel.getType());
+            q.setParameter("typeMission", missionModel.getType());
+            qCount.setParameter("typeMission", missionModel.getType());
         }
         if (missionModel.getMonthFilter() != null) {
             q.setParameter("monthFilter", Integer.parseInt(missionModel.getMonthFilter()));
