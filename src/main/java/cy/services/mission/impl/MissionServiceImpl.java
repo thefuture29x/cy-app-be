@@ -421,6 +421,14 @@ public class MissionServiceImpl implements IMissionService {
             sql += " AND p.status = :status ";
             countSQL += " AND p.status = :status ";
         }
+        if (missionModel.getNature() != null) {
+            sql += " AND p.nature = :nature ";
+            countSQL += " AND p.nature = :nature ";
+        }
+        if (missionModel.getType() != null) {
+            sql += " AND p.type = :type ";
+            countSQL += " AND p.type = :type ";
+        }
         if (missionModel.getMonthFilter() != null) {
             sql += " AND MONTH(p.startDate) = :monthFilter ";
             countSQL += " AND MONTH(p.startDate) = :monthFilter ";
@@ -469,6 +477,14 @@ public class MissionServiceImpl implements IMissionService {
         if (missionModel.getStatus() != null) {
             q.setParameter("status", missionModel.getStatus());
             qCount.setParameter("status", missionModel.getStatus());
+        }
+        if (missionModel.getNature() != null) {
+            q.setParameter("nature", missionModel.getNature());
+            qCount.setParameter("nature", missionModel.getNature());
+        }
+        if (missionModel.getType() != null) {
+            q.setParameter("type", missionModel.getType());
+            qCount.setParameter("type", missionModel.getType());
         }
         if (missionModel.getMonthFilter() != null) {
             q.setParameter("monthFilter", Integer.parseInt(missionModel.getMonthFilter()));
