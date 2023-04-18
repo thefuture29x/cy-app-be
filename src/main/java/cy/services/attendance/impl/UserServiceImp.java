@@ -302,6 +302,7 @@ public class UserServiceImp implements IUserService {
                 .type("Bearer").authorities(userDetail.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .timeValid(timeValid)
                 .avatar(user.getAvatar())
+                .userName(userDetail.getUsername())
                 .build();
     }
 

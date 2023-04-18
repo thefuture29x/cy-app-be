@@ -14,4 +14,5 @@ public class JwtLoginResponse {
     private Long timeValid;
     private List<String> authorities;
     private String avatar;
+    private String userName;
 }
