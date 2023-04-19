@@ -511,7 +511,9 @@ public class AssignServiceImpl implements IAssignService {
         }
 
         if (assignEntity.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
-            throw new CustomHandleException(205);
+            if (!assignEntity.getStatus().equals("IN_REVIEW")){
+                throw new CustomHandleException(205);
+            }
         }
 
         AssignEntity assignEntityOriginal = assignEntity;

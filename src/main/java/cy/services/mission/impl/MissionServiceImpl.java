@@ -556,8 +556,11 @@ public class MissionServiceImpl implements IMissionService {
             throw new CustomHandleException(5);
         }
 
+
         if (missionEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
-            throw new CustomHandleException(205);
+            if (!missionEntityExist.getStatus().equals("IN_REVIEW")){
+                throw new CustomHandleException(205);
+            }
         }
 
         MissionEntity taskEntityOriginal = missionEntityExist;
