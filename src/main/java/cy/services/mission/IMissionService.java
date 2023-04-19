@@ -5,6 +5,7 @@ import cy.dtos.mission.MissionDto;
 import cy.dtos.project.ProjectDto;
 import cy.models.mission.MissionModel;
 import cy.models.project.ProjectModel;
+import cy.models.project.SubTaskUpdateModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -19,4 +20,5 @@ public interface IMissionService {
     Boolean changIsDeleteById(Long id);
     Page<MissionDto> findByPage(Integer pageIndex, Integer pageSize,String sortBy, String sortType,MissionModel missionModel);
     List<UserMetaDto> getAllUserInMission(String category,String type, Long idObject);
+    boolean updateStatusMission(Long idMission, SubTaskUpdateModel subTaskUpdateModel);
 }

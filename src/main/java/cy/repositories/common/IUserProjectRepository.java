@@ -76,4 +76,12 @@ public interface IUserProjectRepository extends JpaRepository<UserProjectEntity,
             "\t)\n" +
             ")",nativeQuery = true)
     List<Long> getAllIdDevOfProjectByBugIdInThisProject(Long idBug, List<String> listType);
+
+    @Query(value = "SELECT DISTINCT uspr.user_id FROM tbl_user_projects uspr \n" +
+            "JOIN tbl_mission pr ON uspr.object_id = pr.id AND uspr.category = 'MISSION' and uspr.type IN ?2 \n" +
+            "WHERE uspr.object_id = (\n" +
+            "\tSELECT mission_id FROM tbl_assign WHERE id = ?1\n" +
+            ")",nativeQuery = true)
+    List<Long> getAllIdDevOfProjectByAssignIdInThisMission(Long idAssign, List<String> listType);
+
 }

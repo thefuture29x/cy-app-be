@@ -4,6 +4,7 @@ import cy.configs.FrontendConfiguration;
 import cy.dtos.common.ResponseDto;
 import cy.models.mission.AssignModel;
 import cy.models.mission.MissionModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.services.mission.IAssignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -49,6 +50,12 @@ public class AssignResource {
                                   @RequestBody AssignModel assignModel) {
         return ResponseDto.of(iAssignService.findByPage(pageIndex,pageSize,sortBy,sortType,assignModel));
 
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @PutMapping("/change-status/{id}")
+    public ResponseDto updateStatusTask(@PathVariable Long id, @RequestBody SubTaskUpdateModel subTaskUpdateModel){
+        return ResponseDto.of(iAssignService.updateStatusAssign(id, subTaskUpdateModel) ? "Update status successfully" : "Update status failed");
     }
 
 }

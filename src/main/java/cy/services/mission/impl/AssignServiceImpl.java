@@ -9,9 +9,12 @@ import cy.entities.common.*;
 import cy.entities.mission.AssignCheckListEntity;
 import cy.entities.mission.AssignEntity;
 import cy.entities.mission.MissionEntity;
+import cy.entities.project.SubTaskEntity;
+import cy.entities.project.TaskEntity;
 import cy.models.mission.AssignCheckListModel;
 import cy.models.mission.AssignModel;
 import cy.models.mission.MissionModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.models.project.UserViewProjectModel;
 import cy.repositories.common.*;
 import cy.repositories.mission.IAssignCheckListRepository;
@@ -493,6 +496,75 @@ public class AssignServiceImpl implements IAssignService {
 
         });
         return result;
+    }
+
+    @Override
+    public boolean updateStatusAssign(Long idAssign, SubTaskUpdateModel subTaskUpdateModel) {
+        AssignEntity assignEntity = iAssignRepository.findById(idAssign).orElseThrow(() -> new CustomHandleException(253));
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+        List<String> listType = new ArrayList<>();
+        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = iUserProjectRepository.getAllIdDevOfProjectByAssignIdInThisMission(idAssign, listType);
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+            throw new CustomHandleException(5);
+        }
+
+        if (assignEntity.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
+            throw new CustomHandleException(205);
+        }
+
+        AssignEntity assignEntityOriginal = assignEntity;
+
+        // check only reviewer can change status to done
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.DONE.name())) {
+            Set<Long> idReviewer = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.ASSIGNMENT.name(), idAssign, Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(idReviewer::contains)) {
+                throw new CustomHandleException(254);
+            }
+        }
+
+        // If current status is in review -> delete reviewer
+//        if (assignEntity.getStatus().equals(Const.status.IN_REVIEW.name())) {
+//            for (UserProjectEntity userProjectEntity : userProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name())) {
+//                userProjectRepository.deleteByIdNative(userProjectEntity.getId());
+//            }
+//        }
+
+        assignEntity.setStatus(subTaskUpdateModel.getNewStatus().name());
+        AssignEntity saveResult = iAssignRepository.save(assignEntity);
+        if (saveResult == null) {
+            return false;
+        }
+
+        // If new status is IN_REVIEW -> add reviewer
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.IN_REVIEW.name())) {
+            if (subTaskUpdateModel.getReviewerIdList() == null) {
+                throw new CustomHandleException(206);
+            }
+            // Delete old reviewer
+            for (UserProjectEntity userProjectEntity : iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.ASSIGNMENT.name(), idAssign, Const.type.TYPE_REVIEWER.name())) {
+                iUserProjectRepository.deleteByIdNative(userProjectEntity.getId());
+            }
+
+//            List<Long> listIdReviewer = userRepository.getAllIdDevByTypeAndObjectId(Const.tableName.TASK.name(), taskId, Const.type.TYPE_REVIEWER.name());
+//            projectService.deleteOldUserAndSaveNewUser(listIdReviewer,subTaskUpdateModel.getReviewerIdList(),Const.type.TYPE_REVIEWER,taskId,Const.tableName.TASK);
+
+
+            for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
+                // Check if reviewer user is not existed
+                iUserRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.ASSIGNMENT.name());
+                userProjectEntity.setObjectId(idAssign);
+                userProjectEntity.setIdUser(reviewerId);
+                userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                iUserProjectRepository.save(userProjectEntity);
+            }
+        }
+
+        iHistoryLogService.logUpdate(assignEntity.getId(), assignEntityOriginal, saveResult, Const.tableName.ASSIGNMENT);
+        return true;
     }
 
     public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId,Const.tableName category){

@@ -6,17 +6,23 @@ import cy.dtos.common.UserMetaDto;
 import cy.dtos.mission.MissionDto;
 import cy.dtos.project.ProjectDto;
 import cy.entities.common.*;
+import cy.entities.mission.AssignEntity;
 import cy.entities.mission.MissionEntity;
 import cy.entities.project.ProjectEntity;
+import cy.entities.project.SubTaskEntity;
+import cy.entities.project.TaskEntity;
 import cy.models.mission.MissionModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.models.project.UserViewProjectModel;
 import cy.repositories.common.*;
+import cy.repositories.mission.IAssignRepository;
 import cy.repositories.mission.IMissionRepository;
 import cy.repositories.mission.IUserViewMissionRepository;
 import cy.repositories.project.IFeatureRepository;
 import cy.services.common.IFileService;
 import cy.services.common.IHistoryLogService;
 import cy.services.common.ITagService;
+import cy.services.mission.IAssignService;
 import cy.services.mission.IMissionService;
 import cy.services.mission.IUserViewMissionService;
 import cy.services.project.IFeatureService;
@@ -76,6 +82,8 @@ public class MissionServiceImpl implements IMissionService {
     IHistoryLogService iHistoryLogService;
     @Autowired
     IUserViewMissionService iUserViewMissionService;
+    @Autowired
+    IAssignRepository iAssignRepository;
 
     @Override
     public MissionDto  findById(Long id, boolean view) {
@@ -533,6 +541,76 @@ public class MissionServiceImpl implements IMissionService {
     @Override
     public List<UserMetaDto> getAllUserInMission(String category, String type, Long idObject) {
         return iUserRepository.getAllByCategoryAndTypeAndObjectId(category,type, idObject).stream().map(data -> UserMetaDto.toDto(data)).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean updateStatusMission(Long idMission, SubTaskUpdateModel subTaskUpdateModel) {
+        MissionEntity missionEntityExist = iMissionRepository.findById(idMission).orElseThrow(() -> new CustomHandleException(253));
+
+        // check the user is on the project's dev list
+        Long idUser = SecurityUtils.getCurrentUserId();
+//        List<String> listType = new ArrayList<>();
+//        listType.add(Const.type.TYPE_DEV.toString());
+        List<Long> listIdDevInProject = iUserProjectRepository.getIdByCategoryAndObjectIdAndType(Const.tableName.MISSION.name(),idMission,Const.type.TYPE_DEV.toString());
+        if (!listIdDevInProject.stream().anyMatch(idUser::equals)) {
+            throw new CustomHandleException(5);
+        }
+
+        if (missionEntityExist.getStatus().equals(subTaskUpdateModel.getNewStatus().name())) {
+            throw new CustomHandleException(205);
+        }
+
+        MissionEntity taskEntityOriginal = missionEntityExist;
+
+        // check only reviewer can change status to done
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.DONE.name())) {
+            Set<Long> idReviewer = iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.MISSION.name(), idMission, Const.type.TYPE_REVIEWER.name()).stream().map(x -> x.getIdUser()).collect(Collectors.toSet());
+            if (Set.of(SecurityUtils.getCurrentUserId()).stream().noneMatch(idReviewer::contains)) {
+                throw new CustomHandleException(254);
+            }
+        }
+
+        // If current status is in review -> delete reviewer
+//        if (missionEntityExist.getStatus().equals(Const.status.IN_REVIEW.name())) {
+//            for (UserProjectEntity userProjectEntity : iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.MISSION.name(), idMission, Const.type.TYPE_REVIEWER.name())) {
+//                iUserProjectRepository.deleteByIdNative(userProjectEntity.getId());
+//            }
+//        }
+
+        missionEntityExist.setStatus(subTaskUpdateModel.getNewStatus().name());
+        MissionEntity saveResult = iMissionRepository.save(missionEntityExist);
+        if (saveResult == null) {
+            return false;
+        }
+
+        // If new status is IN_REVIEW -> add reviewer
+        if (subTaskUpdateModel.getNewStatus().name().equals(Const.status.IN_REVIEW.name())) {
+            if (subTaskUpdateModel.getReviewerIdList() == null) {
+                throw new CustomHandleException(206);
+            }
+            // Delete old reviewer
+            for (UserProjectEntity userProjectEntity : iUserProjectRepository.getByCategoryAndObjectIdAndType(Const.tableName.MISSION.name(), idMission, Const.type.TYPE_REVIEWER.name())) {
+                iUserProjectRepository.deleteByIdNative(userProjectEntity.getId());
+            }
+
+//            List<Long> listIdReviewer = iUserRepository.getAllIdDevByTypeAndObjectId(Const.tableName.MISSION.name(), idMission, Const.type.TYPE_REVIEWER.name());
+//            projectService.deleteOldUserAndSaveNewUser(listIdReviewer,subTaskUpdateModel.getReviewerIdList(),Const.type.TYPE_REVIEWER,idMission,Const.tableName.TASK);
+
+
+            for (Long reviewerId : subTaskUpdateModel.getReviewerIdList()) {
+                // Check if reviewer user is not existed
+                iUserRepository.findById(reviewerId).orElseThrow(() -> new CustomHandleException(207));
+                UserProjectEntity userProjectEntity = new UserProjectEntity();
+                userProjectEntity.setCategory(Const.tableName.MISSION.name());
+                userProjectEntity.setObjectId(idMission);
+                userProjectEntity.setIdUser(reviewerId);
+                userProjectEntity.setType(Const.type.TYPE_REVIEWER.name());
+                iUserProjectRepository.save(userProjectEntity);
+            }
+        }
+
+        iHistoryLogService.logUpdate(missionEntityExist.getId(), taskEntityOriginal, saveResult, Const.tableName.MISSION);
+        return true;
     }
 
     public void deleteOldUserAndSaveNewUser(List<Long> listIdOld,List<Long> listIdNew,Const.type userType,Long projectId,Const.tableName category){

@@ -10,4 +10,6 @@ public interface IUserViewMissionService {
     void add(UserViewProjectModel model);
 
     List<UserViewMissionDto> findProjectRecentlyViewed();
+
+
 }

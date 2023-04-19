@@ -4,6 +4,7 @@ import cy.configs.FrontendConfiguration;
 import cy.dtos.common.ResponseDto;
 import cy.models.mission.MissionModel;
 import cy.models.project.ProjectModel;
+import cy.models.project.SubTaskUpdateModel;
 import cy.services.mission.IMissionService;
 import cy.services.mission.IUserViewMissionService;
 import cy.services.project.IProjectService;
@@ -69,5 +70,10 @@ public class MissionResource {
     @GetMapping(value = "/findMissionRecentlyViewed")
     public ResponseDto findMissionRecentlyViewed() {
         return ResponseDto.of(iUserViewMissionService.findProjectRecentlyViewed());
+    }
+    @Secured({"ROLE_ADMIN", "ROLE_EMPLOYEE","ROLE_LEADER","ROLE_MANAGER","ROLE_ADMINISTRATOR"})
+    @PutMapping("/change-status/{id}")
+    public ResponseDto updateStatusTask(@PathVariable Long id, @RequestBody SubTaskUpdateModel subTaskUpdateModel){
+        return ResponseDto.of(iMissionService.updateStatusMission(id, subTaskUpdateModel) ? "Update status successfully" : "Update status failed");
     }
 }
