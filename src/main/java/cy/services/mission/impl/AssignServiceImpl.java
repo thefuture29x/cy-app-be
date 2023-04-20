@@ -316,7 +316,9 @@ public class AssignServiceImpl implements IAssignService {
         List<String> listContentNew = new ArrayList<>();
 
         iAssignCheckListRepository.findAllByAssign_Id(assignEntity.getId()).stream().forEach(data -> listContentOld.add(data.getContent()));
-        assignModel.getAssignCheckListModels().stream().forEach(data -> listContentNew.add(data.getContent()));
+        if (assignModel.getAssignCheckListModels() != null){
+            assignModel.getAssignCheckListModels().stream().forEach(data -> listContentNew.add(data.getContent()));
+        }
 
         deleteOldAssignCheckListAndSaveNew(listContentOld,listContentNew, assignEntity.getId());
         // add new assign check list
