@@ -1,6 +1,7 @@
 package cy.services.mission.impl;
 
 import cy.dtos.common.CustomHandleException;
+import cy.dtos.common.FileDto;
 import cy.dtos.common.UserDto;
 import cy.dtos.mission.AssignCheckListDto;
 import cy.dtos.mission.AssignDto;
@@ -84,6 +85,7 @@ public class AssignServiceImpl implements IAssignService {
         List<UserDto> userFollow = iUserRepository.getByCategoryAndTypeAndObjectid(Const.tableName.ASSIGNMENT.name(), Const.type.TYPE_FOLLOWER.name(), assignEntity.getId());
         assignDto.setUserDevs(userDev);
         assignDto.setUserFollows(userFollow);
+        assignDto.setAttachFiles(iFileRepository.findByCategoryAndObjectId(Const.tableName.ASSIGNMENT.name(),id).stream().map(data -> FileDto.toDto(data)).collect(Collectors.toList()));
         assignDto.setTagArray(iTagRelationRepository.getNameTagByCategoryAndObjectId(Const.tableName.ASSIGNMENT.name(), assignEntity.getId()));
         assignDto.setAssignCheckListDtos(iAssignCheckListRepository.findAllByAssign_Id(id).stream().map(data -> AssignCheckListDto.toDto(data)).collect(Collectors.toList()));
         return assignDto;
