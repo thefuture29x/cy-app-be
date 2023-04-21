@@ -126,6 +126,7 @@ public class MissionServiceImpl implements IMissionService {
         missionEntity.setDescription(missionModel.getDescription());
         missionEntity.setName(missionModel.getName());
         missionEntity.setIsDefault(missionModel.getIsDefault());
+        missionEntity.setIsAssign(missionModel.getIsAssign());
         missionEntity.setStatus(Const.status.TO_DO.name());
         missionEntity.setUpdatedDate(currentDate);
         missionEntity.setNature(missionModel.getNature());
@@ -299,7 +300,7 @@ public class MissionServiceImpl implements IMissionService {
         missionEntity.setDescription(missionModel.getDescription());
         missionEntity.setName(missionModel.getName());
         missionEntity.setIsDefault(missionModel.getIsDefault());
-
+        missionEntity.setIsAssign(missionModel.getIsAssign());
         missionEntity.setStatus(Const.status.TO_DO.name());
         missionEntity.setUpdatedDate(currentDate);
         missionEntity.setNature(missionModel.getNature());
