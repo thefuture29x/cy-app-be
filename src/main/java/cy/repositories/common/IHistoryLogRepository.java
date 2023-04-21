@@ -75,5 +75,9 @@ public interface IHistoryLogRepository extends JpaRepository<HistoryEntity, Long
             "WHERE object_id = ?1 AND category = 'BUG'",nativeQuery = true)
     Page<HistoryEntity> getAllHistoryOfBug(Long idSubTask, Pageable pageable);
 
+    @Query(value = "SELECT * FROM tbl_historys \n" +
+            "WHERE object_id = ?1 AND category = ?2",nativeQuery = true)
+    Page<HistoryEntity> getAllHistoryOfMissionByObjectId(Long idProject,String category, Pageable pageable);
+
 
 }

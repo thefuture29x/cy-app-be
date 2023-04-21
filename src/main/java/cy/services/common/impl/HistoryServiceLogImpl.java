@@ -380,6 +380,10 @@ public class HistoryServiceLogImpl implements IHistoryLogService {
                 return this.historyLogRepository.getAllHistoryOfSubTask(idObject,pageable).map(data -> HistoryLogDto.toDto(data));
             case "BUG":
                 return this.historyLogRepository.getAllHistoryOfBug(idObject,pageable).map(data -> HistoryLogDto.toDto(data));
+            case "MISSION":
+                return this.historyLogRepository.getAllHistoryOfMissionByObjectId(idObject,Const.tableName.MISSION.name(), pageable).map(data -> HistoryLogDto.toDto(data));
+            case "ASSIGNMENT":
+                return this.historyLogRepository.getAllHistoryOfMissionByObjectId(idObject,Const.tableName.ASSIGNMENT.name(),pageable).map(data -> HistoryLogDto.toDto(data));
         }
         return null;
     }
