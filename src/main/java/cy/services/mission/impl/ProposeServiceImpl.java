@@ -68,6 +68,20 @@ public class ProposeServiceImpl implements IProposeService {
                 }
             }
         }
+
+        if (proposeModel.getFileCreateByComment() != null && proposeModel.getFileCreateByComment().size() > 0){
+            ProposeEntity finalProposeEntity = proposeEntity;
+            proposeModel.getFileCreateByComment().stream().forEach(data -> {
+                FileEntity fileEntity = new FileEntity();
+                fileEntity.setLink(data.getLink());
+                fileEntity.setFileName(data.getFileName());
+                fileEntity.setFileType(data.getFileType());
+                fileEntity.setCategory(Const.tableName.PROPOSE.name());
+                fileEntity.setUploadedBy(userEntity);
+                fileEntity.setObjectId(finalProposeEntity.getId());
+                iFileRepository.saveAndFlush(fileEntity);
+            });
+        }
         iHistoryLogService.logCreate(proposeEntity.getId(), proposeEntity, Const.tableName.PROPOSE, null);
         ProposeDto result = ProposeDto.toDto(proposeEntity);
         return result;

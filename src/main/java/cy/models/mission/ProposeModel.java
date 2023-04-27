@@ -1,5 +1,6 @@
 package cy.models.mission;
 
+import cy.dtos.common.FileDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ public class ProposeModel {
     private String description;
     private MultipartFile[] files;
     private List<String> fileUrlsKeeping;
+    private List<FileDto> fileCreateByComment;
     private String category;
     private Long objectId;
 }
