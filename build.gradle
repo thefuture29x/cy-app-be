@@ -54,6 +54,9 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-jpamodelgen
 	compileOnly 'org.hibernate:hibernate-jpamodelgen'
 	annotationProcessor('org.hibernate:hibernate-jpamodelgen')
+	// https://mvnrepository.com/artifact/org.mapstruct/mapstruct
+	implementation group: 'org.mapstruct', name: 'mapstruct', version: '1.5.5.Final'
+
 
 
 

@@ -92,7 +92,7 @@ public class ProposeServiceImpl implements IProposeService {
         List<ProposeDto> proposeDtoList = new ArrayList<>();
         iProposeRepository.findAllByCategoryAndObjectId(category,idObject).stream().forEach(data -> {
             ProposeDto proposeDto = ProposeDto.toDto(data);
-            proposeDto.setCommentDtos(iCommentRepository.findAllByCategoryAndObjectIdAndIdParent(category, data.getId(), null).stream().map(cm -> CommentDto.toDto(cm)).collect(Collectors.toList()));
+            proposeDto.setCommentDtos(iCommentRepository.findAllByCategoryAndObjectIdAndIdParent(Const.tableName.PROPOSE.name(), data.getId(), null).stream().map(cm -> CommentDto.toDto(cm)).collect(Collectors.toList()));
             proposeDtoList.add(proposeDto);
         });
         return proposeDtoList;
